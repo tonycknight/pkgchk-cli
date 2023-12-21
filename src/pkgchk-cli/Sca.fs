@@ -27,6 +27,7 @@ module Sca =
         p.StartInfo.WindowStyle <- ProcessWindowStyle.Hidden
         p.StartInfo.RedirectStandardError <- true
         p.StartInfo.RedirectStandardOutput <- true
+        p.StartInfo.WorkingDirectory <- Environment.CurrentDirectory
 
         let transitives =
             match includeTransitive with
