@@ -17,7 +17,7 @@ type ScaHit =
 
 module Sca =
 
-    let createProcess path includeTransitive =
+    let createProcess includeTransitive path =
         let p = new Process()
 
         p.StartInfo.UseShellExecute <- false
