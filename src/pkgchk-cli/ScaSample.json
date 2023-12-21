@@ -1,0 +1,104 @@
+﻿{
+  "version": 1,
+  "parameters": "--vulnerable --include-transitive",
+  "sources": [
+    "https://api.nuget.org/v3/index.json",
+    "C:/Program Files (x86)/Microsoft SDKs/NuGetPackages/"
+  ],
+  "projects": [
+    {
+      "path": "/testapp/src/testapp/testapp.fsproj",
+      "frameworks": [
+        {
+          "framework": "net7.0",
+          "topLevelPackages": [
+            {
+              "id": "System.Net.Http",
+              "requestedVersion": "vsn 4.3.0",
+              "resolvedVersion": "vsn 4.3.0",
+              "vulnerabilities": [
+                {
+                  "severity": "High",
+                  "advisoryurl": "https://github.com/advisories/GHSA-7jgj-8wvc-jh57"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/testapp/src/testapp.common/testapp.common.fsproj",
+      "frameworks": [
+        {
+          "framework": "net7.0",
+          "transitivePackages": [
+            {
+              "id": "System.Net.Http",
+              "resolvedVersion": "vsn 4.3.0",
+              "vulnerabilities": [
+                {
+                  "severity": "High",
+                  "advisoryurl": "https://github.com/advisories/GHSA-7jgj-8wvc-jh57"
+                }
+              ]
+            },
+            {
+              "id": "System.Text.RegularExpressions",
+              "resolvedVersion": "aaa 4.3.0",
+              "vulnerabilities": [
+                {
+                  "severity": "High",
+                  "advisoryurl": "https://github.com/advisories/GHSA-cmhx-cq75-c4mj"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/testapp/tests/testapp.tests.unit/testapp.tests.unit.fsproj",
+      "frameworks": [
+        {
+          "framework": "net7.0",
+          "topLevelPackages": [
+            {
+              "id": "System.Net.Http",
+              "requestedVersion": "vsn 4.3.0",
+              "resolvedVersion": "vsn 4.3.0",
+              "vulnerabilities": [
+                {
+                  "severity": "High",
+                  "advisoryurl": "https://github.com/advisories/GHSA-7jgj-8wvc-jh57"
+                }
+              ]
+            }
+          ],
+          "transitivePackages": [
+            {
+              "id": "System.Net.Http",
+              "resolvedVersion": "vsn 4.3.0",
+              "vulnerabilities": [
+                {
+                  "severity": "High",
+                  "advisoryurl": "https://github.com/advisories/GHSA-7jgj-8wvc-jh57"
+                }
+              ]
+            },
+            {
+              "id": "System.Text.RegularExpressions",
+              "resolvedVersion": "aaa 4.3.0",
+              "vulnerabilities": [
+                {
+                  "severity": "High",
+                  "advisoryurl": "https://github.com/advisories/GHSA-cmhx-cq75-c4mj"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
