@@ -16,7 +16,7 @@ type PackageCheckCommandSettings() =
 
 type PackageCheckCommand() =
     inherit Command<PackageCheckCommandSettings>()
-    
+
     override _.Execute(context, settings) =
         let r =
             Sca.createProcess settings.ProjectPath settings.IncludeTransitives |> Sca.get

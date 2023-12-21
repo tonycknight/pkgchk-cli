@@ -3,11 +3,12 @@
 open System
 open Spectre.Console
 
-module Console=
+module Console =
     let returnNoVulnerabilities () =
         "[bold green]No vulnerabilities found![/]"
         |> AnsiConsole.Markup
         |> Console.Out.WriteLine
+
         0
 
     let returnVulnerabilities hits =
@@ -21,4 +22,3 @@ module Console=
     let returnError (error: string) =
         Console.Error.WriteLine error
         2
-

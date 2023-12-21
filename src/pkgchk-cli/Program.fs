@@ -11,7 +11,5 @@ module Program =
 
         try
             app.Run(argv)
-        with
-        | ex ->
-            Console.returnError ex.Message            
-
+        with ex ->
+            Console.returnError ex.Message
