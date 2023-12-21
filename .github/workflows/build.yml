@@ -65,6 +65,9 @@ jobs:
       - name: App restore
         run: dotnet restore
 
+      - name: Check style
+        run: dotnet fantomas  ./ --check 
+
   build:
     runs-on: ubuntu-latest
 
