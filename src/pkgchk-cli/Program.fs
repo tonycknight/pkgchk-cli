@@ -1,6 +1,7 @@
 ﻿namespace pkgchk
 
 open System
+open Spectre.Console
 
 module Program =
     [<EntryPoint>]
@@ -18,10 +19,15 @@ module Program =
         | Choice1Of2 json ->
             match Sca.parse json with
             | Choice1Of2 [] ->
-                Console.Out.WriteLine("No vulnerabilities found!")
+                "[bold green]No vulnerabilities found![/]"
+                |> AnsiConsole.Markup
+                |> Console.Out.WriteLine
                 0
             | Choice1Of2 hits ->
-                Console.Out.WriteLine("Vulnerabilities found!")
+                "[bold red]Vulnerabilities found![/]"
+                |> AnsiConsole.Markup
+                |> Console.Out.WriteLine
+                
                 hits |> Sca.formatHits |> Console.Out.WriteLine
                 1
             | Choice2Of2 error ->

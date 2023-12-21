@@ -3,6 +3,7 @@
 open System
 open System.Diagnostics
 open FSharp.Data
+open Spectre.Console
 
 type ScaData = JsonProvider<"ScaSample.json">
 
@@ -60,7 +61,7 @@ module Sca =
             Choice2Of2(ex.Message)
 
     let parse json =
-        
+
         try
             let r = ScaData.Parse(json)
 
@@ -97,19 +98,32 @@ module Sca =
                                   advisoryUri = v.Advisoryurl }))))
 
             let hits = topLevelVuls |> Seq.append transitiveVuls |> List.ofSeq
-            Choice1Of2 hits 
-        with
-        | ex -> Choice2Of2 ("An error occurred parsing results" + Environment.NewLine + ex.Message)
+            Choice1Of2 hits
+        with ex ->
+            Choice2Of2("An error occurred parsing results" + Environment.NewLine + ex.Message)
 
     let formatHits (hits: seq<ScaHit>) =
+        let formatSeverity value =
+            let code =
+                match value with
+                | "High" -> "red"
+                | "Critical" -> "italic red"
+                | "Moderate" -> "#d75f00"
+                | _ -> "yellow"
+
+            sprintf "[%s]%s[/]" code value
+
+        let formatProject value =
+            sprintf "[bold yellow]%s[/]" value
+
         let fmt (hit: ScaHit) =
             seq {
-                sprintf "Severity:         %s" hit.severity
-                sprintf "Package:          %s" hit.packageId
-                sprintf "Resolved version: %s" hit.resolvedVersion
-                sprintf "Advisory URL:     %s" hit.advisoryUri
-                sprintf "Project:          %s" hit.projectPath
+                ""
+                sprintf "Project:          %s" hit.projectPath |> formatProject 
+                sprintf "Severity:         %s" (formatSeverity  hit.severity)
+                sprintf "Package:          [cyan]%s[/] version [cyan]%s[/]" hit.packageId hit.resolvedVersion
+                sprintf "Advisory URL:     %s" hit.advisoryUri 
             }
 
         let lines = hits |> Seq.collect fmt
-        String.Join(Environment.NewLine, lines)
+        String.Join(Environment.NewLine, lines) |> AnsiConsole.MarkupLine
