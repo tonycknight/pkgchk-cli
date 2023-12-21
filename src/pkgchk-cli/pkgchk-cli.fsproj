@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <PackageReference Include="FSharp.Data" Version="6.3.0" />    
+    <PackageReference Include="Spectre.Console.Cli" Version="0.48.0" />    
   </ItemGroup>
   
 </Project>
