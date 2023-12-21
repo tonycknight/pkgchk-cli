@@ -12,6 +12,7 @@
     <PackageId>pkgchk-cli</PackageId>
     <RepositoryUrl>https://github.com/tonycknight/pkgchk-cli</RepositoryUrl>
     <PackageProjectUrl>https://github.com/tonycknight/pkgchk-cli</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
