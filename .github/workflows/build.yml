@@ -69,6 +69,7 @@ jobs:
         run: dotnet fantomas  ./ --check 
 
   build:
+    name: Build
     runs-on: ubuntu-latest
 
     steps:
