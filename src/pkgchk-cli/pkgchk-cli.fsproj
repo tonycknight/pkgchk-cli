@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <Copyright>Copyright 2023 Tony Knight</Copyright>
+    <Authors>Tony Knight</Authors>
+    <RootNamespace>pkgchk</RootNamespace>
+    <Description>Tooling for .net package checks</Description>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>pkgchk</ToolCommandName>
+    <PackageId>pkgchk-cli</PackageId>
+    <RepositoryUrl>https://github.com/tonycknight/pkgchk-cli</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/tonycknight/pkgchk-cli</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="" Visible="False" />
+    <Content Include="ScaSample.json" />
+    <Compile Include="Sca.fs" />
+    <Compile Include="Io.fs" />
+    <Compile Include="Console.fs" />
+    <Compile Include="Commands.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FSharp.Data" Version="6.3.0" />
+    <PackageReference Include="Spectre.Console.Cli" Version="0.48.0" />    
+  </ItemGroup>
+  
+</Project>

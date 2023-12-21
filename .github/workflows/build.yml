@@ -1,0 +1,142 @@
+name: Build & Release
+
+
+on:
+  push:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  build-version-number: 0.1.${{ github.run_number }}  
+  dotnet_version: 7.x
+
+jobs:
+  sca:
+    name: Check SCA
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "${{ env.dotnet_version }}"
+        
+      - name: dotnet SCA
+        run: |
+          dotnet tool restore
+          dotnet restore
+          dotnet list package --vulnerable --include-transitive | tee results.log
+
+          FOUND_VULN=`grep -c 'has the following vulnerable packages' results.log` || true
+          FOUND_CRIT=`grep -c 'Critical' results.log` || true
+          FOUND_HIGH=`grep -c 'High' results.log` || true
+          
+          if [[ "$FOUND_VULN" != "0" ]]
+          then
+            if [ "$FOUND_CRIT" == "0" -a "$FOUND_HIGH" == "0"]
+            then
+              echo "### Vulnerable packages found ###"
+              exit 0
+            fi
+            echo "### Critical/High vulnerable packages found ###"
+            exit 1
+          fi
+          echo "## No problems found ##"
+          exit 0
+
+  style-rules:
+    name: Check style rules
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "${{ env.dotnet_version }}"
+        
+      - name: Tool restore
+        run: dotnet tool restore
+      
+      - name: App restore
+        run: dotnet restore
+
+      - name: Check style
+        run: dotnet fantomas  ./ --check 
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "${{ env.dotnet_version }}"
+        
+      - name: Tool restore
+        run: dotnet tool restore
+      
+      - name: App restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build -c Release
+
+      
+
+
+  
+  nuget-release:
+    name: Nuget package & release
+    runs-on: ubuntu-latest
+    needs:   [ sca, build, style-rules ]
+    
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "${{ env.dotnet_version }}"
+          
+      - name: Tool restore
+        run: dotnet tool restore
+      
+      - name: App restore
+        run: dotnet restore
+        
+      - name: Build package for Preview
+        if: ${{ github.ref != 'refs/heads/main'}}
+        run: dotnet pack -c Release -o ./package/ -p:PackageVersion=${{ env.build-version-number }}-preview -p:Version=${{ env.build-version-number }}-preview
+      
+      - name: Build package for Release
+        if: ${{ github.ref == 'refs/heads/main'}}
+        run: dotnet pack -c Release -o ./package/ -p:PackageVersion=${{ env.build-version-number }} -p:Version=${{ env.build-version-number }}
+
+      - name: Push nuget package
+        if: github.event_name == 'push'
+        run: dotnet nuget push "package/*.nupkg"  --api-key ${{ secrets.NUGET_PAT }} --source "nuget.org"
+
+  gh-release:
+    name: gh release
+    runs-on: ubuntu-latest
+    needs: [ nuget-release ]    
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:    
+      - uses: actions/checkout@v3
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: v${{ env.build-version-number }}
+          prerelease: true
+          generateReleaseNotes: true
