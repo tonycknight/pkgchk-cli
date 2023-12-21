@@ -3,10 +3,15 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
+    <Copyright>Copyright 2023 Tony Knight</Copyright>
+    <Authors>Tony Knight</Authors>
     <RootNamespace>pkgchk</RootNamespace>
+    <Description>Tooling for .net package checks</Description>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>pkgchk</ToolCommandName>
-    <PackageId>pkgchk_cli</PackageId>
+    <PackageId>pkgchk-cli</PackageId>
+    <RepositoryUrl>https://github.com/tonycknight/pkgchk-cli</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/tonycknight/pkgchk-cli</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
