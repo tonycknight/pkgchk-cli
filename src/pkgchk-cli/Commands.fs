@@ -8,7 +8,7 @@ open Spectre.Console.Cli
 type PackageCheckCommandSettings() =
     inherit CommandSettings()
 
-    [<CommandArgument(0, "<SOLUTION|PROJECT>")>]
+    [<CommandArgument(0, "[SOLUTION|PROJECT]")>]
     [<Description("The solution or project file to check.")>]
     member val ProjectPath = "" with get, set
 
