@@ -15,6 +15,14 @@ So until those issues are resolved, `dotnet list package` needs some workarounds
 
 This tool wraps `dotnet list package` and interprets the output for vulnerabilities. Anything found will return in a non-zero return code. CI integration is as easy as local use.
 
+## Installation requirements
+
+:warning: This tool only works with .Net SDK 7.0.200 or higher. 
+
+You'll need .Net SDK 7.0.200 installed. Any `global.json` files must use .Net SDK 7.0.200 or higher.
+
+If your effective SDK is lower than 7.0.200, this tool will work with unexpected results.
+
 ## Installation into your repository
 
 Create a tool manifest for your reepository:
