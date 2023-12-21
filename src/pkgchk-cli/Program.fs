@@ -9,4 +9,9 @@ module Program =
 
         app.Configure(fun c -> c.PropagateExceptions().ValidateExamples() |> ignore)
 
-        app.Run(argv)
+        try
+            app.Run(argv)
+        with
+        | ex ->
+            Console.returnError ex.Message            
+

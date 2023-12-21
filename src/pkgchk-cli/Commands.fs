@@ -1,8 +1,6 @@
 ﻿namespace pkgchk
 
-open System
 open System.ComponentModel
-open Spectre.Console
 open Spectre.Console.Cli
 
 type PackageCheckCommandSettings() =
@@ -18,26 +16,7 @@ type PackageCheckCommandSettings() =
 
 type PackageCheckCommand() =
     inherit Command<PackageCheckCommandSettings>()
-
-    let returnNoVulnerabilities () =
-        "[bold green]No vulnerabilities found![/]"
-        |> AnsiConsole.Markup
-        |> Console.Out.WriteLine
-
-        0
-
-    let returnVulnerabilities hits =
-        "[bold red]Vulnerabilities found![/]"
-        |> AnsiConsole.Markup
-        |> Console.Out.WriteLine
-
-        hits |> Sca.formatHits |> Console.Out.WriteLine
-        1
-
-    let returnError (error: string) =
-        Console.Error.WriteLine error
-        2
-
+    
     override _.Execute(context, settings) =
         let r =
             Sca.createProcess settings.ProjectPath settings.IncludeTransitives |> Sca.get
@@ -45,7 +24,7 @@ type PackageCheckCommand() =
         match r with
         | Choice1Of2 json ->
             match Sca.parse json with
-            | Choice1Of2 [] -> returnNoVulnerabilities ()
-            | Choice1Of2 hits -> returnVulnerabilities hits
-            | Choice2Of2 error -> returnError error
-        | Choice2Of2 error -> returnError error
+            | Choice1Of2 [] -> Console.returnNoVulnerabilities ()
+            | Choice1Of2 hits -> Console.returnVulnerabilities hits
+            | Choice2Of2 error -> Console.returnError error
+        | Choice2Of2 error -> Console.returnError error
