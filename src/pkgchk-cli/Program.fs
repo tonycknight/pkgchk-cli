@@ -1,38 +1,12 @@
 ﻿namespace pkgchk
 
-open System
-open Spectre.Console
+open Spectre.Console.Cli
 
 module Program =
     [<EntryPoint>]
-    let main args =
+    let main argv =
+        let app = CommandApp<PackageCheckCommand>()
 
-        let path =
-            match args with
-            | [||] -> ""
-            | [| p |] -> p
-            | [| p; _ |] -> p
+        app.Configure(fun c -> c.PropagateExceptions().ValidateExamples() |> ignore)
 
-        let r = Sca.createProcess path true |> Sca.get
-
-        match r with
-        | Choice1Of2 json ->
-            match Sca.parse json with
-            | Choice1Of2 [] ->
-                "[bold green]No vulnerabilities found![/]"
-                |> AnsiConsole.Markup
-                |> Console.Out.WriteLine
-                0
-            | Choice1Of2 hits ->
-                "[bold red]Vulnerabilities found![/]"
-                |> AnsiConsole.Markup
-                |> Console.Out.WriteLine
-                
-                hits |> Sca.formatHits |> Console.Out.WriteLine
-                1
-            | Choice2Of2 error ->
-                Console.Error.WriteLine error
-                99
-        | Choice2Of2 err ->
-            Console.Error.WriteLine err
-            99
+        app.Run(argv)

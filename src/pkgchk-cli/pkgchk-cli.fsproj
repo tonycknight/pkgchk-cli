@@ -12,6 +12,7 @@
   <ItemGroup>
     <Content Include="ScaSample.json" />
     <Compile Include="Sca.fs" />
+    <Compile Include="Commands.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

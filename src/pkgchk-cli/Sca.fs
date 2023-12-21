@@ -113,16 +113,15 @@ module Sca =
 
             sprintf "[%s]%s[/]" code value
 
-        let formatProject value =
-            sprintf "[bold yellow]%s[/]" value
+        let formatProject value = sprintf "[bold yellow]%s[/]" value
 
         let fmt (hit: ScaHit) =
             seq {
                 ""
-                sprintf "Project:          %s" hit.projectPath |> formatProject 
-                sprintf "Severity:         %s" (formatSeverity  hit.severity)
+                sprintf "Project:          %s" hit.projectPath |> formatProject
+                sprintf "Severity:         %s" (formatSeverity hit.severity)
                 sprintf "Package:          [cyan]%s[/] version [cyan]%s[/]" hit.packageId hit.resolvedVersion
-                sprintf "Advisory URL:     %s" hit.advisoryUri 
+                sprintf "Advisory URL:     %s" hit.advisoryUri
             }
 
         let lines = hits |> Seq.collect fmt
