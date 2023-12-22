@@ -26,4 +26,4 @@ jobs:
       - name: dotnet SCA
         run: |
           dotnet tool restore
-          dotnet run --project ./build/build.fsproj -t "SCA"
+          dotnet pkgchk -t
