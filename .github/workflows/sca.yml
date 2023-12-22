@@ -23,7 +23,7 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v3
         
-      - name: dotnet SCA
+      - name: Check SCA
         run: |
           dotnet tool restore
           dotnet pkgchk -t

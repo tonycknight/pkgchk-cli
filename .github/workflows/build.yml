@@ -24,7 +24,7 @@ jobs:
         with:
           dotnet-version: "${{ env.dotnet_version }}"
         
-      - name: dotnet SCA
+      - name: Check SCA
         run: |
           dotnet tool restore
           dotnet pkgchk -t
