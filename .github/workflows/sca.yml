@@ -1,0 +1,29 @@
+name: "SCA"
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      username:
+        required: false
+        type: string
+    secrets:
+      token:
+        required: false
+  schedule:
+    - cron: '1 0 * * 6'
+
+jobs:
+  sca:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v3
+        
+      - name: dotnet SCA
+        run: |
+          dotnet tool restore
+          dotnet run --project ./build/build.fsproj -t "SCA"
