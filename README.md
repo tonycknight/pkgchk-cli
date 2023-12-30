@@ -1,5 +1,9 @@
 # pkgchk-cli
 
+[![Build & Release](https://github.com/tonycknight/pkgchk-cli/actions/workflows/build.yml/badge.svg)](https://github.com/tonycknight/pkgchk-cli/actions/workflows/build.yml)
+
+![Nuget](https://img.shields.io/nuget/v/pkgchk-cli)
+
 A dotnet tool for package dependency checks.
 
 `dotnet list package` is a wonderful tool, and with its `--vulnerable` switch it is essential for code provenance. If you're not famlilar with it or why it's recommended, [see this blog post](https://devblogs.microsoft.com/nuget/how-to-scan-nuget-packages-for-security-vulnerabilities/).
