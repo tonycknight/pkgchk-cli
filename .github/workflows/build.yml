@@ -90,7 +90,7 @@ jobs:
         run: dotnet restore
 
       - name: Run Tests
-        run: dotnet test -c Debug --filter DisplayName!~IntegrationTests
+        run: dotnet test -c Debug --filter DisplayName!~IntegrationTests /p:CollectCoverage=true /p:CoverletOutput=./TestResults/coverage.info /p:CoverletOutputFormat=cobertura 
       
   integration-tests:
     name: Integration Tests
