@@ -20,6 +20,18 @@ type PackageCheckCommandSettings() =
 type PackageCheckCommand() =
     inherit Command<PackageCheckCommandSettings>()
 
+    let returnError console error =
+        error |> Console.error console
+        Console.sysError
+
+    let returnVulnerabilities console hits =
+        hits |> Console.vulnerabilities console
+        Console.validationFailed
+
+    let returnNoVulnerabilities console =
+        Console.noVulnerabilities console
+        Console.validationOk
+
     override _.Execute(context, settings) =
         let console = Spectre.Console.AnsiConsole.Console
 
@@ -33,7 +45,7 @@ type PackageCheckCommand() =
         match r with
         | Choice1Of2 json ->
             match Sca.parse json with
-            | Choice1Of2 [] -> Console.returnNoVulnerabilities console
-            | Choice1Of2 hits -> hits |> Console.returnVulnerabilities console
-            | Choice2Of2 error -> error |> Console.returnError console
-        | Choice2Of2 error -> error |> Console.returnError console
+            | Choice1Of2 [] -> returnNoVulnerabilities console
+            | Choice1Of2 hits -> hits |> returnVulnerabilities console
+            | Choice2Of2 error -> error |> returnError console
+        | Choice2Of2 error -> error |> returnError console

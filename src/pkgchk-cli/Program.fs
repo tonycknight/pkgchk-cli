@@ -1,6 +1,7 @@
 ﻿namespace pkgchk
 
 open System.Diagnostics.CodeAnalysis
+open Spectre.Console
 open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]
@@ -14,4 +15,5 @@ module Program =
         try
             app.Run(argv)
         with ex ->
-            ex.Message |> Console.returnError Spectre.Console.AnsiConsole.Console
+            ex.Message |> Console.error AnsiConsole.Console
+            Console.sysError
