@@ -44,7 +44,6 @@ module Sca =
 
         p
 
-
     let get (proc: Process) =
         try
             if proc.Start() then

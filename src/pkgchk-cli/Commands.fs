@@ -1,8 +1,10 @@
 ﻿namespace pkgchk
 
 open System.ComponentModel
+open System.Diagnostics.CodeAnalysis
 open Spectre.Console.Cli
 
+[<ExcludeFromCodeCoverage>]
 type PackageCheckCommandSettings() =
     inherit CommandSettings()
 
@@ -14,6 +16,7 @@ type PackageCheckCommandSettings() =
     [<Description("Check transitive packages as well as top level packages.")>]
     member val IncludeTransitives = false with get, set
 
+[<ExcludeFromCodeCoverage>]
 type PackageCheckCommand() =
     inherit Command<PackageCheckCommandSettings>()
 
