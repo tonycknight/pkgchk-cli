@@ -9,8 +9,9 @@ module IntegrationTests =
 
     let cmdArgs (cmd: string) =
         let x = cmd.IndexOf(' ')
+
         if x > 0 then
-            (cmd.Substring(0, x), cmd.Substring(x+1))
+            (cmd.Substring(0, x), cmd.Substring(x + 1))
         else
             (cmd, "")
 
@@ -37,8 +38,8 @@ module IntegrationTests =
         let proc = new Process()
         proc.StartInfo.UseShellExecute <- false
         proc.StartInfo.RedirectStandardOutput <- true
-        proc.StartInfo.FileName <- exec 
-        proc.StartInfo.Arguments <- args 
+        proc.StartInfo.FileName <- exec
+        proc.StartInfo.Arguments <- args
         proc.StartInfo.CreateNoWindow <- true
         proc.StartInfo.WindowStyle <- ProcessWindowStyle.Hidden
         proc.StartInfo.RedirectStandardError <- true
