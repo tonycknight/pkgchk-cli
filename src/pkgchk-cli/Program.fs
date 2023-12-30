@@ -14,4 +14,4 @@ module Program =
         try
             app.Run(argv)
         with ex ->
-            Console.returnError ex.Message
+            ex.Message |> Console.returnError Spectre.Console.AnsiConsole.Console

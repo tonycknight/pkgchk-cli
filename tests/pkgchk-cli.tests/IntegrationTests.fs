@@ -7,6 +7,12 @@ open Xunit
 
 module IntegrationTests =
 
+    [<Literal>]
+    let httpPackage = "System.Net.Http"
+
+    [<Literal>]
+    let regexPackage = "System.Text.RegularExpressions"
+
     let cmdArgs (cmd: string) =
         let x = cmd.IndexOf(' ')
 
@@ -22,13 +28,16 @@ module IntegrationTests =
         sprintf "dotnet new classlib -o ./%s -n testproj" outDir
 
     let addBadHttpPackageArgs outDir =
-        sprintf "dotnet add ./%s/testproj.csproj package System.Net.Http -v 4.3.0" outDir
+        sprintf "dotnet add ./%s/testproj.csproj package %s -v 4.3.0" outDir httpPackage
 
     let addGoodHttpPackageArgs outDir =
-        sprintf "dotnet add ./%s/testproj.csproj package System.Net.Http -v 4.3.4" outDir
+        sprintf "dotnet add ./%s/testproj.csproj package %s -v 4.3.4" outDir httpPackage
+
+    let addBadRegexPackageArgs outDir =
+        sprintf "dotnet add ./%s/testproj.csproj package %s -v 4.3.0" outDir regexPackage
 
     let addGoodRegexPackageArgs outDir =
-        sprintf "dotnet add ./%s/testproj.csproj package System.Text.RegularExpressions -v 4.3.1" outDir
+        sprintf "dotnet add ./%s/testproj.csproj package %s -v 4.3.1" outDir regexPackage
 
     let runPkgChkArgs outDir =
         sprintf "dotnet pkgchk-cli.dll ./%s/testproj.csproj -t" outDir
@@ -61,18 +70,35 @@ module IntegrationTests =
     let assertSuccessfulExecution (rc, out, err) =
         rc |> should equal 0
         out |> should not' (be NullOrEmptyString)
-        out |> should not' (haveSubstring "Vulnerabilities found!")
         err |> should be NullOrEmptyString
+
+    let assertSuccessfulPkgChk (rc, out, err) =
+        rc |> should equal 0
+        out |> should not' (be NullOrEmptyString)
+        out |> should haveSubstring "No vulnerabilities found."
+        err |> should be NullOrEmptyString
+        (rc, out, err)
 
     let assertFailedPkgChk (rc, out, err) =
         rc |> should equal 1
         out |> should not' (be NullOrEmptyString)
         out |> should haveSubstring "Vulnerabilities found!"
         err |> should be NullOrEmptyString
+        (rc, out, err)
+
+    let assertPackagesFound (hits: string list) (rc, out, err) =
+        hits |> Seq.iter (fun h -> out |> should haveSubstring h)
+        (rc, out, err)
+
+    let assertPackagesNotFound (misses: string list) (rc, out, err) =
+        misses |> Seq.iter (fun h -> out |> should not' (haveSubstring h))
+        (rc, out, err)
 
     let execSuccess = createProc >> executeProc >> assertSuccessfulExecution
 
     let execFailedPkgChk = createProc >> executeProc >> assertFailedPkgChk
+
+    let execSuccessPkgChk = createProc >> executeProc >> assertSuccessfulPkgChk
 
     [<Fact>]
     let ``Vanilla project returns OK`` () =
@@ -81,10 +107,12 @@ module IntegrationTests =
 
         createProjectArgs outDir |> execSuccess
 
-        runPkgChkArgs outDir |> execSuccess
+        runPkgChkArgs outDir 
+        |> execSuccessPkgChk
+        |> assertPackagesNotFound [ httpPackage; regexPackage ]
 
     [<Fact>]
-    let ``Project with vulnerable package returns Error`` () =
+    let ``Project with multiple vulnerable packages returns Error`` () =
 
         let outDir = getOutDir ()
 
@@ -92,11 +120,15 @@ module IntegrationTests =
 
         addBadHttpPackageArgs outDir |> execSuccess
 
-        runPkgChkArgs outDir |> execFailedPkgChk
+        addBadRegexPackageArgs outDir |> execSuccess
+
+        runPkgChkArgs outDir
+        |> execFailedPkgChk
+        |> assertPackagesFound [ httpPackage; regexPackage ]
 
 
     [<Fact>]
-    let ``Project with good package returns OK`` () =
+    let ``Project with multiple good packages returns OK`` () =
 
         let outDir = getOutDir ()
 
@@ -104,7 +136,11 @@ module IntegrationTests =
 
         addGoodHttpPackageArgs outDir |> execSuccess
 
-        runPkgChkArgs outDir |> execSuccess
+        addGoodRegexPackageArgs outDir |> execSuccess
+
+        runPkgChkArgs outDir
+        |> execSuccessPkgChk
+        |> assertPackagesNotFound [ httpPackage; regexPackage ]
 
     [<Fact>]
     let ``Project with mixed vulnerable / good packages returns Error`` () =
@@ -117,4 +153,7 @@ module IntegrationTests =
 
         addBadHttpPackageArgs outDir |> execSuccess
 
-        runPkgChkArgs outDir |> execFailedPkgChk
+        runPkgChkArgs outDir
+        |> execFailedPkgChk
+        |> assertPackagesFound [ httpPackage ]
+        |> assertPackagesNotFound [ regexPackage ]

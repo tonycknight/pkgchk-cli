@@ -6,21 +6,19 @@ open Spectre.Console
 
 [<ExcludeFromCodeCoverage>]
 module Console =
-    let returnNoVulnerabilities () =
-        "[bold green]No vulnerabilities found![/]"
-        |> AnsiConsole.Markup
-        |> Console.Out.WriteLine
+    let returnNoVulnerabilities (console: IAnsiConsole) =
+        "[bold green]No vulnerabilities found.[/]"
+        |> console.Markup
+        |> console.WriteLine
 
         0
 
-    let returnVulnerabilities hits =
-        "[bold red]Vulnerabilities found![/]"
-        |> AnsiConsole.Markup
-        |> Console.Out.WriteLine
+    let returnVulnerabilities (console: IAnsiConsole) hits =
+        "[bold red]Vulnerabilities found![/]" |> console.Markup |> console.WriteLine
 
-        hits |> Sca.formatHits |> Console.Out.WriteLine
+        hits |> Sca.formatHits |> console.WriteLine
         1
 
-    let returnError (error: string) =
-        Console.Error.WriteLine error
+    let returnError (console: IAnsiConsole) (error: string) =
+        console.WriteLine error
         2
