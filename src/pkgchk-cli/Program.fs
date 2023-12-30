@@ -3,7 +3,7 @@
 open System.Diagnostics.CodeAnalysis
 open Spectre.Console.Cli
 
-[<ExcludeFromCodeCoverage>]    
+[<ExcludeFromCodeCoverage>]
 module Program =
     [<EntryPoint>]
     let main argv =
