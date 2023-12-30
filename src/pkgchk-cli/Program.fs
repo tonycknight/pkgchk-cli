@@ -1,7 +1,10 @@
 ﻿namespace pkgchk
 
+open System.Diagnostics.CodeAnalysis
+open Spectre.Console
 open Spectre.Console.Cli
 
+[<ExcludeFromCodeCoverage>]
 module Program =
     [<EntryPoint>]
     let main argv =
@@ -12,4 +15,5 @@ module Program =
         try
             app.Run(argv)
         with ex ->
-            Console.returnError ex.Message
+            ex.Message |> Console.error AnsiConsole.Console
+            Console.sysError

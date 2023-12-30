@@ -1,8 +1,10 @@
 ﻿namespace pkgchk
 
 open System.ComponentModel
+open System.Diagnostics.CodeAnalysis
 open Spectre.Console.Cli
 
+[<ExcludeFromCodeCoverage>]
 type PackageCheckCommandSettings() =
     inherit CommandSettings()
 
@@ -14,20 +16,37 @@ type PackageCheckCommandSettings() =
     [<Description("Check transitive packages as well as top level packages.")>]
     member val IncludeTransitives = false with get, set
 
+[<ExcludeFromCodeCoverage>]
 type PackageCheckCommand() =
     inherit Command<PackageCheckCommandSettings>()
 
+    let returnError console error =
+        error |> Console.error console
+        Console.sysError
+
+    let returnVulnerabilities console hits =
+        hits |> Console.vulnerabilities console
+        Console.validationFailed
+
+    let returnNoVulnerabilities console =
+        Console.noVulnerabilities console
+        Console.validationOk
+
     override _.Execute(context, settings) =
-        let r =
+        let console = Spectre.Console.AnsiConsole.Console
+
+        use proc =
             settings.ProjectPath
             |> Io.toFullPath
-            |> Sca.createProcess settings.IncludeTransitives
-            |> Sca.get
+            |> Sca.commandArgs settings.IncludeTransitives
+            |> Io.createProcess
+
+        let r = Io.run proc
 
         match r with
         | Choice1Of2 json ->
             match Sca.parse json with
-            | Choice1Of2 [] -> Console.returnNoVulnerabilities ()
-            | Choice1Of2 hits -> Console.returnVulnerabilities hits
-            | Choice2Of2 error -> Console.returnError error
-        | Choice2Of2 error -> Console.returnError error
+            | Choice1Of2 [] -> returnNoVulnerabilities console
+            | Choice1Of2 hits -> hits |> returnVulnerabilities console
+            | Choice2Of2 error -> error |> returnError console
+        | Choice2Of2 error -> error |> returnError console

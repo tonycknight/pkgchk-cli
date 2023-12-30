@@ -4,21 +4,49 @@ open System
 open Spectre.Console
 
 module Console =
-    let returnNoVulnerabilities () =
-        "[bold green]No vulnerabilities found![/]"
-        |> AnsiConsole.Markup
-        |> Console.Out.WriteLine
 
-        0
+    [<Literal>]
+    let validationOk = 0
 
-    let returnVulnerabilities hits =
-        "[bold red]Vulnerabilities found![/]"
-        |> AnsiConsole.Markup
-        |> Console.Out.WriteLine
+    [<Literal>]
+    let validationFailed = 1
 
-        hits |> Sca.formatHits |> Console.Out.WriteLine
-        1
+    [<Literal>]
+    let sysError = 2
 
-    let returnError (error: string) =
-        Console.Error.WriteLine error
-        2
+    let formatSeverity value =
+        let code =
+            match value with
+            | "High" -> "red"
+            | "Critical" -> "italic red"
+            | "Moderate" -> "#d75f00"
+            | _ -> "yellow"
+
+        sprintf "[%s]%s[/]" code value
+
+    let formatProject value = sprintf "[bold yellow]%s[/]" value
+
+    let formatHits (hits: seq<ScaHit>) =
+
+        let fmt (hit: ScaHit) =
+            seq {
+                ""
+                sprintf "Project:          %s" hit.projectPath |> formatProject
+                sprintf "Severity:         %s" (formatSeverity hit.severity)
+                sprintf "Package:          [cyan]%s[/] version [cyan]%s[/]" hit.packageId hit.resolvedVersion
+                sprintf "Advisory URL:     %s" hit.advisoryUri
+            }
+
+        let lines = hits |> Seq.collect fmt
+        String.Join(Environment.NewLine, lines) |> AnsiConsole.MarkupLine
+
+    let noVulnerabilities (console: IAnsiConsole) =
+        "[bold green]No vulnerabilities found.[/]"
+        |> console.Markup
+        |> console.WriteLine
+
+    let vulnerabilities (console: IAnsiConsole) hits =
+        "[bold red]Vulnerabilities found![/]" |> console.Markup |> console.WriteLine
+        hits |> formatHits |> console.WriteLine
+
+    let error (console: IAnsiConsole) (error: string) = console.WriteLine error

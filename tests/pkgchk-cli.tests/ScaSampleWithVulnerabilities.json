@@ -1,0 +1,43 @@
+﻿{
+  "version": 1,
+  "parameters": "--vulnerable --include-transitive",
+  "sources": [
+    "https://api.nuget.org/v3/index.json",
+    "C:/Program Files (x86)/Microsoft SDKs/NuGetPackages/"
+  ],
+  "projects": [        
+    {
+      "path": "/testapp/tests/testapp.tests.unit/testapp.tests.unit.fsproj",
+      "frameworks": [
+        {
+          "framework": "net7.0",
+          "topLevelPackages": [
+            {
+              "id": "System.Net.Http",
+              "requestedVersion": "4.3.0",
+              "resolvedVersion": "4.3.0",
+              "vulnerabilities": [
+                {
+                  "severity": "Critical",
+                  "advisoryurl": "https://github.com/advisories/GHSA-7jgj-8wvc-jh57"
+                }
+              ]
+            }
+          ],
+          "transitivePackages": [
+            {
+              "id": "System.Text.RegularExpressions",
+              "resolvedVersion": "4.3.1",
+              "vulnerabilities": [
+                {
+                  "severity": "High",
+                  "advisoryurl": "https://github.com/advisories/GHSA-7jgj-8wvc-jh57"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
