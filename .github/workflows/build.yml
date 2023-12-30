@@ -72,13 +72,32 @@ jobs:
         run: dotnet build -c Release
 
       
+  test:
+    name: Test
+    runs-on: ubuntu-latest
 
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "${{ env.dotnet_version }}"
+        
+      - name: Tool restore
+        run: dotnet tool restore
+      
+      - name: App restore
+        run: dotnet restore
+
+      - name: Run Tests
+        run: dotnet test -c Debug 
 
   
   nuget-release:
     name: Nuget package & release
     runs-on: ubuntu-latest
-    needs:   [ sca, build, style-rules ]
+    needs:   [ sca, build, style-rules, test ]
     
     steps:
       - uses: actions/checkout@v3
