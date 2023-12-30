@@ -94,6 +94,15 @@ jobs:
           link_missing_lines: true
           report_name: code coverage results
 
+      - name: Consolidate code coverage
+        runs: dotnet reportgenerator -reports:./tests/**/coverage.info -targetdir:./reports/codecoverage -reporttypes:Html
+
+      - name: Archive Code coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: codecoverage
+          path: ./reports/codecoverage/*.*
+
   integration-tests:
     name: Integration Tests
     strategy:
