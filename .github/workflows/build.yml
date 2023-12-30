@@ -92,6 +92,29 @@ jobs:
       - name: Run Tests
         run: dotnet test -c Debug --filter DisplayName!~IntegrationTests /p:CollectCoverage=true /p:CoverletOutput=./TestResults/coverage.info /p:CoverletOutputFormat=cobertura 
       
+      - name: Unit test results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: unit test results
+          path: ${{ github.workspace }}/tests/pkgchk-cli.tests/TestResults/test_results.trx
+          reporter: dotnet-trx
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Code coverage results
+        uses: 5monkeys/cobertura-action@master
+        with:
+          path: ${{ github.workspace }}/tests/pkgchk-cli.tests/TestResults/coverage.info
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          minimum_coverage: 1
+          fail_below_threshold: true
+          show_line: true
+          show_branch: true
+          show_missing: true
+          show_class_names: true
+          link_missing_lines: true
+          report_name: code coverage results
+
   integration-tests:
     name: Integration Tests
     strategy:
@@ -116,6 +139,17 @@ jobs:
 
       - name: Run Tests
         run: dotnet test -c Debug --filter DisplayName~IntegrationTests
+
+      - name: Integration test results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: integration test results - ${{ matrix.os }}
+          path: ${{ github.workspace }}/tests/pkgchk-cli.tests/TestResults/test_results.trx
+          reporter: dotnet-trx
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+
 
   
   nuget-release:

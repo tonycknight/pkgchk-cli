@@ -1,8 +1,10 @@
 ﻿namespace pkgchk
 
 open System
+open System.Diagnostics.CodeAnalysis
 open Spectre.Console
 
+[<ExcludeFromCodeCoverage>]
 module Console =
     let returnNoVulnerabilities () =
         "[bold green]No vulnerabilities found![/]"
