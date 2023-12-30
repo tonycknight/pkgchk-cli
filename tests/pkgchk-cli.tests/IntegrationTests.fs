@@ -31,7 +31,7 @@ module IntegrationTests =
         sprintf "dotnet add ./%s/testproj.csproj package System.Text.RegularExpressions -v 4.3.1" outDir
 
     let runPkgChkArgs outDir =
-        sprintf "pkgchk-cli.exe ./%s/testproj.csproj -t" outDir
+        sprintf "./pkgchk-cli.exe ./%s/testproj.csproj -t" outDir
 
     let createProc cmd =
         let (exec, args) = cmdArgs cmd
