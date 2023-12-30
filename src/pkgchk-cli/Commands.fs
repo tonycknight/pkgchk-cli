@@ -41,7 +41,7 @@ type PackageCheckCommand() =
             |> Sca.commandArgs settings.IncludeTransitives
             |> Io.createProcess
 
-        let r = Sca.get proc
+        let r = Io.run proc
 
         match r with
         | Choice1Of2 json ->

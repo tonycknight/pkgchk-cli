@@ -27,22 +27,7 @@ module Sca =
         else
             sprintf " list %s package --vulnerable %s --format json --output-version 1 " path transitives
 
-    let get (proc: Process) =
-        try
-            if proc.Start() then
-                let out = proc.StandardOutput.ReadToEnd()
-                let err = proc.StandardError.ReadToEnd()
-                proc.WaitForExit()
-
-                if (String.IsNullOrWhiteSpace(err)) then
-                    Choice1Of2(out)
-                else
-                    Choice2Of2(err)
-            else
-                Choice2Of2("Cannot start process")
-        with ex ->
-            Choice2Of2(ex.Message)
-
+    
     let parse json =
 
         try
