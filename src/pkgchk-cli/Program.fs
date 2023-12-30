@@ -3,9 +3,9 @@
 open System.Diagnostics.CodeAnalysis
 open Spectre.Console.Cli
 
+[<ExcludeFromCodeCoverage>]    
 module Program =
     [<EntryPoint>]
-    [<ExcludeFromCodeCoverage>]
     let main argv =
         let app = CommandApp<PackageCheckCommand>()
 
