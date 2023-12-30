@@ -27,7 +27,7 @@ module Sca =
         else
             sprintf " list %s package --vulnerable %s --format json --output-version 1 " path transitives
 
-    
+
     let parse json =
 
         try

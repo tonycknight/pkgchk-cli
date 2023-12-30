@@ -62,4 +62,3 @@ module ScaTests =
                 y.advisoryUri |> should not' (be NullOrEmptyString)
             | _ -> failwith "Unrecognised list returned"
         | _ -> failwith "No error raised"
-
