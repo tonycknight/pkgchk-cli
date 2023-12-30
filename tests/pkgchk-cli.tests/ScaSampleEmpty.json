@@ -1,0 +1,20 @@
+﻿{
+  "version": 1,
+  "parameters": "--vulnerable --include-transitive",
+  "sources": [
+    "https://api.nuget.org/v3/index.json",
+    "C:/Program Files (x86)/Microsoft SDKs/NuGetPackages/"
+  ],
+  "projects": [        
+    {
+      "path": "/testapp/tests/testapp.tests.unit/testapp.tests.unit.fsproj",
+      "frameworks": [
+        {
+          "framework": "net7.0",
+          "topLevelPackages": [ ],
+          "transitivePackages": [ ]
+        }
+      ]
+    }
+  ]
+}

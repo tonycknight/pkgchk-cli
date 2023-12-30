@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="ScaSampleWithVulnerabilities.json" />
+    <EmbeddedResource Include="ScaSampleEmpty.json" />
     <Compile Include="ScaTests.fs" />
     <Compile Include="ConsoleTests.fs" />
     <Compile Include="IntegrationTests.fs" />
