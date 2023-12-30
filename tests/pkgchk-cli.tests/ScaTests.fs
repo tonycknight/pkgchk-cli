@@ -10,12 +10,12 @@ module ScaTests =
     [<InlineData("")>]
     [<InlineData(" a ")>]
     [<InlineData("x.csproj")>]
-    let ``formatProject returns yellow`` proj=
-        
+    let ``formatProject returns yellow`` proj =
+
         let r = formatProject proj
 
         r |> should haveSubstring "yellow"
-        r |> should haveSubstring  proj
+        r |> should haveSubstring proj
 
     [<Theory>]
     [<InlineData("", "yellow")>]

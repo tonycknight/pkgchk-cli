@@ -116,7 +116,7 @@ module Sca =
     let formatProject value = sprintf "[bold yellow]%s[/]" value
 
     let formatHits (hits: seq<ScaHit>) =
-        
+
         let fmt (hit: ScaHit) =
             seq {
                 ""
