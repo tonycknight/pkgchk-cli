@@ -38,7 +38,8 @@ type PackageCheckCommand() =
         use proc =
             settings.ProjectPath
             |> Io.toFullPath
-            |> Sca.createProcess settings.IncludeTransitives
+            |> Sca.commandArgs settings.IncludeTransitives
+            |> Io.createProcess
 
         let r = Sca.get proc
 

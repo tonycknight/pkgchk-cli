@@ -16,32 +16,16 @@ type ScaHit =
 
 module Sca =
 
-    let createProcess includeTransitive path =
-        let p = new Process()
-
-        p.StartInfo.UseShellExecute <- false
-        p.StartInfo.RedirectStandardOutput <- true
-        p.StartInfo.FileName <- "dotnet"
-        p.StartInfo.CreateNoWindow <- true
-        p.StartInfo.WindowStyle <- ProcessWindowStyle.Hidden
-        p.StartInfo.RedirectStandardError <- true
-        p.StartInfo.RedirectStandardOutput <- true
-        p.StartInfo.WorkingDirectory <- Environment.CurrentDirectory
-
+    let commandArgs includeTransitive path =
         let transitives =
             match includeTransitive with
             | true -> "--include-transitive"
             | _ -> ""
 
-        let args =
-            if String.IsNullOrWhiteSpace path then
-                sprintf " list package --vulnerable %s --format json --output-version 1 " transitives
-            else
-                sprintf " list %s package --vulnerable %s --format json --output-version 1 " path transitives
-
-        p.StartInfo.Arguments <- args
-
-        p
+        if String.IsNullOrWhiteSpace path then
+            sprintf " list package --vulnerable %s --format json --output-version 1 " transitives
+        else
+            sprintf " list %s package --vulnerable %s --format json --output-version 1 " path transitives
 
     let get (proc: Process) =
         try
