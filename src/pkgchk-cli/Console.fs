@@ -1,10 +1,8 @@
 ﻿namespace pkgchk
 
 open System
-open System.Diagnostics.CodeAnalysis
 open Spectre.Console
 
-[<ExcludeFromCodeCoverage>]
 module Console =
 
     [<Literal>]
