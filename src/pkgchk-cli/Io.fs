@@ -7,7 +7,7 @@ open System.IO
 
 [<ExcludeFromCodeCoverage>]
 module Io =
-    
+
     let toFullPath (path: string) =
         if not <| Path.IsPathRooted(path) then
             let wd = Environment.CurrentDirectory

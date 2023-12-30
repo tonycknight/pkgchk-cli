@@ -15,7 +15,7 @@ module Console =
 
     [<Literal>]
     let sysError = 2
-    
+
     let formatSeverity value =
         let code =
             match value with
@@ -52,4 +52,3 @@ module Console =
         hits |> formatHits |> console.WriteLine
 
     let error (console: IAnsiConsole) (error: string) = console.WriteLine error
-

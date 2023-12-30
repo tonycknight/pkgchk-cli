@@ -84,5 +84,3 @@ module Sca =
             Choice1Of2 hits
         with ex ->
             Choice2Of2("An error occurred parsing results" + Environment.NewLine + ex.Message)
-
-    
