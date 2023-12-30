@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="ScaTests.fs" />
+    <Compile Include="ConsoleTests.fs" />
     <Compile Include="IntegrationTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

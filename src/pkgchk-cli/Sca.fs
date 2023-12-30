@@ -3,7 +3,6 @@
 open System
 open System.Diagnostics
 open FSharp.Data
-open Spectre.Console
 
 type ScaData = JsonProvider<"ScaSample.json">
 
@@ -102,28 +101,4 @@ module Sca =
         with ex ->
             Choice2Of2("An error occurred parsing results" + Environment.NewLine + ex.Message)
 
-    let formatSeverity value =
-        let code =
-            match value with
-            | "High" -> "red"
-            | "Critical" -> "italic red"
-            | "Moderate" -> "#d75f00"
-            | _ -> "yellow"
-
-        sprintf "[%s]%s[/]" code value
-
-    let formatProject value = sprintf "[bold yellow]%s[/]" value
-
-    let formatHits (hits: seq<ScaHit>) =
-
-        let fmt (hit: ScaHit) =
-            seq {
-                ""
-                sprintf "Project:          %s" hit.projectPath |> formatProject
-                sprintf "Severity:         %s" (formatSeverity hit.severity)
-                sprintf "Package:          [cyan]%s[/] version [cyan]%s[/]" hit.packageId hit.resolvedVersion
-                sprintf "Advisory URL:     %s" hit.advisoryUri
-            }
-
-        let lines = hits |> Seq.collect fmt
-        String.Join(Environment.NewLine, lines) |> AnsiConsole.MarkupLine
+    

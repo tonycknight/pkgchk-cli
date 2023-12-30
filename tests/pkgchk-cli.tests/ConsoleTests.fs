@@ -1,10 +1,10 @@
 ﻿namespace pkgchk.tests
 
 open FsUnit.Xunit
-open pkgchk.Sca
+open pkgchk.Console
 open Xunit
 
-module ScaTests =
+module ConsoleTests =
 
     [<Theory>]
     [<InlineData("")>]
