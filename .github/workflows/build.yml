@@ -95,7 +95,7 @@ jobs:
           report_name: code coverage results
 
       - name: Consolidate code coverage
-        runs: dotnet reportgenerator -reports:./tests/**/coverage.info -targetdir:./reports/codecoverage -reporttypes:Html
+        run: dotnet reportgenerator -reports:./tests/**/coverage.info -targetdir:./reports/codecoverage -reporttypes:Html
 
       - name: Archive Code coverage
         uses: actions/upload-artifact@v3
