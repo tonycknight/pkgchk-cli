@@ -142,23 +142,22 @@ jobs:
 
       - name: Integration test results
         uses: dorny/test-reporter@v1
-        if: always() && runner.os == 'Windows'
+        if: always()
         with:
           name: integration test results - ${{ matrix.os }}
-          #path: ${{ github.workspace }}\tests\pkgchk-cli.tests\TestResults\test_results.trx
           path: ${{ github.workspace }}/tests/pkgchk-cli.tests/TestResults/test_results.trx
           reporter: dotnet-trx
           path-replace-backslashes: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Integration test results
-        uses: dorny/test-reporter@v1
-        if: always() && runner.os != 'Windows'
-        with:
-          name: integration test results - ${{ matrix.os }}
-          path: ${{ github.workspace }}/tests/pkgchk-cli.tests/TestResults/test_results.trx
-          reporter: dotnet-trx
-          token: ${{ secrets.GITHUB_TOKEN }}
+      #- name: Integration test results
+      #  uses: dorny/test-reporter@v1
+      #  if: always() && runner.os != 'Windows'
+      #  with:
+      #    name: integration test results - ${{ matrix.os }}
+      #    path: ${{ github.workspace }}/tests/pkgchk-cli.tests/TestResults/test_results.trx
+      #    reporter: dotnet-trx
+      #    token: ${{ secrets.GITHUB_TOKEN }}
 
 
   
