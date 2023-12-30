@@ -107,7 +107,7 @@ module IntegrationTests =
 
         createProjectArgs outDir |> execSuccess
 
-        runPkgChkArgs outDir 
+        runPkgChkArgs outDir
         |> execSuccessPkgChk
         |> assertPackagesNotFound [ httpPackage; regexPackage ]
 
