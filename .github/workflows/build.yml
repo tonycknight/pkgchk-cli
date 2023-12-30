@@ -145,7 +145,8 @@ jobs:
         if: always() && runner.os == 'Windows'
         with:
           name: integration test results - ${{ matrix.os }}
-          path: ${{ github.workspace }}\tests\pkgchk-cli.tests\TestResults\test_results.trx
+          #path: ${{ github.workspace }}\tests\pkgchk-cli.tests\TestResults\test_results.trx
+          path: ${{ github.workspace }}/tests/pkgchk-cli.tests/TestResults/test_results.trx
           reporter: dotnet-trx
           path-replace-backslashes: true
           token: ${{ secrets.GITHUB_TOKEN }}
