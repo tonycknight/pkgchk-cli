@@ -18,11 +18,12 @@ type PackageCheckCommand() =
     inherit Command<PackageCheckCommandSettings>()
 
     override _.Execute(context, settings) =
-        let r =
+        use proc =
             settings.ProjectPath
             |> Io.toFullPath
             |> Sca.createProcess settings.IncludeTransitives
-            |> Sca.get
+
+        let r = proc |> Sca.get
 
         match r with
         | Choice1Of2 json ->

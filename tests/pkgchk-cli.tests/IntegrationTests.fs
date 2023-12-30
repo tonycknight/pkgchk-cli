@@ -6,7 +6,7 @@ open FsUnit.Xunit
 open Xunit
 
 module IntegrationTests =
-    
+
     let getOutDir () =
         System.Guid.NewGuid().ToString().Replace("-", "")
 
@@ -24,7 +24,7 @@ module IntegrationTests =
 
     let runPkgChkArgs outDir =
         sprintf "pkgchk-cli.exe ./%s/testproj.csproj -t" outDir
-            
+
     let createProc cmd =
         let proc = new Process()
         proc.StartInfo.UseShellExecute <- false
@@ -52,13 +52,15 @@ module IntegrationTests =
     let assertSuccessfulExecution (rc, out, err) =
         rc |> should equal 0
         out |> should not' (be NullOrEmptyString)
+        out |> should not' (haveSubstring "Vulnerabilities found!")
         err |> should be NullOrEmptyString
 
     let assertFailedPkgChk (rc, out, err) =
         rc |> should equal 1
         out |> should not' (be NullOrEmptyString)
+        out |> should haveSubstring "Vulnerabilities found!"
         err |> should be NullOrEmptyString
-            
+
     let execSuccess = createProc >> executeProc >> assertSuccessfulExecution
 
     let execFailedPkgChk = createProc >> executeProc >> assertFailedPkgChk

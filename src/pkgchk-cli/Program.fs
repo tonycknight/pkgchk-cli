@@ -1,9 +1,11 @@
 ﻿namespace pkgchk
 
+open System.Diagnostics.CodeAnalysis
 open Spectre.Console.Cli
 
 module Program =
     [<EntryPoint>]
+    [<ExcludeFromCodeCoverage>]
     let main argv =
         let app = CommandApp<PackageCheckCommand>()
 
