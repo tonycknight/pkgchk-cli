@@ -7,6 +7,13 @@ open Xunit
 
 module IntegrationTests =
 
+    let cmdArgs (cmd: string) =
+        let x = cmd.IndexOf(' ')
+        if x > 0 then
+            (cmd.Substring(0, x), cmd.Substring(x+1))
+        else
+            (cmd, "")
+
     let getOutDir () =
         System.Guid.NewGuid().ToString().Replace("-", "")
 
@@ -26,11 +33,12 @@ module IntegrationTests =
         sprintf "pkgchk-cli.exe ./%s/testproj.csproj -t" outDir
 
     let createProc cmd =
+        let (exec, args) = cmdArgs cmd
         let proc = new Process()
         proc.StartInfo.UseShellExecute <- false
         proc.StartInfo.RedirectStandardOutput <- true
-        proc.StartInfo.FileName <- "cmd.exe"
-        proc.StartInfo.Arguments <- sprintf "/C %s" cmd
+        proc.StartInfo.FileName <- exec 
+        proc.StartInfo.Arguments <- args 
         proc.StartInfo.CreateNoWindow <- true
         proc.StartInfo.WindowStyle <- ProcessWindowStyle.Hidden
         proc.StartInfo.RedirectStandardError <- true
