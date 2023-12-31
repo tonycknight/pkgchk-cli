@@ -26,7 +26,7 @@ module Markdown =
             ""
             "---"
             ""
-            "_Checked with :two_hearts: by [pkgchk](https://github.com/tonycknight/pkgchk-cli)_"
+            "_Checked with :heart: by [pkgchk](https://github.com/tonycknight/pkgchk-cli)_"
             ""
             "---"
         }
