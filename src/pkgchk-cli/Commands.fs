@@ -31,7 +31,9 @@ type PackageCheckCommand() =
     let reportPath outputDirectory =
         let path = Io.toFullPath outputDirectory
         let fn = "pkgchk.md"
-        System.IO.Path.Combine(path, fn)
+        let path = System.IO.Path.Combine(path, fn)
+        System.IO.Path.GetFullPath(path)
+
 
     override _.Execute(context, settings) =
         let console = Spectre.Console.AnsiConsole.Console
@@ -51,6 +53,7 @@ type PackageCheckCommand() =
                 if settings.OutputDirectory <> "" then
                     let reportFile = reportPath settings.OutputDirectory
                     Markdown.formatNoHits () |> Io.writeFile reportFile
+                    reportFile |> Console.reportFileBuilt console
 
                 Console.validationOk
             | Choice1Of2 hits ->
@@ -59,6 +62,7 @@ type PackageCheckCommand() =
                 if settings.OutputDirectory <> "" then
                     let reportFile = reportPath settings.OutputDirectory
                     hits |> Markdown.formatHits |> Io.writeFile reportFile
+                    reportFile |> Console.reportFileBuilt console
 
                 Console.validationFailed
             | Choice2Of2 error -> error |> returnError console

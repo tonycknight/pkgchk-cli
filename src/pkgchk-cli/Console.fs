@@ -50,3 +50,9 @@ module Console =
         hits |> formatHits |> console.WriteLine
 
     let error (console: IAnsiConsole) (error: string) = console.WriteLine error
+
+    let reportFileBuilt (console: IAnsiConsole) path =
+        path
+        |> sprintf "[italic]Report file %s built.[/]"
+        |> console.Markup
+        |> console.WriteLine
