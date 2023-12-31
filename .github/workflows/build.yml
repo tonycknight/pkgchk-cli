@@ -3,6 +3,8 @@ name: Build & Release
 
 on:
   push:
+    paths-ignore:
+      - `.github/ISSUE_TEMPLATE/**`
   pull_request:
     branches: [ main ]
   workflow_dispatch:
