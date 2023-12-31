@@ -42,25 +42,23 @@ module Markdown =
 
         let fmt (hit: ScaHit) =
             seq {
-                
+
                 ""
                 sprintf "%s - %s" (formatHitKind hit.kind) (formatSeverity hit.severity)
                 ""
                 sprintf "**%s** version %s" hit.packageId hit.resolvedVersion
                 sprintf "[Advisory](%s)" hit.advisoryUri
                 ""
-                
+
             }
 
-        let fmtGrp (hit: (string * seq<ScaHit>)) = 
+        let fmtGrp (hit: (string * seq<ScaHit>)) =
             let projectPath, hits = hit
 
-            seq{                
-                projectPath |> formatProject                
+            seq {
+                projectPath |> formatProject
                 yield! hits |> Seq.collect fmt
                 "---"
             }
-        
-        footer 
-        |> Seq.append (grps |> Seq.collect fmtGrp) 
-        |> Seq.append hdr
+
+        footer |> Seq.append (grps |> Seq.collect fmtGrp) |> Seq.append hdr
