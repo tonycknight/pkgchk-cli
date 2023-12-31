@@ -2,6 +2,7 @@
 
 open System.ComponentModel
 open System.Diagnostics.CodeAnalysis
+open Spectre.Console
 open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]
@@ -25,7 +26,7 @@ type PackageCheckCommand() =
     inherit Command<PackageCheckCommandSettings>()
 
     let returnError console error =
-        error |> Console.error console
+        error |> Console.error |> Console.send console
         Console.sysError
 
     let genReport console outDir hits =
@@ -36,7 +37,7 @@ type PackageCheckCommand() =
 
         let reportFile = outDir |> Io.toFullPath |> Io.combine "pkgchk.md" |> Io.normalise
         md |> Io.writeFile reportFile
-        reportFile |> Console.reportFileBuilt console
+        reportFile |> Console.reportFileBuilt |> Console.send console
 
     override _.Execute(context, settings) =
         let console = Spectre.Console.AnsiConsole.Console
@@ -51,7 +52,7 @@ type PackageCheckCommand() =
         | Choice1Of2 json ->
             match Sca.parse json with
             | Choice1Of2 [] ->
-                Console.noVulnerabilities console
+                Console.noVulnerabilities () |> console.MarkupLine
 
                 if settings.OutputDirectory <> "" then
                     [] |> genReport console settings.OutputDirectory
@@ -59,7 +60,7 @@ type PackageCheckCommand() =
                 Console.validationOk
 
             | Choice1Of2 hits ->
-                hits |> Console.vulnerabilities console
+                hits |> Console.vulnerabilities |> console.MarkupLine
 
                 if settings.OutputDirectory <> "" then
                     hits |> genReport console settings.OutputDirectory

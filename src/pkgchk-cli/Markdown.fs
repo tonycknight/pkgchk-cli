@@ -7,7 +7,6 @@ module Markdown =
     let formatHitKind (value: ScaHitKind) =
         match value with
         | ScaHitKind.Vulnerability -> "Vulnerable package"
-        | _ -> ""
 
     let formatSeverity value =
         let (emote, colour) =

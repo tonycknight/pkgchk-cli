@@ -6,6 +6,8 @@ open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]
 module Program =
+    let send = Console.send AnsiConsole.Console
+
     [<EntryPoint>]
     let main argv =
         let app = CommandApp<PackageCheckCommand>()
@@ -15,5 +17,5 @@ module Program =
         try
             app.Run(argv)
         with ex ->
-            ex.Message |> Console.error AnsiConsole.Console
+            ex.Message |> Console.error |> send
             Console.sysError

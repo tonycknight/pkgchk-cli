@@ -14,6 +14,8 @@ module Console =
     [<Literal>]
     let sysError = 2
 
+    let joinLines (lines: seq<string>) = String.Join(Environment.NewLine, lines)
+
     let formatSeverity value =
         let code =
             match value with
@@ -26,7 +28,7 @@ module Console =
 
     let formatProject value = sprintf "[bold yellow]%s[/]" value
 
-    let formatHits (console: IAnsiConsole) (hits: seq<ScaHit>) =
+    let formatHits (hits: seq<ScaHit>) =
 
         let fmt (hit: ScaHit) =
             seq {
@@ -37,22 +39,22 @@ module Console =
                 sprintf "Advisory URL:     %s" hit.advisoryUri
             }
 
-        let lines = hits |> Seq.collect fmt
-        String.Join(Environment.NewLine, lines) |> console.MarkupLine
+        hits |> Seq.collect fmt
 
-    let noVulnerabilities (console: IAnsiConsole) =
+
+    let noVulnerabilities () =
         "[bold green]No vulnerabilities found.[/]"
-        |> console.Markup
-        |> console.WriteLine
 
-    let vulnerabilities (console: IAnsiConsole) hits =
-        "[bold red]Vulnerabilities found![/]" |> console.Markup |> console.WriteLine
-        hits |> formatHits console |> console.WriteLine
+    let vulnerabilities hits =
+        seq {
+            "[bold red]Vulnerabilities found![/]"
+            yield! formatHits hits
+        }
+        |> joinLines
 
-    let error (console: IAnsiConsole) (error: string) = console.WriteLine error
+    let error (error: string) = sprintf "[red]%s[/]" error
 
-    let reportFileBuilt (console: IAnsiConsole) path =
-        path
-        |> sprintf "[italic]Report file %s built.[/]"
-        |> console.Markup
-        |> console.WriteLine
+    let reportFileBuilt path =
+        sprintf "[italic]Report file %s built.[/]" path
+
+    let send (console: IAnsiConsole) = console.MarkupLine
