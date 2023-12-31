@@ -38,7 +38,7 @@ module Markdown =
 
     let formatHits (hits: seq<ScaHit>) =
         let grps = hits |> Seq.groupBy (fun h -> h.projectPath)
-        let hdr = seq { "# :heavy_check_mark: Vulnerabilities found!" }
+        let hdr = seq { "# :x: Vulnerabilities found!" }
 
         let grpHdr =
             seq {
