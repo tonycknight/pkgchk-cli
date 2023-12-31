@@ -16,6 +16,14 @@ module Io =
         else
             path
 
+    let writeFile path (lines: seq<string>) =
+        if System.IO.File.Exists(path) then
+            System.IO.File.Delete(path)
+
+        let dir = System.IO.Path.GetDirectoryName path
+        System.IO.Directory.CreateDirectory dir |> ignore
+        System.IO.File.AppendAllLines(path, lines)
+
     let createProcess args =
         let p = new Process()
 
