@@ -36,7 +36,7 @@ module Markdown =
         footer |> Seq.append content
 
     let formatHits (hits: seq<ScaHit>) =
-        let grps = hits |> Seq.groupBy (fun h -> h.projectPath)
+        let grps = hits |> Seq.groupBy (fun h -> h.projectPath) |> Seq.sortBy fst
         let hdr = seq { "# :warning: Vulnerabilities found!" }
 
         let grpHdr =
@@ -63,8 +63,7 @@ module Markdown =
                 projectPath |> formatProject
                 ""
                 yield! grpHdr
-                yield! hits |> Seq.collect fmt
-            //"---"
+                yield! hits |> Seq.sortBy (fun h -> h.packageId) |> Seq.collect fmt
             }
 
         footer |> Seq.append (grps |> Seq.collect fmtGrp) |> Seq.append hdr

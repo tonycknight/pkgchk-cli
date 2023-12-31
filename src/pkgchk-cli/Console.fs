@@ -32,15 +32,22 @@ module Console =
 
         let fmt (hit: ScaHit) =
             seq {
-                ""
-                sprintf "Project:          %s" hit.projectPath |> formatProject
-                sprintf "Severity:         %s" (formatSeverity hit.severity)
                 sprintf "Package:          [cyan]%s[/] version [cyan]%s[/]" hit.packageId hit.resolvedVersion
+                sprintf "Severity:         %s" (formatSeverity hit.severity)
                 sprintf "Advisory URL:     %s" hit.advisoryUri
+                ""                
             }
 
-        hits |> Seq.collect fmt
+        let fmtGrp (hit: (string * seq<ScaHit>)) =
+            let projectPath, hits = hit
 
+            seq {
+                sprintf "Project:          %s" projectPath |> formatProject
+                yield! hits |> Seq.sortBy (fun h -> h.packageId) |> Seq.collect fmt
+            }
+        
+        let grps = hits |> Seq.groupBy (fun h -> h.projectPath) |> Seq.sortBy fst
+        (grps |> Seq.collect fmtGrp)
 
     let noVulnerabilities () =
         "[bold green]No vulnerabilities found.[/]"
