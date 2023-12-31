@@ -32,9 +32,8 @@ module Console =
 
         let fmt (hit: ScaHit) =
             seq {
-                sprintf "Package:          [cyan]%s[/] version [cyan]%s[/]" hit.packageId hit.resolvedVersion
-                sprintf "Severity:         %s" (formatSeverity hit.severity)
-                sprintf "Advisory URL:     %s" hit.advisoryUri
+                sprintf "Package: %s - [cyan]%s[/] version [cyan]%s[/]" (formatSeverity hit.severity) hit.packageId hit.resolvedVersion
+                sprintf "         [italic]%s[/]" hit.advisoryUri
                 ""                
             }
 
@@ -42,7 +41,7 @@ module Console =
             let projectPath, hits = hit
 
             seq {
-                sprintf "Project:          %s" projectPath |> formatProject
+                sprintf "Project: %s" projectPath |> formatProject
                 yield! hits |> Seq.sortBy (fun h -> h.packageId) |> Seq.collect fmt
             }
         
