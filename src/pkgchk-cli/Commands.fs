@@ -2,7 +2,6 @@
 
 open System.ComponentModel
 open System.Diagnostics.CodeAnalysis
-open Spectre.Console
 open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]
@@ -25,22 +24,34 @@ type PackageCheckCommandSettings() =
 type PackageCheckCommand() =
     inherit Command<PackageCheckCommandSettings>()
 
-    let returnError console error =
-        error |> Console.error |> Console.send console
+    let console = Spectre.Console.AnsiConsole.Console |> Console.send
+
+    let returnError error =
+        error |> Console.error |> console
         Console.sysError
 
-    let genReport console outDir hits =
-        let md =
-            match hits with
-            | [] -> Markdown.formatNoHits ()
-            | hits -> hits |> Markdown.formatHits
+    let returnCode =
+        function
+        | [] -> Console.validationOk
+        | _ -> Console.validationFailed
 
+    let genConsole =
+        function
+        | [] -> Console.noVulnerabilities () |> console
+        | hits -> hits |> Console.vulnerabilities |> console
+
+    let genMarkdown =
+        function
+        | [] -> Markdown.formatNoHits ()
+        | hits -> hits |> Markdown.formatHits
+
+    let genReport outDir hits =
         let reportFile = outDir |> Io.toFullPath |> Io.combine "pkgchk.md" |> Io.normalise
-        md |> Io.writeFile reportFile
-        reportFile |> Console.reportFileBuilt |> Console.send console
+        hits |> genMarkdown |> Io.writeFile reportFile
+        reportFile
+
 
     override _.Execute(context, settings) =
-        let console = Spectre.Console.AnsiConsole.Console
 
         use proc =
             settings.ProjectPath
@@ -51,21 +62,13 @@ type PackageCheckCommand() =
         match Io.run proc with
         | Choice1Of2 json ->
             match Sca.parse json with
-            | Choice1Of2 [] ->
-                Console.noVulnerabilities () |> console.MarkupLine
-
-                if settings.OutputDirectory <> "" then
-                    [] |> genReport console settings.OutputDirectory
-
-                Console.validationOk
-
             | Choice1Of2 hits ->
-                hits |> Console.vulnerabilities |> console.MarkupLine
+                genConsole hits
 
                 if settings.OutputDirectory <> "" then
-                    hits |> genReport console settings.OutputDirectory
+                    hits |> genReport settings.OutputDirectory |> Console.reportFileBuilt |> console
 
-                Console.validationFailed
+                returnCode hits
 
-            | Choice2Of2 error -> error |> returnError console
-        | Choice2Of2 error -> error |> returnError console
+            | Choice2Of2 error -> error |> returnError
+        | Choice2Of2 error -> error |> returnError
