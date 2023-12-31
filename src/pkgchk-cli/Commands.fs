@@ -28,12 +28,15 @@ type PackageCheckCommand() =
         error |> Console.error console
         Console.sysError
 
-    let reportPath outputDirectory =
-        let path = Io.toFullPath outputDirectory
-        let fn = "pkgchk.md"
-        let path = System.IO.Path.Combine(path, fn)
-        System.IO.Path.GetFullPath(path)
+    let genReport console outDir hits =
+        let md =
+            match hits with
+            | [] -> Markdown.formatNoHits ()
+            | hits -> hits |> Markdown.formatHits
 
+        let reportFile = outDir |> Io.toFullPath |> Io.combine "pkgchk.md" |> Io.normalise
+        md |> Io.writeFile reportFile
+        reportFile |> Console.reportFileBuilt console
 
     override _.Execute(context, settings) =
         let console = Spectre.Console.AnsiConsole.Console
@@ -41,7 +44,7 @@ type PackageCheckCommand() =
         use proc =
             settings.ProjectPath
             |> Io.toFullPath
-            |> Sca.commandArgs settings.IncludeTransitives
+            |> Sca.scanVulnerabilitiesArgs settings.IncludeTransitives
             |> Io.createProcess
 
         match Io.run proc with
@@ -51,19 +54,17 @@ type PackageCheckCommand() =
                 Console.noVulnerabilities console
 
                 if settings.OutputDirectory <> "" then
-                    let reportFile = reportPath settings.OutputDirectory
-                    Markdown.formatNoHits () |> Io.writeFile reportFile
-                    reportFile |> Console.reportFileBuilt console
+                    [] |> genReport console settings.OutputDirectory
 
                 Console.validationOk
+
             | Choice1Of2 hits ->
                 hits |> Console.vulnerabilities console
 
                 if settings.OutputDirectory <> "" then
-                    let reportFile = reportPath settings.OutputDirectory
-                    hits |> Markdown.formatHits |> Io.writeFile reportFile
-                    reportFile |> Console.reportFileBuilt console
+                    hits |> genReport console settings.OutputDirectory
 
                 Console.validationFailed
+
             | Choice2Of2 error -> error |> returnError console
         | Choice2Of2 error -> error |> returnError console

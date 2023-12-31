@@ -18,7 +18,7 @@ type ScaHit =
 
 module Sca =
 
-    let commandArgs includeTransitive path =
+    let scanVulnerabilitiesArgs includeTransitive path =
         let transitives =
             match includeTransitive with
             | true -> "--include-transitive"
