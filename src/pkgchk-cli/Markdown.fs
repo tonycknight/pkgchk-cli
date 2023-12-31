@@ -49,7 +49,7 @@ module Markdown =
         let fmt (hit: ScaHit) =
             seq {
                 sprintf
-                    "| %s | %s | %s - %s | [Advisory](%s) | "
+                    "| %s | %s | %s %s | [Advisory](%s) | "
                     (formatHitKind hit.kind)
                     (formatSeverity hit.severity)
                     hit.packageId
