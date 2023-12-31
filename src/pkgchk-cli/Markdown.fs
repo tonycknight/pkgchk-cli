@@ -10,14 +10,14 @@ module Markdown =
         | _ -> ""
 
     let formatSeverity value =
-        let code =
+        let (emote, colour) =
             match value with
-            | "High" -> ":x:"
-            | "Critical" -> ":x:"
-            | "Moderate" -> ":exclamation:"
-            | _ -> ":question:"
+            | "High" -> (":bangbang:", "red")
+            | "Critical" -> (":heavy_exclamation_mark:", "red")
+            | "Moderate" -> (":heavy_exclamation_mark:", "orange")
+            | _ -> (":heavy_exclamation_mark:", "yellow")
 
-        sprintf "%s %s" code value
+        sprintf "%s <span style='color:%s;'>%s</span>" emote colour value
 
     let formatProject value = sprintf "## **%s**" value
 
@@ -38,7 +38,7 @@ module Markdown =
 
     let formatHits (hits: seq<ScaHit>) =
         let grps = hits |> Seq.groupBy (fun h -> h.projectPath)
-        let hdr = seq { "# :x: Vulnerabilities found!" }
+        let hdr = seq { "# :warning: Vulnerabilities found!" }
 
         let grpHdr =
             seq {
