@@ -1,13 +1,16 @@
 ﻿namespace pkgchk
 
 open System
-open System.Diagnostics
 open FSharp.Data
 
 type ScaData = JsonProvider<"ScaSample.json">
 
+type ScaHitKind =
+    | Vulnerability
+
 type ScaHit =
-    { framework: string
+    { kind: ScaHitKind
+      framework: string
       projectPath: string
       packageId: string
       resolvedVersion: string
@@ -43,6 +46,7 @@ module Sca =
                             tp.Vulnerabilities
                             |> Seq.map (fun v ->
                                 { ScaHit.projectPath = p.Path
+                                  kind = ScaHitKind.Vulnerability
                                   framework = f.Framework
                                   packageId = tp.Id
                                   resolvedVersion = tp.ResolvedVersion
@@ -59,6 +63,7 @@ module Sca =
                             tp.Vulnerabilities
                             |> Seq.map (fun v ->
                                 { ScaHit.projectPath = p.Path
+                                  kind = ScaHitKind.Vulnerability
                                   framework = f.Framework
                                   packageId = tp.Id
                                   resolvedVersion = tp.ResolvedVersion
