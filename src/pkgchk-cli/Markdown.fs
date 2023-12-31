@@ -2,7 +2,7 @@
 
 open System
 
-module Markdown=
+module Markdown =
 
     let formatHitKind (value: ScaHitKind) =
         match value with
@@ -20,7 +20,7 @@ module Markdown=
         sprintf "%s %s" code value
 
     let formatProject value = sprintf "## **%s**" value
-    
+
     let formatHits (hits: seq<ScaHit>) =
         let fmt (hit: ScaHit) =
             seq {
@@ -33,4 +33,3 @@ module Markdown=
 
         let lines = hits |> Seq.collect fmt
         String.Join(Environment.NewLine, lines)
-

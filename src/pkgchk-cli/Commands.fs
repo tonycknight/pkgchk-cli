@@ -16,6 +16,10 @@ type PackageCheckCommandSettings() =
     [<Description("Check transitive packages as well as top level packages.")>]
     member val IncludeTransitives = false with get, set
 
+    [<CommandOption("-o|--output")>]
+    [<Description("Output directory for reports.")>]
+    member val OutputDirectory = "" with get, set
+
 [<ExcludeFromCodeCoverage>]
 type PackageCheckCommand() =
     inherit Command<PackageCheckCommandSettings>()
@@ -23,14 +27,6 @@ type PackageCheckCommand() =
     let returnError console error =
         error |> Console.error console
         Console.sysError
-
-    let returnVulnerabilities console hits =
-        hits |> Console.vulnerabilities console
-        Console.validationFailed
-
-    let returnNoVulnerabilities console =
-        Console.noVulnerabilities console
-        Console.validationOk
 
     override _.Execute(context, settings) =
         let console = Spectre.Console.AnsiConsole.Console
@@ -41,12 +37,14 @@ type PackageCheckCommand() =
             |> Sca.commandArgs settings.IncludeTransitives
             |> Io.createProcess
 
-        let r = Io.run proc
-
-        match r with
+        match Io.run proc with
         | Choice1Of2 json ->
             match Sca.parse json with
-            | Choice1Of2 [] -> returnNoVulnerabilities console
-            | Choice1Of2 hits -> hits |> returnVulnerabilities console
+            | Choice1Of2 [] ->
+                Console.noVulnerabilities console
+                Console.validationOk
+            | Choice1Of2 hits ->
+                hits |> Console.vulnerabilities console
+                Console.validationFailed
             | Choice2Of2 error -> error |> returnError console
         | Choice2Of2 error -> error |> returnError console

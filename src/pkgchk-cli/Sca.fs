@@ -5,8 +5,7 @@ open FSharp.Data
 
 type ScaData = JsonProvider<"ScaSample.json">
 
-type ScaHitKind =
-    | Vulnerability
+type ScaHitKind = | Vulnerability
 
 type ScaHit =
     { kind: ScaHitKind
