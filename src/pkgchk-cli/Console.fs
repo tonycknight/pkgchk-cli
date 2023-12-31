@@ -26,7 +26,7 @@ module Console =
 
     let formatProject value = sprintf "[bold yellow]%s[/]" value
 
-    let formatHits (hits: seq<ScaHit>) =
+    let formatHits (console: IAnsiConsole) (hits: seq<ScaHit>) =
 
         let fmt (hit: ScaHit) =
             seq {
@@ -38,7 +38,7 @@ module Console =
             }
 
         let lines = hits |> Seq.collect fmt
-        String.Join(Environment.NewLine, lines) |> AnsiConsole.MarkupLine
+        String.Join(Environment.NewLine, lines) |> console.MarkupLine
 
     let noVulnerabilities (console: IAnsiConsole) =
         "[bold green]No vulnerabilities found.[/]"
@@ -47,7 +47,7 @@ module Console =
 
     let vulnerabilities (console: IAnsiConsole) hits =
         "[bold red]Vulnerabilities found![/]" |> console.Markup |> console.WriteLine
-        hits |> formatHits |> console.WriteLine
+        hits |> formatHits console |> console.WriteLine
 
     let error (console: IAnsiConsole) (error: string) = console.WriteLine error
 
