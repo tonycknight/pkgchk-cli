@@ -17,7 +17,7 @@ module Markdown =
             | "Moderate" -> (":heavy_exclamation_mark:", "orange")
             | _ -> (":heavy_exclamation_mark:", "yellow")
 
-        sprintf "%s <span style='color:%s;'>%s</span>" emote colour value
+        sprintf "%s <span style='color:%s'>%s</span>" emote colour value
 
     let formatProject value = sprintf "## **%s**" value
 
