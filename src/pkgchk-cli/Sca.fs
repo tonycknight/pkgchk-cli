@@ -44,7 +44,7 @@ module Sca =
                         |> Seq.collect (fun tp ->
                             tp.Vulnerabilities
                             |> Seq.map (fun v ->
-                                { ScaHit.projectPath = p.Path
+                                { ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
                                   kind = ScaHitKind.Vulnerability
                                   framework = f.Framework
                                   packageId = tp.Id
@@ -61,7 +61,7 @@ module Sca =
                         |> Seq.collect (fun tp ->
                             tp.Vulnerabilities
                             |> Seq.map (fun v ->
-                                { ScaHit.projectPath = p.Path
+                                { ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
                                   kind = ScaHitKind.Vulnerability
                                   framework = f.Framework
                                   packageId = tp.Id
