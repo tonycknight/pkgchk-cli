@@ -19,8 +19,36 @@ type ScaHit =
       advisoryUri: string
       commentary: string }
 
-module Sca =
+module ScaArgs =
+    let argPrefix path =
+        sprintf " list %s package " path
+            
+    let includeTransitives =
+        function
+        | true -> "--include-transitive"
+        | _ -> ""
 
+    let mode (vulnerable, deprecation) =
+        match vulnerable, deprecation with
+        | true, _ -> " --vulnerable "
+        | false, true -> " --deprecated "
+        | _,_ -> ""
+
+    let scanArgs vulnerable includeTransitive path =
+        let xs = seq {
+            argPrefix path
+            mode (vulnerable, not vulnerable)
+            includeTransitives includeTransitive
+            " --format json --output-version 1 "
+            }
+        xs |> String.join ""
+
+    let scanVulnerabilities = scanArgs true
+
+    let scanDeprecations = scanArgs false
+
+module Sca =
+    
     let scanVulnerabilitiesArgs includeTransitive path =
         let transitives =
             match includeTransitive with
@@ -31,7 +59,7 @@ module Sca =
             sprintf " list package --vulnerable %s --format json --output-version 1 " transitives
         else
             sprintf " list %s package --vulnerable %s --format json --output-version 1 " path transitives
-
+    
     let scanDeprecationsArgs includeTransitive path =
         let transitives =
             match includeTransitive with
