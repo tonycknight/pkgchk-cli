@@ -44,7 +44,7 @@ module Sca =
             sprintf " list %s package --deprecated %s --format json --output-version 1 " path transitives
 
     let parse json =
-        
+
         try
             let r = ScaData.Parse(json)
 

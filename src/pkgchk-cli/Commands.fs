@@ -43,13 +43,12 @@ type PackageCheckCommand() =
 
     let genArgs (settings: PackageCheckCommandSettings) =
         let projPath = settings.ProjectPath |> Io.toFullPath
-                
-        [|  if settings.IncludeVulnerabilities then
-                yield projPath |> Sca.scanVulnerabilitiesArgs settings.IncludeTransitives
-            if settings.IncludeDeprecations then
-                yield projPath |> Sca.scanDeprecationsArgs settings.IncludeTransitives 
-        |]
-        
+
+        [| if settings.IncludeVulnerabilities then
+               yield projPath |> Sca.scanVulnerabilitiesArgs settings.IncludeTransitives
+           if settings.IncludeDeprecations then
+               yield projPath |> Sca.scanDeprecationsArgs settings.IncludeTransitives |]
+
 
     let runProc proc =
         try
@@ -61,19 +60,19 @@ type PackageCheckCommand() =
         error |> Console.error |> console
         Console.sysError
 
-    let getErrors procResults = 
+    let getErrors procResults =
         procResults
-            |> Seq.map (function
-                | Choice2Of2 x -> x
-                | _ -> "")
-            |> Seq.filter String.isNotEmpty
+        |> Seq.map (function
+            | Choice2Of2 x -> x
+            | _ -> "")
+        |> Seq.filter String.isNotEmpty
 
     let getHits procResults =
         procResults
-            |> Seq.collect (function
-                | Choice1Of2 xs -> xs
-                | _ -> [])
-            |> List.ofSeq
+        |> Seq.collect (function
+            | Choice1Of2 xs -> xs
+            | _ -> [])
+        |> List.ofSeq
 
     let returnCode =
         function
@@ -95,7 +94,7 @@ type PackageCheckCommand() =
         hits |> genMarkdown |> Io.writeFile reportFile
         reportFile
 
-    override _.Execute(context, settings) =        
+    override _.Execute(context, settings) =
         let procs = settings |> genArgs |> Array.map Io.createProcess
 
         let procResults =
@@ -107,12 +106,12 @@ type PackageCheckCommand() =
                 | Choice2Of2 x -> Choice2Of2 x)
 
         let errors = getErrors procResults
-        
+
         if Seq.isEmpty errors |> not then
             errors |> String.joinLines |> returnError
         else
             let hits = getHits procResults
-            
+
             hits |> genConsole
 
             if settings.OutputDirectory <> "" then
