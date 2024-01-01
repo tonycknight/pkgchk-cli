@@ -16,6 +16,11 @@ module Console =
 
     let joinLines (lines: seq<string>) = String.Join(Environment.NewLine, lines)
 
+    let formatHitKind =
+        function
+        | ScaHitKind.Vulnerability -> "Vulnerable package"
+        | ScaHitKind.Deprecated -> "Deprecated package"
+
     let formatSeverity value =
         let code =
             match value with
@@ -33,12 +38,13 @@ module Console =
         let fmt (hit: ScaHit) =
             seq {
                 sprintf
-                    "Package: %s - [cyan]%s[/] version [cyan]%s[/]"
+                    "%s: %s - [cyan]%s[/] version [cyan]%s[/]"
+                    (formatHitKind hit.kind)
                     (formatSeverity hit.severity)
                     hit.packageId
                     hit.resolvedVersion
 
-                sprintf "         [italic]%s[/]" hit.advisoryUri
+                sprintf "                    [italic]%s[/]" hit.advisoryUri
                 ""
             }
 
