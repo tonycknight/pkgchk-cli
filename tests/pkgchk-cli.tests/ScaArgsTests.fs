@@ -6,6 +6,10 @@ open Xunit
 
 module ScaArgsTests =
 
+    let includeTransitives =
+        function
+        | true -> "--include-transitive"
+        | _ -> ""
 
     [<Theory>]
     [<InlineData("", true)>]

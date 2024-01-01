@@ -20,24 +20,17 @@ type ScaHit =
       commentary: string }
 
 module ScaArgs =
-    let argPrefix path = sprintf "list %s package" path
-
-    let includeTransitives =
-        function
-        | true -> "--include-transitive"
-        | _ -> ""
-
-    let mode =
-        function
-        | true -> "--vulnerable"
-        | false -> "--deprecated"
 
     let scanArgs vulnerable includeTransitive path =
         sprintf
             "%s %s %s %s"
-            (argPrefix path)
-            (mode vulnerable)
-            (includeTransitives includeTransitive)
+            (sprintf "list %s package" path)
+            (match vulnerable with
+             | true -> "--vulnerable"
+             | false -> "--deprecated")
+            (match includeTransitive with
+             | true -> "--include-transitive"
+             | _ -> "")
             "--format json --output-version 1"
 
     let scanVulnerabilities = scanArgs true
