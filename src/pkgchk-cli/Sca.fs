@@ -5,7 +5,9 @@ open FSharp.Data
 
 type ScaData = JsonProvider<"ScaSample.json">
 
-type ScaHitKind = | Vulnerability
+type ScaHitKind =
+    | Vulnerability
+    | Deprecated
 
 type ScaHit =
     { kind: ScaHitKind
@@ -14,21 +16,29 @@ type ScaHit =
       packageId: string
       resolvedVersion: string
       severity: string
-      advisoryUri: string }
+      advisoryUri: string
+      reason: string
+      suggestedReplacement: string }
+
+module ScaArgs =
+
+    let scanArgs vulnerable includeTransitive path =
+        sprintf
+            "%s %s %s %s"
+            (sprintf "list %s package" path)
+            (match vulnerable with
+             | true -> "--vulnerable"
+             | false -> "--deprecated")
+            (match includeTransitive with
+             | true -> "--include-transitive"
+             | _ -> "")
+            "--format json --output-version 1"
+
+    let scanVulnerabilities = scanArgs true
+
+    let scanDeprecations = scanArgs false
 
 module Sca =
-
-    let scanVulnerabilitiesArgs includeTransitive path =
-        let transitives =
-            match includeTransitive with
-            | true -> "--include-transitive"
-            | _ -> ""
-
-        if String.IsNullOrWhiteSpace path then
-            sprintf " list package --vulnerable %s --format json --output-version 1 " transitives
-        else
-            sprintf " list %s package --vulnerable %s --format json --output-version 1 " path transitives
-
 
     let parse json =
 
@@ -50,7 +60,33 @@ module Sca =
                                   packageId = tp.Id
                                   resolvedVersion = tp.ResolvedVersion
                                   severity = v.Severity
+                                  reason = ""
+                                  suggestedReplacement = ""
                                   advisoryUri = v.Advisoryurl }))))
+
+            let topLevelDeprecations =
+                r.Projects
+                |> Seq.collect (fun p ->
+                    p.Frameworks
+                    |> Seq.collect (fun f ->
+                        f.TopLevelPackages
+                        |> Seq.collect (fun tp ->
+                            tp.DeprecationReasons
+                            |> Seq.filter String.isNotEmpty
+                            |> Seq.map (fun d ->
+                                { ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
+                                  kind = ScaHitKind.Deprecated
+                                  framework = f.Framework
+                                  packageId = tp.Id
+                                  resolvedVersion = tp.ResolvedVersion
+                                  severity = ""
+                                  suggestedReplacement =
+                                    match tp.AlternativePackage with
+                                    | Some ap -> sprintf "%s %s" ap.Id ap.VersionRange
+                                    | None -> ""
+                                  reason = d
+
+                                  advisoryUri = "" }))))
 
             let transitiveVuls =
                 r.Projects
@@ -67,9 +103,16 @@ module Sca =
                                   packageId = tp.Id
                                   resolvedVersion = tp.ResolvedVersion
                                   severity = v.Severity
+                                  reason = ""
+                                  suggestedReplacement = ""
                                   advisoryUri = v.Advisoryurl }))))
 
-            let hits = topLevelVuls |> Seq.append transitiveVuls |> List.ofSeq
+            let hits =
+                topLevelDeprecations
+                |> Seq.append transitiveVuls
+                |> Seq.append topLevelVuls
+                |> List.ofSeq
+
             Choice1Of2 hits
         with ex ->
-            Choice2Of2("An error occurred parsing results" + Environment.NewLine + ex.Message)
+            Choice2Of2("An error occurred parsing results." + Environment.NewLine)

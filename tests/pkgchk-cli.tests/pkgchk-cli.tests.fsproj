@@ -12,13 +12,12 @@
   <ItemGroup>
     <EmbeddedResource Include="ScaSampleWithVulnerabilities.json" />
     <EmbeddedResource Include="ScaSampleEmpty.json" />
+    <Compile Include="ScaArgsTests.fs" />
     <Compile Include="ScaTests.fs" />
     <Compile Include="ConsoleTests.fs" />
     <Compile Include="IntegrationTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
-
-  <ItemGroup />
 
   <ItemGroup>
     <PackageReference Include="coverlet.msbuild" Version="6.0.0">

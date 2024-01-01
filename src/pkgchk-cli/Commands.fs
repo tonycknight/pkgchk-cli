@@ -1,5 +1,6 @@
 ﻿namespace pkgchk
 
+open System
 open System.ComponentModel
 open System.Diagnostics.CodeAnalysis
 open Spectre.Console.Cli
@@ -14,9 +15,14 @@ type PackageCheckCommandSettings() =
     member val ProjectPath = "" with get, set
 
     [<CommandOption("-t|--transitives")>]
-    [<Description("Toggle transitive package checks. -t false to exclude transtiives, -t true to include them.")>]
+    [<Description("Toggle transitive package checks. -t true to include them, -t false to exclude.")>]
     [<DefaultValue(true)>]
     member val IncludeTransitives = true with get, set
+
+    [<CommandOption("-d|--deprecations")>]
+    [<Description("Check deprecated packagess. -d true to include, -d false to exclude.")>]
+    [<DefaultValue(false)>]
+    member val IncludeDeprecations = true with get, set
 
     [<CommandOption("-o|--output")>]
     [<Description("Output directory for reports.")>]
@@ -29,9 +35,45 @@ type PackageCheckCommand() =
 
     let console = Spectre.Console.AnsiConsole.Console |> Console.send
 
+    let genArgs (settings: PackageCheckCommandSettings) =
+        let projPath = settings.ProjectPath |> Io.toFullPath
+
+        [| yield projPath |> ScaArgs.scanVulnerabilities settings.IncludeTransitives
+           if settings.IncludeDeprecations then
+               yield projPath |> ScaArgs.scanDeprecations settings.IncludeTransitives |]
+
+
+    let runProc proc =
+        try
+            Io.run proc
+        finally
+            proc.Dispose()
+
+    let runProcParse procs =
+        procs
+        |> Array.map runProc
+        |> Array.map (fun r ->
+            match r with
+            | Choice1Of2 json -> Sca.parse json
+            | Choice2Of2 x -> Choice2Of2 x)
+
     let returnError error =
         error |> Console.error |> console
         Console.sysError
+
+    let getErrors procResults =
+        procResults
+        |> Seq.map (function
+            | Choice2Of2 x -> x
+            | _ -> "")
+        |> Seq.filter String.isNotEmpty
+
+    let getHits procResults =
+        procResults
+        |> Seq.collect (function
+            | Choice1Of2 xs -> xs
+            | _ -> [])
+        |> List.ofSeq
 
     let returnCode =
         function
@@ -53,25 +95,20 @@ type PackageCheckCommand() =
         hits |> genMarkdown |> Io.writeFile reportFile
         reportFile
 
-
     override _.Execute(context, settings) =
 
-        use proc =
-            settings.ProjectPath
-            |> Io.toFullPath
-            |> Sca.scanVulnerabilitiesArgs settings.IncludeTransitives
-            |> Io.createProcess
+        let results = settings |> genArgs |> Array.map Io.createProcess |> runProcParse
 
-        match Io.run proc with
-        | Choice1Of2 json ->
-            match Sca.parse json with
-            | Choice1Of2 hits ->
-                genConsole hits
+        let errors = getErrors results
 
-                if settings.OutputDirectory <> "" then
-                    hits |> genReport settings.OutputDirectory |> Console.reportFileBuilt |> console
+        if Seq.isEmpty errors |> not then
+            errors |> String.joinLines |> returnError
+        else
+            let hits = getHits results
 
-                returnCode hits
+            hits |> genConsole
 
-            | Choice2Of2 error -> error |> returnError
-        | Choice2Of2 error -> error |> returnError
+            if settings.OutputDirectory <> "" then
+                hits |> genReport settings.OutputDirectory |> Console.reportFileBuilt |> console
+
+            returnCode hits

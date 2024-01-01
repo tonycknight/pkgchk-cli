@@ -48,7 +48,7 @@ module ScaTests =
         | Choice1Of2 xs ->
             match xs with
             | [] -> failwith "Empty list returned"
-            | [ y; x ] ->
+            | [ x; y ] ->
                 x.framework |> should equal "net7.0"
                 x.packageId |> should equal "System.Net.Http"
                 x.resolvedVersion |> should equal "4.3.0"

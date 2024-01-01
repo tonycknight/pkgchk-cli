@@ -14,7 +14,15 @@ module Console =
     [<Literal>]
     let sysError = 2
 
-    let joinLines (lines: seq<string>) = String.Join(Environment.NewLine, lines)
+    let formatHitKind =
+        function
+        | ScaHitKind.Vulnerability -> "Vulnerable package"
+        | ScaHitKind.Deprecated -> "Deprecated package"
+
+    let formatReason value =
+        match value with
+        | "Legacy" -> sprintf "[yellow]%s[/]" value
+        | _ -> sprintf "[red]%s[/]" value
 
     let formatSeverity value =
         let code =
@@ -32,22 +40,49 @@ module Console =
 
         let fmt (hit: ScaHit) =
             seq {
-                sprintf
-                    "Package: %s - [cyan]%s[/] version [cyan]%s[/]"
-                    (formatSeverity hit.severity)
-                    hit.packageId
-                    hit.resolvedVersion
+                match hit.kind with
+                | ScaHitKind.Vulnerability ->
+                    sprintf
+                        "%s: %s - [cyan]%s[/] version [cyan]%s[/]"
+                        (formatHitKind hit.kind)
+                        (formatSeverity hit.severity)
+                        hit.packageId
+                        hit.resolvedVersion
+                | ScaHitKind.Deprecated ->
+                    sprintf
+                        "%s: [cyan]%s[/] version [cyan]%s[/]"
+                        (formatHitKind hit.kind)
+                        hit.packageId
+                        hit.resolvedVersion
 
-                sprintf "         [italic]%s[/]" hit.advisoryUri
+                if String.isNotEmpty hit.advisoryUri then
+                    sprintf "                    [italic]%s[/]" hit.advisoryUri
+
+                if String.isNotEmpty hit.reason && String.isNotEmpty hit.suggestedReplacement then
+                    sprintf
+                        "                    [italic]%s - use [cyan]%s[/][/]"
+                        (formatReason hit.reason)
+                        hit.suggestedReplacement
+                else if String.isNotEmpty hit.reason then
+                    sprintf "                    [italic]%s " hit.reason
+
                 ""
             }
 
         let fmtGrp (hit: (string * seq<ScaHit>)) =
             let projectPath, hits = hit
 
+            let hits =
+                hits
+                |> Seq.sortBy (fun h ->
+                    (match h.kind with
+                     | ScaHitKind.Vulnerability -> 0
+                     | _ -> 1),
+                    h.packageId)
+
             seq {
                 sprintf "Project: %s" projectPath |> formatProject
-                yield! hits |> Seq.sortBy (fun h -> h.packageId) |> Seq.collect fmt
+                yield! hits |> Seq.collect fmt
             }
 
         let grps = hits |> Seq.groupBy (fun h -> h.projectPath) |> Seq.sortBy fst
@@ -61,7 +96,7 @@ module Console =
             "[bold red]Vulnerabilities found![/]"
             yield! formatHits hits
         }
-        |> joinLines
+        |> String.joinLines
 
     let error (error: string) = sprintf "[red]%s[/]" error
 

@@ -13,6 +13,9 @@ module IntegrationTests =
     [<Literal>]
     let regexPackage = "System.Text.RegularExpressions"
 
+    [<Literal>]
+    let aadPackage = "Microsoft.IdentityModel.Clients.ActiveDirectory"
+
     let cmdArgs (cmd: string) =
         let x = cmd.IndexOf(' ')
 
@@ -39,8 +42,11 @@ module IntegrationTests =
     let addGoodRegexPackageArgs outDir =
         sprintf "dotnet add ./%s/testproj.csproj package %s -v 4.3.1" outDir regexPackage
 
+    let addDeprecatedAadPackageArgs outDir =
+        sprintf "dotnet add ./%s/testproj.csproj package %s -v 5.3.0" outDir aadPackage
+
     let runPkgChkArgs outDir =
-        sprintf "dotnet pkgchk-cli.dll ./%s/testproj.csproj -t true" outDir
+        sprintf "dotnet pkgchk-cli.dll ./%s/testproj.csproj -t true -d true" outDir
 
     let createProc cmd =
         let (exec, args) = cmdArgs cmd
@@ -156,4 +162,33 @@ module IntegrationTests =
         runPkgChkArgs outDir
         |> execFailedPkgChk
         |> assertPackagesFound [ httpPackage ]
+        |> assertPackagesNotFound [ regexPackage ]
+
+    [<Fact>]
+    let ``Project with multiple deprecated packages returns Error`` () =
+
+        let outDir = getOutDir ()
+
+        createProjectArgs outDir |> execSuccess
+
+        addDeprecatedAadPackageArgs outDir |> execSuccess
+
+        runPkgChkArgs outDir |> execFailedPkgChk |> assertPackagesFound [ aadPackage ]
+
+    [<Fact>]
+    let ``Project with mixed vulnerable / good / deprecated packages returns Error`` () =
+
+        let outDir = getOutDir ()
+
+        createProjectArgs outDir |> execSuccess
+
+        addGoodRegexPackageArgs outDir |> execSuccess
+
+        addBadHttpPackageArgs outDir |> execSuccess
+
+        addDeprecatedAadPackageArgs outDir |> execSuccess
+
+        runPkgChkArgs outDir
+        |> execFailedPkgChk
+        |> assertPackagesFound [ httpPackage; aadPackage ]
         |> assertPackagesNotFound [ regexPackage ]
