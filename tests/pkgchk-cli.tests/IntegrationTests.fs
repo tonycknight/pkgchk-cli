@@ -13,6 +13,9 @@ module IntegrationTests =
     [<Literal>]
     let regexPackage = "System.Text.RegularExpressions"
 
+    [<Literal>]
+    let aadPackage = "Microsoft.IdentityModel.Clients.ActiveDirectory"
+
     let cmdArgs (cmd: string) =
         let x = cmd.IndexOf(' ')
 
@@ -38,6 +41,9 @@ module IntegrationTests =
 
     let addGoodRegexPackageArgs outDir =
         sprintf "dotnet add ./%s/testproj.csproj package %s -v 4.3.1" outDir regexPackage
+
+    let addDeprecatedAadPackageArgs outDir =
+        sprintf "dotnet add ./%s/testproj.csproj package %s -v 5.3.0" outDir aadPackage
 
     let runPkgChkArgs outDir =
         sprintf "dotnet pkgchk-cli.dll ./%s/testproj.csproj -t true" outDir
