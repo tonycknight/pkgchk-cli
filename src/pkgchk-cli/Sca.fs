@@ -27,17 +27,16 @@ module ScaArgs =
         | true -> "--include-transitive"
         | _ -> ""
 
-    let mode (vulnerable, deprecation) =
-        match vulnerable, deprecation with
-        | true, _ -> "--vulnerable"
-        | false, true -> "--deprecated"
-        | _, _ -> ""
+    let mode =
+        function
+        | true -> "--vulnerable"
+        | false -> "--deprecated"
 
     let scanArgs vulnerable includeTransitive path =
         sprintf
             "%s %s %s %s"
             (argPrefix path)
-            (mode (vulnerable, not vulnerable))
+            (mode vulnerable)
             (includeTransitives includeTransitive)
             "--format json --output-version 1"
 
