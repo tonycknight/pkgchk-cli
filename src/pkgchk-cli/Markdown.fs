@@ -20,14 +20,16 @@ module Markdown =
 
         sprintf "%s <span style='color:%s'>%s</span>" emote colour value
 
-    let formatReason value =
-        let colour =
-            function
-            | "Legacy" -> "yellow"
-            | "Critical Bugs" -> "red"
-            | _ -> ""
+    let formatReasons values =
+        let formatReason value =
+            let colour =
+                function
+                | "Legacy" -> "yellow"
+                | "Critical Bugs" -> "red"
+                | _ -> ""
 
-        sprintf "<span style='color:%s'>%s</span>" (colour value) value
+            sprintf "<span style='color:%s'>%s</span>" (colour value) value
+        values |> Seq.map formatReason |> String.join ", "
 
     let formatProject value = sprintf "## **%s**" value
 
@@ -71,7 +73,7 @@ module Markdown =
                     sprintf
                         "| %s | %s | %s %s | %s | "
                         (formatHitKind hit.kind)
-                        (formatReason hit.reasons)
+                        (formatReasons hit.reasons)
                         hit.packageId
                         hit.resolvedVersion
                         (match hit.suggestedReplacement with

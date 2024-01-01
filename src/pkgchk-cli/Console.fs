@@ -19,10 +19,12 @@ module Console =
         | ScaHitKind.Vulnerability -> "Vulnerable package"
         | ScaHitKind.Deprecated -> "Deprecated package"
 
-    let formatReason value =
-        match value with
-        | "Legacy" -> sprintf "[yellow]%s[/]" value
-        | _ -> sprintf "[red]%s[/]" value
+    let formatReasons values =
+        let formatReason value =
+            match value with
+            | "Legacy" -> sprintf "[yellow]%s[/]" value
+            | _ -> sprintf "[red]%s[/]" value
+        values |> Seq.map formatReason |> String.join ", "
 
     let formatSeverity value =
         let code =
@@ -58,13 +60,13 @@ module Console =
                 if String.isNotEmpty hit.advisoryUri then
                     sprintf "                    [italic]%s[/]" hit.advisoryUri
 
-                if String.isNotEmpty hit.reasons && String.isNotEmpty hit.suggestedReplacement then
+                if (hit.reasons |> Array.isEmpty |> not) && String.isNotEmpty hit.suggestedReplacement then
                     sprintf
                         "                    [italic]%s - use [cyan]%s[/][/]"
-                        (formatReason hit.reasons)
+                        (formatReasons hit.reasons)
                         hit.suggestedReplacement
-                else if String.isNotEmpty hit.reasons then
-                    sprintf "                    [italic]%s " hit.reasons
+                else if (hit.reasons |> Array.isEmpty |> not) then
+                    sprintf "                    [italic]%s " (formatReasons hit.reasons)
 
                 ""
             }
