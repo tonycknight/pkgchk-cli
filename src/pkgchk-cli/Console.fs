@@ -24,6 +24,7 @@ module Console =
             match value with
             | "Legacy" -> sprintf "[yellow]%s[/]" value
             | _ -> sprintf "[red]%s[/]" value
+
         values |> Seq.map formatReason |> String.join ", "
 
     let formatSeverity value =
@@ -60,7 +61,10 @@ module Console =
                 if String.isNotEmpty hit.advisoryUri then
                     sprintf "                    [italic]%s[/]" hit.advisoryUri
 
-                if (hit.reasons |> Array.isEmpty |> not) && String.isNotEmpty hit.suggestedReplacement then
+                if
+                    (hit.reasons |> Array.isEmpty |> not)
+                    && String.isNotEmpty hit.suggestedReplacement
+                then
                     sprintf
                         "                    [italic]%s - use [cyan]%s[/][/]"
                         (formatReasons hit.reasons)

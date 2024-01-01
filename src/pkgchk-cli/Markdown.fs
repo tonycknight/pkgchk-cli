@@ -29,6 +29,7 @@ module Markdown =
                 | _ -> ""
 
             sprintf "<span style='color:%s'>%s</span>" (colour value) value
+
         values |> Seq.map formatReason |> String.join ", "
 
     let formatProject value = sprintf "## **%s**" value
