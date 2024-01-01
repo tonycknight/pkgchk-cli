@@ -74,7 +74,7 @@ module Sca =
                         f.TopLevelPackages
                         |> Seq.collect (fun tp ->
                             tp.DeprecationReasons
-                            |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+                            |> Seq.filter String.isNotEmpty
                             |> Seq.map (fun d ->
                                 { ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
                                   kind = ScaHitKind.Deprecated
@@ -82,7 +82,11 @@ module Sca =
                                   packageId = tp.Id
                                   resolvedVersion = tp.ResolvedVersion
                                   severity = ""
-                                  commentary = d // TODO: tp.DeprecationReasons |> String.join "; "
+                                  commentary =
+                                    match tp.AlternativePackage with
+                                    | Some ap -> sprintf "Reason: %s Replacement: %s %s" d ap.Id ap.VersionRange
+                                    | None -> sprintf "Reason: %s" d
+
                                   advisoryUri = "" }))))
 
             let transitiveVuls =
@@ -104,9 +108,9 @@ module Sca =
                                   advisoryUri = v.Advisoryurl }))))
 
             let hits =
-                topLevelVuls
+                topLevelDeprecations
                 |> Seq.append transitiveVuls
-                |> Seq.append topLevelDeprecations
+                |> Seq.append topLevelVuls
                 |> List.ofSeq
 
             Choice1Of2 hits

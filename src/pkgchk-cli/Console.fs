@@ -62,9 +62,17 @@ module Console =
         let fmtGrp (hit: (string * seq<ScaHit>)) =
             let projectPath, hits = hit
 
+            let hits =
+                hits
+                |> Seq.sortBy (fun h ->
+                    (match h.kind with
+                     | ScaHitKind.Vulnerability -> 0
+                     | _ -> 1),
+                    h.packageId)
+
             seq {
                 sprintf "Project: %s" projectPath |> formatProject
-                yield! hits |> Seq.sortBy (fun h -> h.packageId) |> Seq.collect fmt
+                yield! hits |> Seq.collect fmt
             }
 
         let grps = hits |> Seq.groupBy (fun h -> h.projectPath) |> Seq.sortBy fst
