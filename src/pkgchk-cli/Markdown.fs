@@ -15,6 +15,7 @@ module Markdown =
             | "High" -> (":bangbang:", "red")
             | "Critical" -> (":heavy_exclamation_mark:", "red")
             | "Moderate" -> (":heavy_exclamation_mark:", "orange")
+            | "" -> ("", "")
             | _ -> (":heavy_exclamation_mark:", "yellow")
 
         sprintf "%s <span style='color:%s'>%s</span>" emote colour value

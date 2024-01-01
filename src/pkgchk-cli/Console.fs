@@ -35,14 +35,27 @@ module Console =
 
         let fmt (hit: ScaHit) =
             seq {
-                sprintf
-                    "%s: %s - [cyan]%s[/] version [cyan]%s[/]"
-                    (formatHitKind hit.kind)
-                    (formatSeverity hit.severity)
-                    hit.packageId
-                    hit.resolvedVersion
+                match hit.kind with
+                | ScaHitKind.Vulnerability ->
+                    sprintf
+                        "%s: %s - [cyan]%s[/] version [cyan]%s[/]"
+                        (formatHitKind hit.kind)
+                        (formatSeverity hit.severity)
+                        hit.packageId
+                        hit.resolvedVersion
+                | ScaHitKind.Deprecated ->
+                    sprintf
+                        "%s: [cyan]%s[/] version [cyan]%s[/]"
+                        (formatHitKind hit.kind)
+                        hit.packageId
+                        hit.resolvedVersion
 
-                sprintf "                    [italic]%s[/]" hit.advisoryUri
+                if not <| String.isEmpty hit.advisoryUri then
+                    sprintf "                    [italic]%s[/]" hit.advisoryUri
+
+                if not <| String.isEmpty hit.commentary then
+                    sprintf "                    [italic]%s[/]" hit.commentary
+
                 ""
             }
 

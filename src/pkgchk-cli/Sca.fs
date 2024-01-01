@@ -17,7 +17,7 @@ type ScaHit =
       resolvedVersion: string
       severity: string
       advisoryUri: string
-      commentary: string}
+      commentary: string }
 
 module Sca =
 
@@ -44,7 +44,7 @@ module Sca =
             sprintf " list %s package --deprecated %s --format json --output-version 1 " path transitives
 
     let parse json =
-
+        
         try
             let r = ScaData.Parse(json)
 
@@ -65,6 +65,7 @@ module Sca =
                                   severity = v.Severity
                                   commentary = ""
                                   advisoryUri = v.Advisoryurl }))))
+
             let topLevelDeprecations =
                 r.Projects
                 |> Seq.collect (fun p ->
@@ -81,7 +82,7 @@ module Sca =
                                   packageId = tp.Id
                                   resolvedVersion = tp.ResolvedVersion
                                   severity = ""
-                                  commentary = d // tp.DeprecationReasons |> String.join "; "
+                                  commentary = d // TODO: tp.DeprecationReasons |> String.join "; "
                                   advisoryUri = "" }))))
 
             let transitiveVuls =
@@ -102,7 +103,12 @@ module Sca =
                                   commentary = ""
                                   advisoryUri = v.Advisoryurl }))))
 
-            let hits = topLevelVuls |> Seq.append transitiveVuls |> Seq.append topLevelDeprecations |> List.ofSeq
+            let hits =
+                topLevelVuls
+                |> Seq.append transitiveVuls
+                |> Seq.append topLevelDeprecations
+                |> List.ofSeq
+
             Choice1Of2 hits
         with ex ->
-            Choice2Of2("An error occurred parsing results" + Environment.NewLine + ex.Message)
+            Choice2Of2("An error occurred parsing results." + Environment.NewLine)

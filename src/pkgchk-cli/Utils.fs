@@ -9,3 +9,8 @@ module String =
 
     [<DebuggerStepThrough>]
     let joinLines (lines: seq<string>) = join Environment.NewLine lines
+
+    [<DebuggerStepThrough>]
+    let isEmpty = String.IsNullOrEmpty
+
+    // TODO: negation/whitespace
