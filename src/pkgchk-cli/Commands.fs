@@ -46,9 +46,9 @@ type PackageCheckCommand() =
     let genArgs (settings: PackageCheckCommandSettings) =
         let projPath = settings.ProjectPath |> Io.toFullPath
 
-        [| yield projPath |> Sca.scanVulnerabilitiesArgs settings.IncludeTransitives
+        [| yield projPath |> ScaArgs.scanVulnerabilities settings.IncludeTransitives
            if settings.IncludeDeprecations then
-               yield projPath |> Sca.scanDeprecationsArgs settings.IncludeTransitives |]
+               yield projPath |> ScaArgs.scanDeprecations settings.IncludeTransitives |]
 
 
     let runProc proc =

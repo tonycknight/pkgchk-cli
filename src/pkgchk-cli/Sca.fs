@@ -20,9 +20,8 @@ type ScaHit =
       commentary: string }
 
 module ScaArgs =
-    let argPrefix path =
-        sprintf " list %s package " path
-            
+    let argPrefix path = sprintf "list %s package" path
+
     let includeTransitives =
         function
         | true -> "--include-transitive"
@@ -30,46 +29,23 @@ module ScaArgs =
 
     let mode (vulnerable, deprecation) =
         match vulnerable, deprecation with
-        | true, _ -> " --vulnerable "
-        | false, true -> " --deprecated "
-        | _,_ -> ""
+        | true, _ -> "--vulnerable"
+        | false, true -> "--deprecated"
+        | _, _ -> ""
 
     let scanArgs vulnerable includeTransitive path =
-        let xs = seq {
-            argPrefix path
-            mode (vulnerable, not vulnerable)
-            includeTransitives includeTransitive
-            " --format json --output-version 1 "
-            }
-        xs |> String.join ""
+        sprintf
+            "%s %s %s %s"
+            (argPrefix path)
+            (mode (vulnerable, not vulnerable))
+            (includeTransitives includeTransitive)
+            "--format json --output-version 1"
 
     let scanVulnerabilities = scanArgs true
 
     let scanDeprecations = scanArgs false
 
 module Sca =
-    
-    let scanVulnerabilitiesArgs includeTransitive path =
-        let transitives =
-            match includeTransitive with
-            | true -> "--include-transitive"
-            | _ -> ""
-
-        if String.IsNullOrWhiteSpace path then
-            sprintf " list package --vulnerable %s --format json --output-version 1 " transitives
-        else
-            sprintf " list %s package --vulnerable %s --format json --output-version 1 " path transitives
-    
-    let scanDeprecationsArgs includeTransitive path =
-        let transitives =
-            match includeTransitive with
-            | true -> "--include-transitive"
-            | _ -> ""
-
-        if String.IsNullOrWhiteSpace path then
-            sprintf " list package --deprecated %s --format json --output-version 1 " transitives
-        else
-            sprintf " list %s package --deprecated %s --format json --output-version 1 " path transitives
 
     let parse json =
 
