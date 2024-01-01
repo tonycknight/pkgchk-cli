@@ -19,10 +19,10 @@ type PackageCheckCommandSettings() =
     [<DefaultValue(true)>]
     member val IncludeTransitives = true with get, set
 
-    // TODO: Disabled because of a regression in Spectre.Console: https://github.com/spectreconsole/spectre.console/issues/1400
     (*
+    Disabled because of a regression in Spectre.Console: https://github.com/spectreconsole/spectre.console/issues/1400
     [<CommandOption("-v|--vulnerable")>]
-    [<Description("Check vulnerable packages. -u true to include, -u false to exclude.")>]
+    [<Description("Check vulnerable packages. -v true to include, -v false to exclude.")>]
     [<DefaultValue(true)>]
     member val IncludeVulnerabilities = true with get, set
     *)
@@ -56,6 +56,14 @@ type PackageCheckCommand() =
             Io.run proc
         finally
             proc.Dispose()
+
+    let runProcParse procs =
+        procs
+        |> Array.map runProc
+        |> Array.map (fun r ->
+            match r with
+            | Choice1Of2 json -> Sca.parse json
+            | Choice2Of2 x -> Choice2Of2 x)
 
     let returnError error =
         error |> Console.error |> console
@@ -96,22 +104,15 @@ type PackageCheckCommand() =
         reportFile
 
     override _.Execute(context, settings) =
-        let procs = settings |> genArgs |> Array.map Io.createProcess
 
-        let procResults =
-            procs
-            |> Array.map runProc
-            |> Array.map (fun r ->
-                match r with
-                | Choice1Of2 json -> Sca.parse json
-                | Choice2Of2 x -> Choice2Of2 x)
+        let results = settings |> genArgs |> Array.map Io.createProcess |> runProcParse
 
-        let errors = getErrors procResults
+        let errors = getErrors results
 
         if Seq.isEmpty errors |> not then
             errors |> String.joinLines |> returnError
         else
-            let hits = getHits procResults
+            let hits = getHits results
 
             hits |> genConsole
 
