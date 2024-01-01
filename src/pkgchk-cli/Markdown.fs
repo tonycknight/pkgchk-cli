@@ -20,6 +20,15 @@ module Markdown =
 
         sprintf "%s <span style='color:%s'>%s</span>" emote colour value
 
+    let formatReason value =
+        let colour =
+            function
+            | "Legacy" -> "yellow"
+            | "Critical Bugs" -> "red"
+            | _ -> ""
+
+        sprintf "<span style='color:%s'>%s</span>" (colour value) value
+
     let formatProject value = sprintf "## **%s**" value
 
     let footer =
@@ -60,11 +69,14 @@ module Markdown =
                         hit.advisoryUri
                 | ScaHitKind.Deprecated ->
                     sprintf
-                        "| %s |  | %s %s | %s | "
+                        "| %s | %s | %s %s | %s | "
                         (formatHitKind hit.kind)
+                        (formatReason hit.reason)
                         hit.packageId
                         hit.resolvedVersion
-                        hit.commentary
+                        (match hit.suggestedReplacement with
+                         | "" -> ""
+                         | x -> sprintf "Use %s" x)
             }
 
         let fmtGrp (hit: (string * seq<ScaHit>)) =

@@ -19,6 +19,11 @@ module Console =
         | ScaHitKind.Vulnerability -> "Vulnerable package"
         | ScaHitKind.Deprecated -> "Deprecated package"
 
+    let formatReason value =
+        match value with
+        | "Legacy" -> sprintf "[yellow]%s[/]" value
+        | _ -> sprintf "[red]%s[/]" value
+
     let formatSeverity value =
         let code =
             match value with
@@ -53,8 +58,13 @@ module Console =
                 if String.isNotEmpty hit.advisoryUri then
                     sprintf "                    [italic]%s[/]" hit.advisoryUri
 
-                if String.isNotEmpty hit.commentary then
-                    sprintf "                    [italic]%s[/]" hit.commentary
+                if String.isNotEmpty hit.reason && String.isNotEmpty hit.suggestedReplacement then
+                    sprintf
+                        "                    [italic]%s - use [cyan]%s[/][/]"
+                        (formatReason hit.reason)
+                        hit.suggestedReplacement
+                else if String.isNotEmpty hit.reason then
+                    sprintf "                    [italic]%s " hit.reason
 
                 ""
             }

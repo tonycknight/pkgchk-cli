@@ -18,7 +18,7 @@ type PackageCheckCommandSettings() =
     [<Description("Toggle transitive package checks. -t true to include them, -t false to exclude.")>]
     [<DefaultValue(true)>]
     member val IncludeTransitives = true with get, set
-        
+
     [<CommandOption("-d|--deprecations")>]
     [<Description("Check deprecated packagess. -d true to include, -d false to exclude.")>]
     [<DefaultValue(false)>]
