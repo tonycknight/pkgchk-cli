@@ -29,7 +29,13 @@ jobs:
       - name: Check SCA
         run: |
           dotnet tool restore
-          dotnet pkgchk -t
+          dotnet restore
+          dotnet pkgchk -t -o ./report
+
+      - name: SCA summary
+        if: always()
+        run: |          
+          cat ./report/pkgchk.md >> $GITHUB_STEP_SUMMARY
 
   style-rules:
     name: Check style rules
