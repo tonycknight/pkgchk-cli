@@ -14,8 +14,6 @@ module Console =
     [<Literal>]
     let sysError = 2
 
-    let joinLines (lines: seq<string>) = String.Join(Environment.NewLine, lines)
-
     let formatHitKind =
         function
         | ScaHitKind.Vulnerability -> "Vulnerable package"
@@ -67,7 +65,7 @@ module Console =
             "[bold red]Vulnerabilities found![/]"
             yield! formatHits hits
         }
-        |> joinLines
+        |> String.joinLines
 
     let error (error: string) = sprintf "[red]%s[/]" error
 
