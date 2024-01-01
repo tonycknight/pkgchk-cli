@@ -18,15 +18,7 @@ type PackageCheckCommandSettings() =
     [<Description("Toggle transitive package checks. -t true to include them, -t false to exclude.")>]
     [<DefaultValue(true)>]
     member val IncludeTransitives = true with get, set
-
-    (*
-    Disabled because of a regression in Spectre.Console: https://github.com/spectreconsole/spectre.console/issues/1400
-    [<CommandOption("-v|--vulnerable")>]
-    [<Description("Check vulnerable packages. -v true to include, -v false to exclude.")>]
-    [<DefaultValue(true)>]
-    member val IncludeVulnerabilities = true with get, set
-    *)
-
+        
     [<CommandOption("-d|--deprecations")>]
     [<Description("Check deprecated packagess. -d true to include, -d false to exclude.")>]
     [<DefaultValue(false)>]
