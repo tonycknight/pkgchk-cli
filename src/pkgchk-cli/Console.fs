@@ -50,10 +50,10 @@ module Console =
                         hit.packageId
                         hit.resolvedVersion
 
-                if not <| String.isEmpty hit.advisoryUri then
+                if String.isNotEmpty hit.advisoryUri then
                     sprintf "                    [italic]%s[/]" hit.advisoryUri
 
-                if not <| String.isEmpty hit.commentary then
+                if String.isNotEmpty hit.commentary then
                     sprintf "                    [italic]%s[/]" hit.commentary
 
                 ""

@@ -11,6 +11,7 @@ module String =
     let joinLines (lines: seq<string>) = join Environment.NewLine lines
 
     [<DebuggerStepThrough>]
-    let isEmpty = String.IsNullOrEmpty
+    let isEmpty = String.IsNullOrWhiteSpace
 
-    // TODO: negation/whitespace
+    [<DebuggerStepThrough>]
+    let isNotEmpty = isEmpty >> not

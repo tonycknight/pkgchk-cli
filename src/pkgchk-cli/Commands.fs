@@ -66,7 +66,7 @@ type PackageCheckCommand() =
             |> Seq.map (function
                 | Choice2Of2 x -> x
                 | _ -> "")
-            |> Seq.filter (String.isEmpty >> not)
+            |> Seq.filter String.isNotEmpty
 
     let getHits procResults =
         procResults
