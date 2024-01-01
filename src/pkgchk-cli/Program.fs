@@ -11,8 +11,12 @@ module Program =
     [<EntryPoint>]
     let main argv =
         let app = CommandApp<PackageCheckCommand>()
-
-        app.Configure(fun c -> c.PropagateExceptions().ValidateExamples() |> ignore)
+                    .WithDescription("Check project dependency packages for vulnerabilities and deprecations.")
+        
+        app.Configure(fun c -> c.PropagateExceptions()
+                                .ValidateExamples()
+                                .TrimTrailingPeriods(false)
+                                |> ignore)
 
         try
             app.Run(argv)

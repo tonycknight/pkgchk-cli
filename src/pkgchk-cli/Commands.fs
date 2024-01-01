@@ -19,14 +19,16 @@ type PackageCheckCommandSettings() =
     [<DefaultValue(true)>]
     member val IncludeTransitives = true with get, set
 
-    // TODO: shorts, etc.
-    [<CommandOption("-u|--vulnerable")>]
-    [<Description("Toggle vulnerable package checks. -t true to include them, -t false to exclude.")>]
+    // TODO: Disabled because of a regression in Spectre.Console: https://github.com/spectreconsole/spectre.console/issues/1400
+    (*
+    [<CommandOption("-v|--vulnerable")>]
+    [<Description("Check vulnerable packages. -u true to include, -u false to exclude.")>]
     [<DefaultValue(true)>]
     member val IncludeVulnerabilities = true with get, set
+    *)
 
     [<CommandOption("-d|--deprecations")>]
-    [<Description("Toggle deprecated package checks. -t true to include them, -t false to exclude.")>]
+    [<Description("Check deprecated packagess. -d true to include, -d false to exclude.")>]
     [<DefaultValue(false)>]
     member val IncludeDeprecations = true with get, set
 
@@ -44,8 +46,8 @@ type PackageCheckCommand() =
     let genArgs (settings: PackageCheckCommandSettings) =
         let projPath = settings.ProjectPath |> Io.toFullPath
 
-        [| if settings.IncludeVulnerabilities then
-               yield projPath |> Sca.scanVulnerabilitiesArgs settings.IncludeTransitives
+        [| 
+           yield projPath |> Sca.scanVulnerabilitiesArgs settings.IncludeTransitives
            if settings.IncludeDeprecations then
                yield projPath |> Sca.scanDeprecationsArgs settings.IncludeTransitives |]
 
