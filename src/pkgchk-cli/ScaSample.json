@@ -21,7 +21,14 @@
                   "severity": "High",
                   "advisoryurl": "https://github.com/advisories/GHSA-7jgj-8wvc-jh57"
                 }
-              ]
+              ],
+              "deprecationReasons": [
+                "Legacy"
+              ],
+              "alternativePackage": {
+                "id": "Microsoft.Identity.Client",
+                "versionRange": ">= 0.0.0"
+              }
             }
           ]
         }
