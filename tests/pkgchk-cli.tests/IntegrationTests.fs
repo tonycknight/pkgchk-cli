@@ -173,9 +173,7 @@ module IntegrationTests =
 
         addDeprecatedAadPackageArgs outDir |> execSuccess
 
-        runPkgChkArgs outDir
-        |> execFailedPkgChk
-        |> assertPackagesFound [ aadPackage ]
+        runPkgChkArgs outDir |> execFailedPkgChk |> assertPackagesFound [ aadPackage ]
 
     [<Fact>]
     let ``Project with mixed vulnerable / good / deprecated packages returns Error`` () =
