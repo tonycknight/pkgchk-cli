@@ -17,7 +17,7 @@ type ScaHit =
       resolvedVersion: string
       severity: string
       advisoryUri: string
-      reason: string
+      reasons: string
       suggestedReplacement: string }
 
 module ScaArgs =
@@ -60,7 +60,7 @@ module Sca =
                                   packageId = tp.Id
                                   resolvedVersion = tp.ResolvedVersion
                                   severity = v.Severity
-                                  reason = ""
+                                  reasons = ""
                                   suggestedReplacement = ""
                                   advisoryUri = v.Advisoryurl }))))
 
@@ -70,10 +70,8 @@ module Sca =
                     p.Frameworks
                     |> Seq.collect (fun f ->
                         f.TopLevelPackages
-                        |> Seq.collect (fun tp ->
-                            tp.DeprecationReasons
-                            |> Seq.filter String.isNotEmpty
-                            |> Seq.map (fun d ->
+                        |> Seq.filter (fun tp -> tp.DeprecationReasons |> Array.isEmpty |> not)
+                        |> Seq.map (fun tp ->                            
                                 { ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
                                   kind = ScaHitKind.Deprecated
                                   framework = f.Framework
@@ -84,9 +82,10 @@ module Sca =
                                     match tp.AlternativePackage with
                                     | Some ap -> sprintf "%s %s" ap.Id ap.VersionRange
                                     | None -> ""
-                                  reason = d
+                                  reasons = tp.DeprecationReasons |> String.join ", "
 
-                                  advisoryUri = "" }))))
+                                  advisoryUri = "" 
+                                } )))
 
             let transitiveVuls =
                 r.Projects
@@ -103,7 +102,7 @@ module Sca =
                                   packageId = tp.Id
                                   resolvedVersion = tp.ResolvedVersion
                                   severity = v.Severity
-                                  reason = ""
+                                  reasons = ""
                                   suggestedReplacement = ""
                                   advisoryUri = v.Advisoryurl }))))
 

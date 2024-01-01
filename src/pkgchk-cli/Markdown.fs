@@ -71,7 +71,7 @@ module Markdown =
                     sprintf
                         "| %s | %s | %s %s | %s | "
                         (formatHitKind hit.kind)
-                        (formatReason hit.reason)
+                        (formatReason hit.reasons)
                         hit.packageId
                         hit.resolvedVersion
                         (match hit.suggestedReplacement with

@@ -58,13 +58,13 @@ module Console =
                 if String.isNotEmpty hit.advisoryUri then
                     sprintf "                    [italic]%s[/]" hit.advisoryUri
 
-                if String.isNotEmpty hit.reason && String.isNotEmpty hit.suggestedReplacement then
+                if String.isNotEmpty hit.reasons && String.isNotEmpty hit.suggestedReplacement then
                     sprintf
                         "                    [italic]%s - use [cyan]%s[/][/]"
-                        (formatReason hit.reason)
+                        (formatReason hit.reasons)
                         hit.suggestedReplacement
-                else if String.isNotEmpty hit.reason then
-                    sprintf "                    [italic]%s " hit.reason
+                else if String.isNotEmpty hit.reasons then
+                    sprintf "                    [italic]%s " hit.reasons
 
                 ""
             }
