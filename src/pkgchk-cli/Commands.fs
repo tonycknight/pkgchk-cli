@@ -10,14 +10,17 @@ type PackageCheckCommandSettings() =
 
     [<CommandArgument(0, "[SOLUTION|PROJECT]")>]
     [<Description("The solution or project file to check.")>]
+    [<DefaultValue("")>]
     member val ProjectPath = "" with get, set
 
     [<CommandOption("-t|--transitives")>]
-    [<Description("Check transitive packages as well as top level packages.")>]
-    member val IncludeTransitives = false with get, set
+    [<Description("Toggle transitive package checks. -t false to exclude transtiives, -t true to include them.")>]
+    [<DefaultValue(true)>]
+    member val IncludeTransitives = true with get, set
 
     [<CommandOption("-o|--output")>]
     [<Description("Output directory for reports.")>]
+    [<DefaultValue("")>]
     member val OutputDirectory = "" with get, set
 
 [<ExcludeFromCodeCoverage>]
