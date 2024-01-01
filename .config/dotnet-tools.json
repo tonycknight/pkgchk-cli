@@ -9,7 +9,7 @@
       ]
     },
     "pkgchk-cli": {
-      "version": "0.1.63",
+      "version": "0.1.81",
       "commands": [
         "pkgchk"
       ]
