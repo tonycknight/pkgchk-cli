@@ -14,6 +14,8 @@ module Console =
     [<Literal>]
     let sysError = 2
 
+    let joinLines (lines: seq<string>) = String.Join(Environment.NewLine, lines)
+
     let formatSeverity value =
         let code =
             match value with
@@ -30,23 +32,40 @@ module Console =
 
         let fmt (hit: ScaHit) =
             seq {
+                sprintf
+                    "Package: %s - [cyan]%s[/] version [cyan]%s[/]"
+                    (formatSeverity hit.severity)
+                    hit.packageId
+                    hit.resolvedVersion
+
+                sprintf "         [italic]%s[/]" hit.advisoryUri
                 ""
-                sprintf "Project:          %s" hit.projectPath |> formatProject
-                sprintf "Severity:         %s" (formatSeverity hit.severity)
-                sprintf "Package:          [cyan]%s[/] version [cyan]%s[/]" hit.packageId hit.resolvedVersion
-                sprintf "Advisory URL:     %s" hit.advisoryUri
             }
 
-        let lines = hits |> Seq.collect fmt
-        String.Join(Environment.NewLine, lines) |> AnsiConsole.MarkupLine
+        let fmtGrp (hit: (string * seq<ScaHit>)) =
+            let projectPath, hits = hit
 
-    let noVulnerabilities (console: IAnsiConsole) =
+            seq {
+                sprintf "Project: %s" projectPath |> formatProject
+                yield! hits |> Seq.sortBy (fun h -> h.packageId) |> Seq.collect fmt
+            }
+
+        let grps = hits |> Seq.groupBy (fun h -> h.projectPath) |> Seq.sortBy fst
+        (grps |> Seq.collect fmtGrp)
+
+    let noVulnerabilities () =
         "[bold green]No vulnerabilities found.[/]"
-        |> console.Markup
-        |> console.WriteLine
 
-    let vulnerabilities (console: IAnsiConsole) hits =
-        "[bold red]Vulnerabilities found![/]" |> console.Markup |> console.WriteLine
-        hits |> formatHits |> console.WriteLine
+    let vulnerabilities hits =
+        seq {
+            "[bold red]Vulnerabilities found![/]"
+            yield! formatHits hits
+        }
+        |> joinLines
 
-    let error (console: IAnsiConsole) (error: string) = console.WriteLine error
+    let error (error: string) = sprintf "[red]%s[/]" error
+
+    let reportFileBuilt path =
+        sprintf "[italic]Report file %s built.[/]" path
+
+    let send (console: IAnsiConsole) = console.MarkupLine

@@ -1,13 +1,15 @@
 ﻿namespace pkgchk
 
 open System
-open System.Diagnostics
 open FSharp.Data
 
 type ScaData = JsonProvider<"ScaSample.json">
 
+type ScaHitKind = | Vulnerability
+
 type ScaHit =
-    { framework: string
+    { kind: ScaHitKind
+      framework: string
       projectPath: string
       packageId: string
       resolvedVersion: string
@@ -16,7 +18,7 @@ type ScaHit =
 
 module Sca =
 
-    let commandArgs includeTransitive path =
+    let scanVulnerabilitiesArgs includeTransitive path =
         let transitives =
             match includeTransitive with
             | true -> "--include-transitive"
@@ -42,7 +44,8 @@ module Sca =
                         |> Seq.collect (fun tp ->
                             tp.Vulnerabilities
                             |> Seq.map (fun v ->
-                                { ScaHit.projectPath = p.Path
+                                { ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
+                                  kind = ScaHitKind.Vulnerability
                                   framework = f.Framework
                                   packageId = tp.Id
                                   resolvedVersion = tp.ResolvedVersion
@@ -58,7 +61,8 @@ module Sca =
                         |> Seq.collect (fun tp ->
                             tp.Vulnerabilities
                             |> Seq.map (fun v ->
-                                { ScaHit.projectPath = p.Path
+                                { ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
+                                  kind = ScaHitKind.Vulnerability
                                   framework = f.Framework
                                   packageId = tp.Id
                                   resolvedVersion = tp.ResolvedVersion

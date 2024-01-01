@@ -16,37 +16,59 @@ type PackageCheckCommandSettings() =
     [<Description("Check transitive packages as well as top level packages.")>]
     member val IncludeTransitives = false with get, set
 
+    [<CommandOption("-o|--output")>]
+    [<Description("Output directory for reports.")>]
+    member val OutputDirectory = "" with get, set
+
 [<ExcludeFromCodeCoverage>]
 type PackageCheckCommand() =
     inherit Command<PackageCheckCommandSettings>()
 
-    let returnError console error =
-        error |> Console.error console
+    let console = Spectre.Console.AnsiConsole.Console |> Console.send
+
+    let returnError error =
+        error |> Console.error |> console
         Console.sysError
 
-    let returnVulnerabilities console hits =
-        hits |> Console.vulnerabilities console
-        Console.validationFailed
+    let returnCode =
+        function
+        | [] -> Console.validationOk
+        | _ -> Console.validationFailed
 
-    let returnNoVulnerabilities console =
-        Console.noVulnerabilities console
-        Console.validationOk
+    let genConsole =
+        function
+        | [] -> Console.noVulnerabilities () |> console
+        | hits -> hits |> Console.vulnerabilities |> console
+
+    let genMarkdown =
+        function
+        | [] -> Markdown.formatNoHits ()
+        | hits -> hits |> Markdown.formatHits
+
+    let genReport outDir hits =
+        let reportFile = outDir |> Io.toFullPath |> Io.combine "pkgchk.md" |> Io.normalise
+        hits |> genMarkdown |> Io.writeFile reportFile
+        reportFile
+
 
     override _.Execute(context, settings) =
-        let console = Spectre.Console.AnsiConsole.Console
 
         use proc =
             settings.ProjectPath
             |> Io.toFullPath
-            |> Sca.commandArgs settings.IncludeTransitives
+            |> Sca.scanVulnerabilitiesArgs settings.IncludeTransitives
             |> Io.createProcess
 
-        let r = Io.run proc
-
-        match r with
+        match Io.run proc with
         | Choice1Of2 json ->
             match Sca.parse json with
-            | Choice1Of2 [] -> returnNoVulnerabilities console
-            | Choice1Of2 hits -> hits |> returnVulnerabilities console
-            | Choice2Of2 error -> error |> returnError console
-        | Choice2Of2 error -> error |> returnError console
+            | Choice1Of2 hits ->
+                genConsole hits
+
+                if settings.OutputDirectory <> "" then
+                    hits |> genReport settings.OutputDirectory |> Console.reportFileBuilt |> console
+
+                returnCode hits
+
+            | Choice2Of2 error -> error |> returnError
+        | Choice2Of2 error -> error |> returnError
