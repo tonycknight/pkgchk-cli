@@ -49,13 +49,22 @@ module Markdown =
 
         let fmt (hit: ScaHit) =
             seq {
-                sprintf
-                    "| %s | %s | %s %s | [Advisory](%s) | "
-                    (formatHitKind hit.kind)
-                    (formatSeverity hit.severity)
-                    hit.packageId
-                    hit.resolvedVersion
-                    hit.advisoryUri
+                match hit.kind with
+                | ScaHitKind.Vulnerability ->
+                    sprintf
+                        "| %s | %s | %s %s | [Advisory](%s) | "
+                        (formatHitKind hit.kind)
+                        (formatSeverity hit.severity)
+                        hit.packageId
+                        hit.resolvedVersion
+                        hit.advisoryUri
+                | ScaHitKind.Deprecated ->
+                    sprintf
+                        "| %s |  | %s %s | %s | "
+                        (formatHitKind hit.kind)
+                        hit.packageId
+                        hit.resolvedVersion
+                        hit.commentary
             }
 
         let fmtGrp (hit: (string * seq<ScaHit>)) =
@@ -65,7 +74,15 @@ module Markdown =
                 projectPath |> formatProject
                 ""
                 yield! grpHdr
-                yield! hits |> Seq.sortBy (fun h -> h.packageId) |> Seq.collect fmt
+
+                yield!
+                    hits
+                    |> Seq.sortBy (fun h ->
+                        ((match h.kind with
+                          | ScaHitKind.Vulnerability -> 0
+                          | _ -> 1),
+                         h.packageId))
+                    |> Seq.collect fmt
             }
 
         footer |> Seq.append (grps |> Seq.collect fmtGrp) |> Seq.append hdr

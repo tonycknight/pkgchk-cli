@@ -84,7 +84,7 @@ module Sca =
                                   severity = ""
                                   commentary =
                                     match tp.AlternativePackage with
-                                    | Some ap -> sprintf "Reason: %s Replacement: %s %s" d ap.Id ap.VersionRange
+                                    | Some ap -> sprintf "Reason: %s Use %s %s" d ap.Id ap.VersionRange
                                     | None -> sprintf "Reason: %s" d
 
                                   advisoryUri = "" }))))
