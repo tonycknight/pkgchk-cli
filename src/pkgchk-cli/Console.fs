@@ -70,7 +70,7 @@ module Console =
                         (formatReasons hit.reasons)
                         hit.suggestedReplacement
                 else if (hit.reasons |> Array.isEmpty |> not) then
-                    sprintf "                    [italic]%s " (formatReasons hit.reasons)
+                    sprintf "                    [italic]%s[/]" (formatReasons hit.reasons)
 
                 ""
             }
