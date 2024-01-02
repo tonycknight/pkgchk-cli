@@ -20,7 +20,7 @@ module Markdown =
 
         sprintf "%s <span style='color:%s'>%s</span>" emote colour value
 
-    let nugetLinkPkgVsn (package, version) =
+    let nugetLinkPkgVsn package version =
         $"[{package}](https://www.nuget.org/packages/{package}/{version})"
 
     let nugetLinkPkgSuggestion package suggestion =
@@ -73,7 +73,7 @@ module Markdown =
                         "| %s | %s | %s %s | [Advisory](%s) | "
                         (formatHitKind hit.kind)
                         (formatSeverity hit.severity)
-                        (nugetLinkPkgVsn (hit.packageId, hit.resolvedVersion) )
+                        (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
                         hit.resolvedVersion
                         hit.advisoryUri
                 | ScaHitKind.Deprecated ->
@@ -81,7 +81,7 @@ module Markdown =
                         "| %s | %s | %s %s | %s | "
                         (formatHitKind hit.kind)
                         (formatReasons hit.reasons)
-                        (nugetLinkPkgVsn (hit.packageId, hit.resolvedVersion) )
+                        (nugetLinkPkgVsn hit.packageId hit.resolvedVersion )
                         hit.resolvedVersion
                         (match (hit.suggestedReplacement, hit.alternativePackageId) with
                          | "", _ -> ""
