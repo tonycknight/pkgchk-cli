@@ -2,7 +2,7 @@
 
 [![Build & Release](https://github.com/tonycknight/pkgchk-cli/actions/workflows/build.yml/badge.svg)](https://github.com/tonycknight/pkgchk-cli/actions/workflows/build.yml)
 
-![Nuget](https://img.shields.io/nuget/v/pkgchk-cli)
+[![Nuget](https://img.shields.io/nuget/v/pkgchk-cli)](https://www.nuget.org/packages/pkgchk-cli/)
 
 A dotnet tool for package dependency checks.
 
@@ -38,6 +38,10 @@ Add the tool to your repository's toolset:
 ```dotnet tool install pkgchk-cli```
 
 ## Use
+
+To get help:
+
+```pkgchk --help```
 
 To check for top-level dependency vulnerabilities:
 

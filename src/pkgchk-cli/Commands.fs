@@ -19,7 +19,7 @@ type PackageCheckCommandSettings() =
     [<DefaultValue(true)>]
     member val IncludeTransitives = true with get, set
 
-    [<CommandOption("-d|--deprecations")>]
+    [<CommandOption("--deprecations")>]
     [<Description("Check deprecated packagess. -d true to include, -d false to exclude.")>]
     [<DefaultValue(false)>]
     member val IncludeDeprecations = true with get, set
