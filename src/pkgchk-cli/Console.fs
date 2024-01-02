@@ -119,6 +119,6 @@ module Console =
     let error (error: string) = sprintf "[red]%s[/]" error
 
     let reportFileBuilt path =
-        sprintf "[italic]Report file %s built.[/]" path
+        sprintf "[italic]Report file [link=%s]%s[/] built.[/]" path path
 
     let send (console: IAnsiConsole) = console.MarkupLine
