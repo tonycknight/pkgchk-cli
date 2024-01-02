@@ -46,7 +46,7 @@ module IntegrationTests =
         sprintf "dotnet add ./%s/testproj.csproj package %s -v 5.3.0" outDir aadPackage
 
     let runPkgChkArgs outDir =
-        sprintf "dotnet pkgchk-cli.dll ./%s/testproj.csproj -t true --deprecations true" outDir
+        sprintf "dotnet pkgchk-cli.dll ./%s/testproj.csproj --transitive true --deprecated true" outDir
 
     let createProc cmd =
         let (exec, args) = cmdArgs cmd
