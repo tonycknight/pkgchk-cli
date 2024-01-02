@@ -38,6 +38,14 @@ module Console =
 
         sprintf "[%s]%s[/]" code value
 
+    let nugetLinkPkgVsn package version =
+        let url = $"https://www.nuget.org/packages/{package}/{version}"
+        $"[link={url}]{package} {version}[/]"
+
+    let nugetLinkPkgSuggestion package suggestion =
+        let url = $"https://www.nuget.org/packages/{package}"
+        $"[link={url}]{package} {suggestion}[/]"
+
     let formatProject value = sprintf "[bold yellow]%s[/]" value
 
     let formatHits (hits: seq<ScaHit>) =
@@ -50,13 +58,13 @@ module Console =
                         "%s: %s - [cyan]%s[/] version [cyan]%s[/]"
                         (formatHitKind hit.kind)
                         (formatSeverity hit.severity)
-                        hit.packageId
+                        (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
                         hit.resolvedVersion
                 | ScaHitKind.Deprecated ->
                     sprintf
                         "%s: [cyan]%s[/] version [cyan]%s[/]"
                         (formatHitKind hit.kind)
-                        hit.packageId
+                        (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
                         hit.resolvedVersion
 
                 if String.isNotEmpty hit.advisoryUri then
@@ -69,7 +77,10 @@ module Console =
                     sprintf
                         "                    [italic]%s - use [cyan]%s[/][/]"
                         (formatReasons hit.reasons)
-                        hit.suggestedReplacement
+                        (match (hit.suggestedReplacement, hit.alternativePackageId) with
+                         | "", _ -> ""
+                         | x, y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> sprintf "Use %s"
+                         | x, _ -> x |> sprintf "Use %s")
                 else if (hit.reasons |> Array.isEmpty |> not) then
                     sprintf "                    [italic]%s[/]" (formatReasons hit.reasons)
 
