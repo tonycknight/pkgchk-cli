@@ -14,12 +14,12 @@ type PackageCheckCommandSettings() =
     [<DefaultValue("")>]
     member val ProjectPath = "" with get, set
 
-    [<CommandOption("-t|--transitives")>]
+    [<CommandOption("-t|--transitive")>]
     [<Description("Toggle transitive package checks. -t true to include them, -t false to exclude.")>]
     [<DefaultValue(true)>]
     member val IncludeTransitives = true with get, set
 
-    [<CommandOption("--deprecations")>]
+    [<CommandOption("--deprecated")>]
     [<Description("Check deprecated packagess. -d true to include, -d false to exclude.")>]
     [<DefaultValue(false)>]
     member val IncludeDeprecations = true with get, set
