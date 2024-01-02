@@ -23,6 +23,7 @@ module Console =
         let formatReason value =
             match value with
             | "Legacy" -> sprintf "[yellow]%s[/]" value
+            | "Other" -> value
             | _ -> sprintf "[red]%s[/]" value
 
         values |> Seq.map formatReason |> String.join ", "
