@@ -20,6 +20,12 @@ module Markdown =
 
         sprintf "%s <span style='color:%s'>%s</span>" emote colour value
 
+    let nugetLinkPkgVsn (package, version) =
+        $"[{package}](https://www.nuget.org/packages/{package}/{version})"
+
+    let nugetLinkPkgSuggestion package suggestion =
+        $"[{suggestion}](https://www.nuget.org/packages/{package})"
+
     let formatReasons values =
         let formatReason value =
             let colour =
@@ -67,7 +73,7 @@ module Markdown =
                         "| %s | %s | %s %s | [Advisory](%s) | "
                         (formatHitKind hit.kind)
                         (formatSeverity hit.severity)
-                        hit.packageId
+                        (nugetLinkPkgVsn (hit.packageId, hit.resolvedVersion) )
                         hit.resolvedVersion
                         hit.advisoryUri
                 | ScaHitKind.Deprecated ->
@@ -75,11 +81,12 @@ module Markdown =
                         "| %s | %s | %s %s | %s | "
                         (formatHitKind hit.kind)
                         (formatReasons hit.reasons)
-                        hit.packageId
+                        (nugetLinkPkgVsn (hit.packageId, hit.resolvedVersion) )
                         hit.resolvedVersion
-                        (match hit.suggestedReplacement with
-                         | "" -> ""
-                         | x -> sprintf "Use %s" x)
+                        (match (hit.suggestedReplacement, hit.alternativePackageId) with
+                         | "", _ -> ""
+                         | x,y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> sprintf "Use %s"
+                         | x,_ -> x |> sprintf "Use %s")
             }
 
         let fmtGrp (hit: (string * seq<ScaHit>)) =
