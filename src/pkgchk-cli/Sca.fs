@@ -19,7 +19,7 @@ type ScaHit =
       advisoryUri: string
       reasons: string[]
       suggestedReplacement: string
-      alternativePackageId: string}
+      alternativePackageId: string }
 
 module ScaArgs =
 
@@ -84,7 +84,7 @@ module Sca =
                                 match tp.AlternativePackage with
                                 | Some ap -> sprintf "%s %s" ap.Id ap.VersionRange
                                 | None -> ""
-                              alternativePackageId = 
+                              alternativePackageId =
                                 match tp.AlternativePackage with
                                 | Some ap -> ap.Id
                                 | None -> ""

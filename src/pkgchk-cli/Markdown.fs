@@ -81,12 +81,12 @@ module Markdown =
                         "| %s | %s | %s %s | %s | "
                         (formatHitKind hit.kind)
                         (formatReasons hit.reasons)
-                        (nugetLinkPkgVsn hit.packageId hit.resolvedVersion )
+                        (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
                         hit.resolvedVersion
                         (match (hit.suggestedReplacement, hit.alternativePackageId) with
                          | "", _ -> ""
-                         | x,y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> sprintf "Use %s"
-                         | x,_ -> x |> sprintf "Use %s")
+                         | x, y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> sprintf "Use %s"
+                         | x, _ -> x |> sprintf "Use %s")
             }
 
         let fmtGrp (hit: (string * seq<ScaHit>)) =
