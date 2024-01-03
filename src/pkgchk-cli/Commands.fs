@@ -87,8 +87,8 @@ type PackageCheckCommand() =
                             |> Seq.collect (fun h -> seq {
                                                         h.severity
                                                         yield! h.reasons
-                                                        })
-                            |> Seq.groupBy (fun h -> h)
+                                                        } |> Seq.filter String.isNotEmpty)
+                            |> Seq.groupBy id
                             |> Seq.map (fun (s, xs) -> (kind, s, xs |> Seq.length))
                             )
 
@@ -99,12 +99,12 @@ type PackageCheckCommand() =
         
         let lines = 
             counts
-            |> Seq.map (fun (k, s, c) -> $"{k} / {s}: {c} hits." )
+            |> Seq.map (fun (k, s, c) -> $"{k} - {s}: {c} hits." )
             |> List.ofSeq
 
         if lines |> List.isEmpty |> not then                         
             "[yellow]Issues found:[/]" |> console
-            lines |> String.joinLines |> console        
+            lines |> String.joinLines |> console         
         
 
     let returnCode (hits: ScaHit list) =
