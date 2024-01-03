@@ -29,6 +29,10 @@ type PackageCheckCommandSettings() =
     [<DefaultValue("")>]
     member val OutputDirectory = "" with get, set
 
+    [<CommandOption("-l|--level")>]
+    [<Description("Levels to scan for and if found return error codes. Multiple levels can be specified.")>]
+    member val MinimumLevels : string array = [||] with get, set
+
 [<ExcludeFromCodeCoverage>]
 type PackageCheckCommand() =
     inherit Command<PackageCheckCommandSettings>()
@@ -73,9 +77,9 @@ type PackageCheckCommand() =
             | Choice1Of2 xs -> xs
             | _ -> [])
         |> List.ofSeq
-
-    let returnCode =
-        function
+            
+    let returnCode (hits: ScaHit list) =                
+        match hits with
         | [] -> ReturnCodes.validationOk
         | _ -> ReturnCodes.validationFailed
 
@@ -102,4 +106,4 @@ type PackageCheckCommand() =
             if settings.OutputDirectory <> "" then
                 hits |> genReport settings.OutputDirectory |> Console.reportFileBuilt |> console
 
-            returnCode hits
+            hits |> Sca.hitsByLevels settings.MinimumLevels |> returnCode 
