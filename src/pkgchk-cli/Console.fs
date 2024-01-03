@@ -89,10 +89,10 @@ module Console =
 
     let generate hits =
         match hits with
-        | [] -> seq { "[bold green]No vulnerabilities found.[/]" }
+        | [] -> seq { "[green]No vulnerabilities found.[/]" }
         | hits ->
             seq {
-                "[bold red]Vulnerabilities found![/]"
+                "[red]Vulnerabilities found![/]"
                 yield! formatHits hits
             }
 
