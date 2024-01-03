@@ -43,16 +43,26 @@ module Io =
 
         p
 
-    let run (proc: Process) =
-        try
+    let run log (proc: Process) =
+        
+        try    
+            log <| sprintf
+                "Running:%s%s %s" 
+                Environment.NewLine
+                proc.StartInfo.FileName
+                proc.StartInfo.Arguments
+
             if proc.Start() then
+                log "Getting response..."
                 let out = proc.StandardOutput.ReadToEnd()
-                let err = proc.StandardError.ReadToEnd()
+                let err = proc.StandardError.ReadToEnd()                
                 proc.WaitForExit()
 
                 if (String.IsNullOrWhiteSpace(err)) then
+                    log "Successfully fetched response."
                     Choice1Of2(out)
                 else
+                    log "Error detected getting response."
                     Choice2Of2(err)
             else
                 Choice2Of2("Cannot start process")
