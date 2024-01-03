@@ -15,3 +15,17 @@ module String =
 
     [<DebuggerStepThrough>]
     let isNotEmpty = isEmpty >> not
+
+    [<DebuggerStepThrough>]
+    let trim (value: string) = value.Trim()
+
+module ReturnCodes =
+
+    [<Literal>]
+    let validationOk = 0
+
+    [<Literal>]
+    let validationFailed = 1
+
+    [<Literal>]
+    let sysError = 2

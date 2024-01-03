@@ -18,7 +18,8 @@ type ScaHit =
       severity: string
       advisoryUri: string
       reasons: string[]
-      suggestedReplacement: string }
+      suggestedReplacement: string
+      alternativePackageId: string }
 
 module ScaArgs =
 
@@ -62,6 +63,7 @@ module Sca =
                                   severity = v.Severity
                                   reasons = [||]
                                   suggestedReplacement = ""
+                                  alternativePackageId = ""
                                   advisoryUri = v.Advisoryurl }))))
 
             let topLevelDeprecations =
@@ -81,6 +83,10 @@ module Sca =
                               suggestedReplacement =
                                 match tp.AlternativePackage with
                                 | Some ap -> sprintf "%s %s" ap.Id ap.VersionRange
+                                | None -> ""
+                              alternativePackageId =
+                                match tp.AlternativePackage with
+                                | Some ap -> ap.Id
                                 | None -> ""
                               reasons = tp.DeprecationReasons |> Array.ofSeq
 
@@ -103,6 +109,7 @@ module Sca =
                                   severity = v.Severity
                                   reasons = [||]
                                   suggestedReplacement = ""
+                                  alternativePackageId = ""
                                   advisoryUri = v.Advisoryurl }))))
 
             let hits =
