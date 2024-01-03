@@ -43,9 +43,9 @@ module Io =
 
         p
 
-    let run log (proc: Process) =
-        
-        try    
+    let run log (proc: Process) =                
+        try                            
+            let sw = System.Diagnostics.Stopwatch.StartNew()
             log <| sprintf
                 "Running:%s%s %s" 
                 Environment.NewLine
@@ -57,7 +57,10 @@ module Io =
                 let out = proc.StandardOutput.ReadToEnd()
                 let err = proc.StandardError.ReadToEnd()                
                 proc.WaitForExit()
-
+                
+                sw.Stop()
+                log $"Duration: {sw.ElapsedMilliseconds:N2}ms"
+                
                 if (String.IsNullOrWhiteSpace(err)) then
                     log "Successfully fetched response."
                     Choice1Of2(out)
@@ -66,5 +69,7 @@ module Io =
                     Choice2Of2(err)
             else
                 Choice2Of2("Cannot start process")
-        with ex ->
+        with ex ->            
             Choice2Of2(ex.Message)
+        
+            
