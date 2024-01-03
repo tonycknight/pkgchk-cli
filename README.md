@@ -6,9 +6,9 @@
 
 A dotnet tool for package dependency checks.
 
-`dotnet list package` is a wonderful tool, and with its `--vulnerable` switch it is essential for code provenance. If you're not famlilar with it or why it's recommended, [see this blog post](https://devblogs.microsoft.com/nuget/how-to-scan-nuget-packages-for-security-vulnerabilities/).
+`dotnet list package` is a wonderful tool, and with its `--vulnerable` switch it is essential for verifying dependencies. If you're not famlilar with it or why it's recommended, [see this blog post](https://devblogs.microsoft.com/nuget/how-to-scan-nuget-packages-for-security-vulnerabilities/).
 
-Unfortunately, simple integration into CI pipelines isn't feasible: the tool does not return a non-zero return code when vulnerabilities are found; and CI pipelines rely on return codes. Users are left to parse the tool's console output, and so must maintain different scripts for different environments.
+Unfortunately, CI pipeline integration isn't simple: the tool does not return a non-zero return code when vulnerabilities are found; and CI pipelines rely on return codes. Users are left to parse the tool's console output, and so must maintain different scripts for different environments.
 
 There are long-lived issues on the Dotnet & Nuget boards, which seem to be stuck:
 - [Dotnet issue 16852](https://github.com/dotnet/sdk/issues/16852)
@@ -43,16 +43,26 @@ To get help:
 
 ```pkgchk --help```
 
-To check for top-level dependency vulnerabilities:
+To check for top-level and transitive dependency vulnerabilities:
 
 ```pkgchk <project|solution>```
 
-To check for top-level and transitive dependency vulnerabilities:
-
-```pkgchk <project|solution> --transitive```
-
 If there's only one project or solution file in your directory, omit the `<project|solution>` argument.
 
+
+To check only for top-level dependency vulnerabilities:
+
+```pkgchk <project|solution> --transitive false```
+
+
+To produce a markdown file, simply give an output folder:
+
+```pkgchk <project|solution> --output ./reports_directory```
+
+
+By default only `High`, `Critical`, `Critical Bugs` and `Legacy` vulnerabilities and deprecations are detected. Specify the vulnerability severities (or deprecation reasons) with ``--severity`` switches, e.g.
+
+```pkgchk <project|solution> --severity Moderate --severity Legacy```
 
 ## Integration within Github actions
 
@@ -60,9 +70,10 @@ Simply:
 
 ```
 name: run SCA
-runs: |
+run: |
     dotnet tool restore
-    pkgchk <project|solution> --transitive
+    dotnet restore
+    pkgchk <project|solution>
 ```
 
 ## Integration within other CI platforms
@@ -73,7 +84,8 @@ Simply ensure your repository has `pkgchk-cli` in its tools manifest, your CI in
 
 ```
 dotnet tool restore
-pkgchk <project|solution> --transitive
+dotnet restore
+pkgchk <project|solution>
 ```
 
 

@@ -33,6 +33,11 @@ type PackageCheckCommandSettings() =
     [<Description("Severity levels to scan for. Matches will return non-zero exit codes. Multiple levels can be specified.")>]
     member val SeverityLevels: string array = [||] with get, set
 
+    [<CommandOption("--trace")>]
+    [<Description("Enable trace logging.")>]
+    [<DefaultValue(false)>]
+    member val TraceLogging = false with get, set
+
 [<ExcludeFromCodeCoverage>]
 type PackageCheckCommand() =
     inherit Command<PackageCheckCommandSettings>()
@@ -47,15 +52,15 @@ type PackageCheckCommand() =
                yield projPath |> ScaArgs.scanDeprecations settings.IncludeTransitives |]
 
 
-    let runProc proc =
+    let runProc logging proc =
         try
-            Io.run proc
+            proc |> Io.run logging
         finally
             proc.Dispose()
 
-    let runProcParse procs =
+    let runProcParse run procs =
         procs
-        |> Array.map runProc
+        |> Array.map run
         |> Array.map (function
             | Choice1Of2 json -> Sca.parse json
             | Choice2Of2 x -> Choice2Of2 x)
@@ -93,18 +98,14 @@ type PackageCheckCommand() =
             |> Seq.groupBy id
             |> Seq.map (fun (s, xs) -> (kind, s, xs |> Seq.length)))
 
-
-
-
-    let reportHitCounts counts =
+    let reportHitCounts console counts =
 
         let lines =
             counts |> Seq.map (fun (k, s, c) -> $"{k} - {s}: {c} hits.") |> List.ofSeq
 
         if lines |> List.isEmpty |> not then
-            "[yellow]Issues found:[/]" |> console
+            "Issues found:" |> console
             lines |> String.joinLines |> console
-
 
     let returnCode (hits: ScaHit list) =
         match hits with
@@ -118,9 +119,16 @@ type PackageCheckCommand() =
         hits |> Markdown.generate |> Io.writeFile reportFile
         reportFile
 
-    override _.Execute(context, settings) =
+    let trace value = $"[grey]{value}[/]" |> console
 
-        let results = settings |> genArgs |> Array.map Io.createProcess |> runProcParse
+    override _.Execute(context, settings) =
+        let logging = if settings.TraceLogging then trace else (fun _ -> ignore 0)
+
+        let results =
+            settings
+            |> genArgs
+            |> Array.map Io.createProcess
+            |> runProcParse (runProc logging)
 
         let errors = getErrors results
 
@@ -129,12 +137,13 @@ type PackageCheckCommand() =
         else
             let hits = getHits results
 
+            let errorHits = hits |> Sca.hitsByLevels settings.SeverityLevels
+
+            errorHits |> getHitCounts |> reportHitCounts logging
+
             hits |> genConsole
 
             if settings.OutputDirectory <> "" then
                 hits |> genReport settings.OutputDirectory |> Console.reportFileBuilt |> console
 
-            let errorHits = hits |> Sca.hitsByLevels settings.SeverityLevels
-
-            errorHits |> getHitCounts |> reportHitCounts
             errorHits |> returnCode
