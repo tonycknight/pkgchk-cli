@@ -32,7 +32,7 @@ type PackageCheckCommandSettings() =
 [<ExcludeFromCodeCoverage>]
 type PackageCheckCommand() =
     inherit Command<PackageCheckCommandSettings>()
-        
+
     let console = Spectre.Console.AnsiConsole.Console |> Console.send
 
     let genArgs (settings: PackageCheckCommandSettings) =

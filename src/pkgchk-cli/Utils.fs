@@ -20,7 +20,7 @@ module String =
     let trim (value: string) = value.Trim()
 
 module ReturnCodes =
-    
+
     [<Literal>]
     let validationOk = 0
 

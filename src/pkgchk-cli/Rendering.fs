@@ -4,7 +4,7 @@ module Rendering =
 
     [<Literal>]
     let nugetPrefix = "https://www.nuget.org/packages"
-        
+
     let formatHitKind =
         function
         | ScaHitKind.Vulnerability -> "Vulnerable package"
@@ -13,7 +13,7 @@ module Rendering =
     let reasonColour =
         function
         | "Critical Bugs" -> "red"
-        | "Legacy" -> "yellow" 
+        | "Legacy" -> "yellow"
         | _ -> "cyan"
 
     let severityColour =
@@ -28,17 +28,15 @@ module Rendering =
         | "Critical" -> "italic"
         | _ -> ""
 
-    let severityEmote = 
-        function        
-        | "Critical"  -> ":bangbang:"        
-        | "Moderate" 
+    let severityEmote =
+        function
+        | "Critical" -> ":bangbang:"
+        | "Moderate"
         | "" -> ""
-        | "High"        
+        | "High"
         | _ -> ":heavy_exclamation_mark:"
 
     let nugetLink (package, version) =
         match package, version with
         | p, "" -> $"{nugetPrefix}/{p}"
         | p, v -> $"{nugetPrefix}/{p}/{v}"
-
-    

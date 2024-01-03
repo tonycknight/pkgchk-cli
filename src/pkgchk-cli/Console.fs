@@ -4,15 +4,19 @@ open System
 open Spectre.Console
 
 module Console =
-    
+
     let formatReasons values =
         let formatReason value =
             let colour = Rendering.reasonColour value
-            $"[{colour}]{value}[/]"            
+            $"[{colour}]{value}[/]"
+
         values |> Seq.map formatReason |> String.join ", "
 
     let formatSeverity value =
-        let code = $"{Rendering.severityStyle value} {Rendering.severityColour value}" |> String.trim
+        let code =
+            $"{Rendering.severityStyle value} {Rendering.severityColour value}"
+            |> String.trim
+
         sprintf "[%s]%s[/]" code value
 
     let nugetLinkPkgVsn package version =

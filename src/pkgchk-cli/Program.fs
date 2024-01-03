@@ -6,7 +6,7 @@ open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]
 module Program =
-    
+
     let send = Console.send AnsiConsole.Console
 
     [<EntryPoint>]

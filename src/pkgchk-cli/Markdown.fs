@@ -5,16 +5,17 @@ module Markdown =
     let formatSeverity value =
         $"{Rendering.severityEmote value} <span style='color:{Rendering.severityColour value}'>{value}</span>"
 
-    let nugetLinkPkgVsn package version =        
+    let nugetLinkPkgVsn package version =
         $"[{package}]({Rendering.nugetLink (package, version)})"
 
     let nugetLinkPkgSuggestion package suggestion =
         let url = Rendering.nugetLink (package, "")
         $"[{suggestion}]({url})"
-        
+
     let formatReasons values =
         let formatReason value =
             $"<span style='color:{Rendering.reasonColour value}'>{value}</span>"
+
         values |> Seq.map formatReason |> String.join ", "
 
     let formatProject value = sprintf "## **%s**" value
