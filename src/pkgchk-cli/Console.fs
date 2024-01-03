@@ -6,35 +6,16 @@ open Spectre.Console
 module Console =
 
     [<Literal>]
-    let validationOk = 0
-
-    [<Literal>]
-    let validationFailed = 1
-
-    [<Literal>]
     let sysError = 2
-
-    let formatHitKind =
-        function
-        | ScaHitKind.Vulnerability -> "Vulnerable package"
-        | ScaHitKind.Deprecated -> "Deprecated package"
 
     let formatReasons values =
         let formatReason value =
-            match value with
-            | "Legacy" -> sprintf "[yellow]%s[/]" value
-            | "Other" -> value
-            | _ -> sprintf "[red]%s[/]" value
-
+            let colour = Rendering.reasonColour value
+            $"[{colour}]{value}[/]"            
         values |> Seq.map formatReason |> String.join ", "
 
     let formatSeverity value =
-        let code =
-            match value with
-            | "High" -> "red"
-            | "Critical" -> "italic red"
-            | "Moderate" -> "#d75f00"
-            | _ -> "yellow"
+        let code = $"{Rendering.severityStyle value} {Rendering.severityColour value}" |> String.trim
 
         sprintf "[%s]%s[/]" code value
 
@@ -56,14 +37,14 @@ module Console =
                 | ScaHitKind.Vulnerability ->
                     sprintf
                         "%s: %s - [cyan]%s[/] version [cyan]%s[/]"
-                        (formatHitKind hit.kind)
+                        (Rendering.formatHitKind hit.kind)
                         (formatSeverity hit.severity)
                         (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
                         hit.resolvedVersion
                 | ScaHitKind.Deprecated ->
                     sprintf
                         "%s: [cyan]%s[/] version [cyan]%s[/]"
-                        (formatHitKind hit.kind)
+                        (Rendering.formatHitKind hit.kind)
                         (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
                         hit.resolvedVersion
 
@@ -106,15 +87,14 @@ module Console =
         let grps = hits |> Seq.groupBy (fun h -> h.projectPath) |> Seq.sortBy fst
         (grps |> Seq.collect fmtGrp)
 
-    let noVulnerabilities () =
-        "[bold green]No vulnerabilities found.[/]"
-
-    let vulnerabilities hits =
-        seq {
-            "[bold red]Vulnerabilities found![/]"
-            yield! formatHits hits
-        }
-        |> String.joinLines
+    let generate hits =
+        match hits with
+        | [] -> seq { "[bold green]No vulnerabilities found.[/]" }
+        | hits ->
+            seq {
+                "[bold red]Vulnerabilities found![/]"
+                yield! formatHits hits
+            }
 
     let error (error: string) = sprintf "[red]%s[/]" error
 

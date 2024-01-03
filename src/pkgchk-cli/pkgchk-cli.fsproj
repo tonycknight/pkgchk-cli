@@ -21,6 +21,7 @@
     <Compile Include="Utils.fs" />
     <Compile Include="Sca.fs" />
     <Compile Include="Io.fs" />
+    <Compile Include="Rendering.fs" />
     <Compile Include="Console.fs" />
     <Compile Include="Markdown.fs" />
     <Compile Include="Commands.fs" />

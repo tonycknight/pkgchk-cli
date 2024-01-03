@@ -1,41 +1,20 @@
 ﻿namespace pkgchk
 
-open System
-
 module Markdown =
 
-    let formatHitKind (value: ScaHitKind) =
-        match value with
-        | ScaHitKind.Vulnerability -> "Vulnerable package"
-        | ScaHitKind.Deprecated -> "Deprecated package"
-
     let formatSeverity value =
-        let (emote, colour) =
-            match value with
-            | "High" -> (":bangbang:", "red")
-            | "Critical" -> (":heavy_exclamation_mark:", "red")
-            | "Moderate" -> (":heavy_exclamation_mark:", "orange")
-            | "" -> ("", "")
-            | _ -> (":heavy_exclamation_mark:", "yellow")
+        $"{Rendering.severityEmote value} <span style='color:{Rendering.severityColour value}'>{value}</span>"
 
-        sprintf "%s <span style='color:%s'>%s</span>" emote colour value
-
-    let nugetLinkPkgVsn package version =
-        $"[{package}](https://www.nuget.org/packages/{package}/{version})"
+    let nugetLinkPkgVsn package version =        
+        $"[{package}]({Rendering.nugetLink (package, version)})"
 
     let nugetLinkPkgSuggestion package suggestion =
-        $"[{suggestion}](https://www.nuget.org/packages/{package})"
-
+        let url = Rendering.nugetLink (package, "")
+        $"[{suggestion}]({url})"
+        
     let formatReasons values =
         let formatReason value =
-            let colour =
-                function
-                | "Legacy" -> "yellow"
-                | "Critical Bugs" -> "red"
-                | _ -> ""
-
-            sprintf "<span style='color:%s'>%s</span>" (colour value) value
-
+            $"<span style='color:{Rendering.reasonColour value}'>{value}</span>"
         values |> Seq.map formatReason |> String.join ", "
 
     let formatProject value = sprintf "## **%s**" value
@@ -71,7 +50,7 @@ module Markdown =
                 | ScaHitKind.Vulnerability ->
                     sprintf
                         "| %s | %s | %s %s | [Advisory](%s) | "
-                        (formatHitKind hit.kind)
+                        (Rendering.formatHitKind hit.kind)
                         (formatSeverity hit.severity)
                         (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
                         hit.resolvedVersion
@@ -79,7 +58,7 @@ module Markdown =
                 | ScaHitKind.Deprecated ->
                     sprintf
                         "| %s | %s | %s %s | %s | "
-                        (formatHitKind hit.kind)
+                        (Rendering.formatHitKind hit.kind)
                         (formatReasons hit.reasons)
                         (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
                         hit.resolvedVersion
@@ -108,3 +87,8 @@ module Markdown =
             }
 
         footer |> Seq.append (grps |> Seq.collect fmtGrp) |> Seq.append hdr
+
+    let generate hits =
+        match hits with
+        | [] -> formatNoHits ()
+        | hits -> hits |> formatHits

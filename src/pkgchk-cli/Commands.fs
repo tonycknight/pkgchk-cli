@@ -22,7 +22,7 @@ type PackageCheckCommandSettings() =
     [<CommandOption("--deprecated")>]
     [<Description("Check deprecated packagess. -d true to include, -d false to exclude.")>]
     [<DefaultValue(false)>]
-    member val IncludeDeprecations = true with get, set
+    member val IncludeDeprecations = false with get, set
 
     [<CommandOption("-o|--output")>]
     [<Description("Output directory for reports.")>]
@@ -32,6 +32,12 @@ type PackageCheckCommandSettings() =
 [<ExcludeFromCodeCoverage>]
 type PackageCheckCommand() =
     inherit Command<PackageCheckCommandSettings>()
+
+    [<Literal>]
+    let validationOk = 0
+
+    [<Literal>]
+    let validationFailed = 1
 
     let console = Spectre.Console.AnsiConsole.Console |> Console.send
 
@@ -52,8 +58,7 @@ type PackageCheckCommand() =
     let runProcParse procs =
         procs
         |> Array.map runProc
-        |> Array.map (fun r ->
-            match r with
+        |> Array.map (function
             | Choice1Of2 json -> Sca.parse json
             | Choice2Of2 x -> Choice2Of2 x)
 
@@ -77,22 +82,14 @@ type PackageCheckCommand() =
 
     let returnCode =
         function
-        | [] -> Console.validationOk
-        | _ -> Console.validationFailed
+        | [] -> validationOk
+        | _ -> validationFailed
 
-    let genConsole =
-        function
-        | [] -> Console.noVulnerabilities () |> console
-        | hits -> hits |> Console.vulnerabilities |> console
-
-    let genMarkdown =
-        function
-        | [] -> Markdown.formatNoHits ()
-        | hits -> hits |> Markdown.formatHits
+    let genConsole = Console.generate >> String.joinLines >> console
 
     let genReport outDir hits =
         let reportFile = outDir |> Io.toFullPath |> Io.combine "pkgchk.md" |> Io.normalise
-        hits |> genMarkdown |> Io.writeFile reportFile
+        hits |> Markdown.generate |> Io.writeFile reportFile
         reportFile
 
     override _.Execute(context, settings) =

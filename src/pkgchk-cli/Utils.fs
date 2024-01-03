@@ -15,3 +15,6 @@ module String =
 
     [<DebuggerStepThrough>]
     let isNotEmpty = isEmpty >> not
+
+    [<DebuggerStepThrough>]
+    let trim (value: string) = value.Trim()
