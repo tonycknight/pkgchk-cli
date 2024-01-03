@@ -122,11 +122,7 @@ type PackageCheckCommand() =
     let trace value = $"[grey]{value}[/]" |> console
 
     override _.Execute(context, settings) =
-        let logging =
-            if settings.TraceLogging then
-                trace
-            else
-                (fun _ -> ignore 0)
+        let logging = if settings.TraceLogging then trace else (fun _ -> ignore 0)
 
         let results =
             settings
