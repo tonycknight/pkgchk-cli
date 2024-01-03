@@ -119,15 +119,20 @@ type PackageCheckCommand() =
         hits |> Markdown.generate |> Io.writeFile reportFile
         reportFile
 
-    let trace value =
-        $"[grey]{value}[/]" |> console
+    let trace value = $"[grey]{value}[/]" |> console
 
     override _.Execute(context, settings) =
         let logging =
-            if settings.VerboseLogging then trace
-            else (fun _ -> ignore 0)
-                
-        let results = settings |> genArgs |> Array.map Io.createProcess |> runProcParse (runProc logging)
+            if settings.VerboseLogging then
+                trace
+            else
+                (fun _ -> ignore 0)
+
+        let results =
+            settings
+            |> genArgs
+            |> Array.map Io.createProcess
+            |> runProcParse (runProc logging)
 
         let errors = getErrors results
 
@@ -144,5 +149,5 @@ type PackageCheckCommand() =
 
             if settings.OutputDirectory <> "" then
                 hits |> genReport settings.OutputDirectory |> Console.reportFileBuilt |> console
-                            
+
             errorHits |> returnCode
