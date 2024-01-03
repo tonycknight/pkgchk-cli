@@ -1,0 +1,12 @@
+ci/cd:
+  - .github/**
+
+app:
+  - src/**
+
+tests:
+  - tests/**
+
+documentation:
+  - README.md
+  - ./*.md
