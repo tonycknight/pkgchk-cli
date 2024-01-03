@@ -29,3 +29,10 @@ module ReturnCodes =
 
     [<Literal>]
     let sysError = 2
+
+module HashSet =
+    open System.Collections.Generic
+
+    let ofSeq<'a> (comparer: IEqualityComparer<'a>) (values: seq<'a>) = new HashSet<'a>(values, comparer)
+
+    let contains<'a> (hashSet: HashSet<'a>) = hashSet.Contains

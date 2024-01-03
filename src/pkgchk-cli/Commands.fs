@@ -29,6 +29,10 @@ type PackageCheckCommandSettings() =
     [<DefaultValue("")>]
     member val OutputDirectory = "" with get, set
 
+    [<CommandOption("-s|--severity")>]
+    [<Description("Severity levels to scan for. Matches will return non-zero exit codes. Multiple levels can be specified.")>]
+    member val SeverityLevels: string array = [||] with get, set
+
 [<ExcludeFromCodeCoverage>]
 type PackageCheckCommand() =
     inherit Command<PackageCheckCommandSettings>()
@@ -74,8 +78,36 @@ type PackageCheckCommand() =
             | _ -> [])
         |> List.ofSeq
 
-    let returnCode =
-        function
+    let getHitCounts (hits: ScaHit list) =
+
+        hits
+        |> Seq.groupBy (fun h -> h.kind)
+        |> Seq.collect (fun (kind, hs) ->
+            hs
+            |> Seq.collect (fun h ->
+                seq {
+                    h.severity
+                    yield! h.reasons
+                }
+                |> Seq.filter String.isNotEmpty)
+            |> Seq.groupBy id
+            |> Seq.map (fun (s, xs) -> (kind, s, xs |> Seq.length)))
+
+
+
+
+    let reportHitCounts counts =
+
+        let lines =
+            counts |> Seq.map (fun (k, s, c) -> $"{k} - {s}: {c} hits.") |> List.ofSeq
+
+        if lines |> List.isEmpty |> not then
+            "[yellow]Issues found:[/]" |> console
+            lines |> String.joinLines |> console
+
+
+    let returnCode (hits: ScaHit list) =
+        match hits with
         | [] -> ReturnCodes.validationOk
         | _ -> ReturnCodes.validationFailed
 
@@ -102,4 +134,7 @@ type PackageCheckCommand() =
             if settings.OutputDirectory <> "" then
                 hits |> genReport settings.OutputDirectory |> Console.reportFileBuilt |> console
 
-            returnCode hits
+            let errorHits = hits |> Sca.hitsByLevels settings.SeverityLevels
+
+            errorHits |> getHitCounts |> reportHitCounts
+            errorHits |> returnCode
