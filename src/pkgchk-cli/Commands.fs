@@ -33,10 +33,10 @@ type PackageCheckCommandSettings() =
     [<Description("Severity levels to scan for. Matches will return non-zero exit codes. Multiple levels can be specified.")>]
     member val SeverityLevels: string array = [||] with get, set
 
-    [<CommandOption("--verbose")>]
-    [<Description("Use verbose logging.")>]
+    [<CommandOption("--trace")>]
+    [<Description("Enable trace logging.")>]
     [<DefaultValue(false)>]
-    member val VerboseLogging = false with get, set
+    member val TraceLogging = false with get, set
 
 [<ExcludeFromCodeCoverage>]
 type PackageCheckCommand() =
@@ -123,7 +123,7 @@ type PackageCheckCommand() =
 
     override _.Execute(context, settings) =
         let logging =
-            if settings.VerboseLogging then
+            if settings.TraceLogging then
                 trace
             else
                 (fun _ -> ignore 0)
