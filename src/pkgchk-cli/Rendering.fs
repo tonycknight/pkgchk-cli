@@ -2,6 +2,9 @@
 
 module Rendering =
 
+    [<Literal>]
+    let nugetPrefix = "https://www.nuget.org/packages"
+        
     let formatHitKind =
         function
         | ScaHitKind.Vulnerability -> "Vulnerable package"
@@ -27,15 +30,15 @@ module Rendering =
 
     let severityEmote = 
         function        
-        | "High" -> ":bangbang:"
-        | "Critical" -> ":heavy_exclamation_mark:"
-        | "Moderate" -> ":heavy_exclamation_mark:"
+        | "Critical"  -> ":bangbang:"        
+        | "Moderate" 
         | "" -> ""
+        | "High"        
         | _ -> ":heavy_exclamation_mark:"
 
     let nugetLink (package, version) =
         match package, version with
-        | p, "" -> $"https://www.nuget.org/packages/{p}"
-        | p, v -> $"https://www.nuget.org/packages/{p}/{v}"
+        | p, "" -> $"{nugetPrefix}/{p}"
+        | p, v -> $"{nugetPrefix}/{p}/{v}"
 
     

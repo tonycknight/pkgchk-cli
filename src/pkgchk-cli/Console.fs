@@ -4,10 +4,7 @@ open System
 open Spectre.Console
 
 module Console =
-
-    [<Literal>]
-    let sysError = 2
-
+    
     let formatReasons values =
         let formatReason value =
             let colour = Rendering.reasonColour value
@@ -16,7 +13,6 @@ module Console =
 
     let formatSeverity value =
         let code = $"{Rendering.severityStyle value} {Rendering.severityColour value}" |> String.trim
-
         sprintf "[%s]%s[/]" code value
 
     let nugetLinkPkgVsn package version =

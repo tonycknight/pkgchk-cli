@@ -6,6 +6,7 @@ open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]
 module Program =
+    
     let send = Console.send AnsiConsole.Console
 
     [<EntryPoint>]
@@ -20,4 +21,4 @@ module Program =
             app.Run(argv)
         with ex ->
             ex.Message |> Console.error |> send
-            Console.sysError
+            ReturnCodes.sysError

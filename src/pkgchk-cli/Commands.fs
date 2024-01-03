@@ -32,13 +32,7 @@ type PackageCheckCommandSettings() =
 [<ExcludeFromCodeCoverage>]
 type PackageCheckCommand() =
     inherit Command<PackageCheckCommandSettings>()
-
-    [<Literal>]
-    let validationOk = 0
-
-    [<Literal>]
-    let validationFailed = 1
-
+        
     let console = Spectre.Console.AnsiConsole.Console |> Console.send
 
     let genArgs (settings: PackageCheckCommandSettings) =
@@ -64,7 +58,7 @@ type PackageCheckCommand() =
 
     let returnError error =
         error |> Console.error |> console
-        Console.sysError
+        ReturnCodes.sysError
 
     let getErrors procResults =
         procResults
@@ -82,8 +76,8 @@ type PackageCheckCommand() =
 
     let returnCode =
         function
-        | [] -> validationOk
-        | _ -> validationFailed
+        | [] -> ReturnCodes.validationOk
+        | _ -> ReturnCodes.validationFailed
 
     let genConsole = Console.generate >> String.joinLines >> console
 
