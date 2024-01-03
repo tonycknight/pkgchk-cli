@@ -78,6 +78,35 @@ type PackageCheckCommand() =
             | _ -> [])
         |> List.ofSeq
 
+    let getHitCounts (hits: ScaHit list) =
+        
+        hits 
+            |> Seq.groupBy (fun h -> h.kind)
+            |> Seq.collect (fun (kind, hs) -> 
+                            hs
+                            |> Seq.collect (fun h -> seq {
+                                                        h.severity
+                                                        yield! h.reasons
+                                                        })
+                            |> Seq.groupBy (fun h -> h)
+                            |> Seq.map (fun (s, xs) -> (kind, s, xs |> Seq.length))
+                            )
+
+        
+        
+            
+    let reportHitCounts counts =
+        
+        let lines = 
+            counts
+            |> Seq.map (fun (k, s, c) -> $"{k} / {s}: {c} hits." )
+            |> List.ofSeq
+
+        if lines |> List.isEmpty |> not then                         
+            "[yellow]Issues found:[/]" |> console
+            lines |> String.joinLines |> console        
+        
+
     let returnCode (hits: ScaHit list) =
         match hits with
         | [] -> ReturnCodes.validationOk
@@ -106,4 +135,7 @@ type PackageCheckCommand() =
             if settings.OutputDirectory <> "" then
                 hits |> genReport settings.OutputDirectory |> Console.reportFileBuilt |> console
 
-            hits |> Sca.hitsByLevels settings.SeverityLevels |> returnCode
+            let errorHits = hits |> Sca.hitsByLevels settings.SeverityLevels 
+            
+            errorHits |> getHitCounts |> reportHitCounts
+            errorHits |> returnCode
