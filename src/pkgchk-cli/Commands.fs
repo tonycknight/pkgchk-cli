@@ -29,9 +29,9 @@ type PackageCheckCommandSettings() =
     [<DefaultValue("")>]
     member val OutputDirectory = "" with get, set
 
-    [<CommandOption("-l|--level")>]
-    [<Description("Levels to scan for and if found return error codes. Multiple levels can be specified.")>]
-    member val MinimumLevels: string array = [||] with get, set
+    [<CommandOption("-s|--severity")>]
+    [<Description("Severity levels to scan for. Matches will return non-zero exit codes. Multiple levels can be specified.")>]
+    member val SeverityLevels: string array = [||] with get, set
 
 [<ExcludeFromCodeCoverage>]
 type PackageCheckCommand() =
@@ -106,4 +106,4 @@ type PackageCheckCommand() =
             if settings.OutputDirectory <> "" then
                 hits |> genReport settings.OutputDirectory |> Console.reportFileBuilt |> console
 
-            hits |> Sca.hitsByLevels settings.MinimumLevels |> returnCode
+            hits |> Sca.hitsByLevels settings.SeverityLevels |> returnCode
