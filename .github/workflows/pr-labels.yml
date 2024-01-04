@@ -1,0 +1,33 @@
+name: Pull Request Labeling
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  pr-scope:
+    name: Set PR scope
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/labeler@v5
+        name: Set label
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+
+  size-label:
+    name: Set change size
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set label
+        uses: "pascalgn/size-label-action@v0.5.0"
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        with:
+          sizes: >
+            {
+              "0": "XS",
+              "10": "S",
+              "20": "M",
+              "50": "L",
+              "100": "XL"
+            }

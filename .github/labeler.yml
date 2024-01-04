@@ -1,0 +1,31 @@
+ci/cd:
+- all:
+  - changed-files:
+    - any-glob-to-any-file: '.github/**'
+
+app:
+- all:
+  - changed-files:
+    - any-glob-to-any-file: 'src/**/*'
+
+tests:
+- all:
+  - changed-files:
+    - any-glob-to-any-file: 'tests/**/**/*'  
+
+documentation:
+- all:
+  - changed-files:
+    - any-glob-to-any-file: ['*.md*', '**/*.md*']
+
+feature:
+- head-branch: ['^feature', 'feature']
+
+chore:
+- head-branch: ['^chore', 'chore']
+
+bugfix:
+- head-branch: ['^bugfix', 'bugfix']
+
+experiment:
+- head-branch: ['^experiment', 'experiment']
