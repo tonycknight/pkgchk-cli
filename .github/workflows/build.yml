@@ -182,7 +182,7 @@ jobs:
     name: gh release
     runs-on: ubuntu-latest
     needs: [ nuget-release ]    
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && false # temporary
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' 
 
     steps:    
       - uses: actions/checkout@v3
