@@ -4,8 +4,9 @@ open System
 open System.Diagnostics
 open FsUnit.Xunit
 open Xunit
+open Xunit.Abstractions
 
-module IntegrationTests =
+type IntegrationTests(output: ITestOutputHelper) =
 
     [<Literal>]
     let httpPackage = "System.Net.Http"
@@ -46,7 +47,13 @@ module IntegrationTests =
         sprintf "dotnet add ./%s/testproj.csproj package %s -v 5.3.0" outDir aadPackage
 
     let runPkgChkArgs outDir =
-        sprintf "dotnet pkgchk-cli.dll ./%s/testproj.csproj --transitive true --deprecated true" outDir
+        sprintf "dotnet pkgchk-cli.dll ./%s/testproj.csproj --transitive true --deprecated true --trace " outDir
+
+    let runPkgChkSeverityArgs outDir (severities: seq<string>) =
+        let severityArgs =
+            severities |> Seq.map (sprintf "--severity %s") |> pkgchk.String.join " "
+
+        $"{runPkgChkArgs outDir} {severityArgs}"
 
     let createProc cmd =
         let (exec, args) = cmdArgs cmd
@@ -61,6 +68,12 @@ module IntegrationTests =
         proc.StartInfo.RedirectStandardOutput <- true
         proc
 
+    let logProcArgs (proc: Process) =
+        $"Running command:{Environment.NewLine}{proc.StartInfo.FileName} {proc.StartInfo.Arguments}"
+        |> output.WriteLine
+
+        proc
+
     let executeProc (proc: Process) =
         let ok = proc.Start()
 
@@ -73,6 +86,15 @@ module IntegrationTests =
 
         (proc.ExitCode, out, err)
 
+    let logExecution (rc, out, err) =
+        if out <> "" then
+            $"Output:{Environment.NewLine}{out}" |> output.WriteLine
+
+        if err <> "" then
+            $"Error:{Environment.NewLine}{out}" |> output.WriteLine
+
+        (rc, out, err)
+
     let assertSuccessfulExecution (rc, out, err) =
         rc |> should equal 0
         out |> should not' (be NullOrEmptyString)
@@ -81,15 +103,21 @@ module IntegrationTests =
     let assertSuccessfulPkgChk (rc, out, err) =
         rc |> should equal 0
         out |> should not' (be NullOrEmptyString)
-        out |> should haveSubstring "No vulnerabilities found."
         err |> should be NullOrEmptyString
         (rc, out, err)
 
     let assertFailedPkgChk (rc, out, err) =
         rc |> should equal 1
         out |> should not' (be NullOrEmptyString)
-        out |> should haveSubstring "Vulnerabilities found!"
         err |> should be NullOrEmptyString
+        (rc, out, err)
+
+    let assertTitleShowsVulnerabilities (rc, out, err) =
+        out |> should haveSubstring "Vulnerabilities found!"
+        (rc, out, err)
+
+    let assertTitleShowsNoVulnerabilities (rc, out, err) =
+        out |> should haveSubstring "No vulnerabilities found."
         (rc, out, err)
 
     let assertPackagesFound (hits: string list) (rc, out, err) =
@@ -100,11 +128,22 @@ module IntegrationTests =
         misses |> Seq.iter (fun h -> out |> should not' (haveSubstring h))
         (rc, out, err)
 
-    let execSuccess = createProc >> executeProc >> assertSuccessfulExecution
+    let execSuccess =
+        createProc
+        >> logProcArgs
+        >> executeProc
+        >> logExecution
+        >> assertSuccessfulExecution
 
-    let execFailedPkgChk = createProc >> executeProc >> assertFailedPkgChk
+    let execFailedPkgChk =
+        createProc >> logProcArgs >> executeProc >> logExecution >> assertFailedPkgChk
 
-    let execSuccessPkgChk = createProc >> executeProc >> assertSuccessfulPkgChk
+    let execSuccessPkgChk =
+        createProc
+        >> logProcArgs
+        >> executeProc
+        >> logExecution
+        >> assertSuccessfulPkgChk
 
     [<Fact>]
     let ``Vanilla project returns OK`` () =
@@ -115,6 +154,7 @@ module IntegrationTests =
 
         runPkgChkArgs outDir
         |> execSuccessPkgChk
+        |> assertTitleShowsNoVulnerabilities
         |> assertPackagesNotFound [ httpPackage; regexPackage ]
 
     [<Fact>]
@@ -130,6 +170,7 @@ module IntegrationTests =
 
         runPkgChkArgs outDir
         |> execFailedPkgChk
+        |> assertTitleShowsVulnerabilities
         |> assertPackagesFound [ httpPackage; regexPackage ]
 
 
@@ -146,6 +187,7 @@ module IntegrationTests =
 
         runPkgChkArgs outDir
         |> execSuccessPkgChk
+        |> assertTitleShowsNoVulnerabilities
         |> assertPackagesNotFound [ httpPackage; regexPackage ]
 
     [<Fact>]
@@ -161,6 +203,7 @@ module IntegrationTests =
 
         runPkgChkArgs outDir
         |> execFailedPkgChk
+        |> assertTitleShowsVulnerabilities
         |> assertPackagesFound [ httpPackage ]
         |> assertPackagesNotFound [ regexPackage ]
 
@@ -173,7 +216,11 @@ module IntegrationTests =
 
         addDeprecatedAadPackageArgs outDir |> execSuccess
 
-        runPkgChkArgs outDir |> execFailedPkgChk |> assertPackagesFound [ aadPackage ]
+        runPkgChkArgs outDir
+        |> execFailedPkgChk
+        |> assertTitleShowsVulnerabilities
+        |> assertPackagesFound [ aadPackage ]
+
 
     [<Fact>]
     let ``Project with mixed vulnerable / good / deprecated packages returns Error`` () =
@@ -190,5 +237,47 @@ module IntegrationTests =
 
         runPkgChkArgs outDir
         |> execFailedPkgChk
+        |> assertTitleShowsVulnerabilities
+        |> assertPackagesFound [ httpPackage; aadPackage ]
+        |> assertPackagesNotFound [ regexPackage ]
+
+    [<Fact>]
+    let ``Project with mixed vulnerable / good / deprecated packages with unknown severity returns Ok`` () =
+
+        let outDir = getOutDir ()
+
+        createProjectArgs outDir |> execSuccess
+
+        addGoodRegexPackageArgs outDir |> execSuccess
+
+        addBadHttpPackageArgs outDir |> execSuccess
+
+        addDeprecatedAadPackageArgs outDir |> execSuccess
+
+        [ "test" ]
+        |> runPkgChkSeverityArgs outDir
+        |> execSuccessPkgChk
+        |> assertTitleShowsVulnerabilities
+        |> assertPackagesFound [ httpPackage; aadPackage ]
+        |> assertPackagesNotFound [ regexPackage ]
+
+
+    [<Fact>]
+    let ``Project with mixed vulnerable / good / deprecated packages with known severity returns Error`` () =
+
+        let outDir = getOutDir ()
+
+        createProjectArgs outDir |> execSuccess
+
+        addGoodRegexPackageArgs outDir |> execSuccess
+
+        addBadHttpPackageArgs outDir |> execSuccess
+
+        addDeprecatedAadPackageArgs outDir |> execSuccess
+
+        [ "high"; "legacy" ]
+        |> runPkgChkSeverityArgs outDir
+        |> execFailedPkgChk
+        |> assertTitleShowsVulnerabilities
         |> assertPackagesFound [ httpPackage; aadPackage ]
         |> assertPackagesNotFound [ regexPackage ]

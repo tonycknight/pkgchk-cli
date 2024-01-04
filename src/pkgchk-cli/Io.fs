@@ -47,8 +47,7 @@ module Io =
         try
             let sw = System.Diagnostics.Stopwatch.StartNew()
 
-            log
-            <| sprintf "Running:%s%s %s" Environment.NewLine proc.StartInfo.FileName proc.StartInfo.Arguments
+            log $"Running command:{Environment.NewLine}{proc.StartInfo.FileName} {proc.StartInfo.Arguments}"
 
             if proc.Start() then
                 log "Getting response..."
