@@ -60,6 +60,11 @@ To produce a markdown file, simply give an output folder:
 ```pkgchk <project|solution> --output ./reports_directory```
 
 
+Project restores occur automatically. To suppress:
+
+```pkgchk <project|solution> --no-restore```
+
+
 By default only `High`, `Critical`, `Critical Bugs` and `Legacy` vulnerabilities and deprecations are detected. Specify the vulnerability severities (or deprecation reasons) with ``--severity`` switches, e.g.
 
 ```pkgchk <project|solution> --severity Moderate --severity Legacy```
