@@ -6,7 +6,7 @@ open FsUnit.Xunit
 open Xunit
 open Xunit.Abstractions
 
-type  IntegrationTests(output:ITestOutputHelper) =
+type IntegrationTests(output: ITestOutputHelper) =
 
     [<Literal>]
     let httpPackage = "System.Net.Http"
@@ -50,8 +50,10 @@ type  IntegrationTests(output:ITestOutputHelper) =
         sprintf "dotnet pkgchk-cli.dll ./%s/testproj.csproj --transitive true --deprecated true --trace " outDir
 
     let runPkgChkSeverityArgs outDir (severities: seq<string>) =
-        let severityArgs = severities |> Seq.map (sprintf "--severity %s") |> pkgchk.String.join " "
-        $"{runPkgChkArgs outDir} {severityArgs}"        
+        let severityArgs =
+            severities |> Seq.map (sprintf "--severity %s") |> pkgchk.String.join " "
+
+        $"{runPkgChkArgs outDir} {severityArgs}"
 
     let createProc cmd =
         let (exec, args) = cmdArgs cmd
@@ -67,12 +69,12 @@ type  IntegrationTests(output:ITestOutputHelper) =
         proc
 
     let logProcArgs (proc: Process) =
-        // TODO: log the proc's arguments
         $"Running command:{Environment.NewLine}{proc.StartInfo.FileName} {proc.StartInfo.Arguments}"
-            |> output.WriteLine
+        |> output.WriteLine
+
         proc
 
-    let executeProc (proc: Process) =        
+    let executeProc (proc: Process) =
         let ok = proc.Start()
 
         if not ok then
@@ -87,8 +89,10 @@ type  IntegrationTests(output:ITestOutputHelper) =
     let logExecution (rc, out, err) =
         if out <> "" then
             $"Output:{Environment.NewLine}{out}" |> output.WriteLine
+
         if err <> "" then
             $"Error:{Environment.NewLine}{out}" |> output.WriteLine
+
         (rc, out, err)
 
     let assertSuccessfulExecution (rc, out, err) =
@@ -113,7 +117,7 @@ type  IntegrationTests(output:ITestOutputHelper) =
         (rc, out, err)
 
     let assertTitleShowsNoVulnerabilities (rc, out, err) =
-        out |> should haveSubstring "No vulnerabilities found."        
+        out |> should haveSubstring "No vulnerabilities found."
         (rc, out, err)
 
     let assertPackagesFound (hits: string list) (rc, out, err) =
@@ -124,11 +128,22 @@ type  IntegrationTests(output:ITestOutputHelper) =
         misses |> Seq.iter (fun h -> out |> should not' (haveSubstring h))
         (rc, out, err)
 
-    let execSuccess = createProc >> logProcArgs >> executeProc >> logExecution >> assertSuccessfulExecution
+    let execSuccess =
+        createProc
+        >> logProcArgs
+        >> executeProc
+        >> logExecution
+        >> assertSuccessfulExecution
 
-    let execFailedPkgChk = createProc >> logProcArgs >> executeProc >> logExecution >> assertFailedPkgChk
+    let execFailedPkgChk =
+        createProc >> logProcArgs >> executeProc >> logExecution >> assertFailedPkgChk
 
-    let execSuccessPkgChk = createProc >> logProcArgs >> executeProc >> logExecution >> assertSuccessfulPkgChk
+    let execSuccessPkgChk =
+        createProc
+        >> logProcArgs
+        >> executeProc
+        >> logExecution
+        >> assertSuccessfulPkgChk
 
     [<Fact>]
     let ``Vanilla project returns OK`` () =
@@ -201,11 +216,11 @@ type  IntegrationTests(output:ITestOutputHelper) =
 
         addDeprecatedAadPackageArgs outDir |> execSuccess
 
-        runPkgChkArgs outDir 
-        |> execFailedPkgChk 
+        runPkgChkArgs outDir
+        |> execFailedPkgChk
         |> assertTitleShowsVulnerabilities
         |> assertPackagesFound [ aadPackage ]
-        
+
 
     [<Fact>]
     let ``Project with mixed vulnerable / good / deprecated packages returns Error`` () =
