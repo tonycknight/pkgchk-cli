@@ -1,12 +1,19 @@
 ci/cd:
-  - .github/**
+- all:
+  - changed-files:
+    - any-glob-to-any-file: '.github/**'
 
 app:
-  - src/**
+- all:
+  - changed-files:
+    - any-glob-to-any-file: 'src/**/*'
 
 tests:
-  - tests/**
+- all:
+  - changed-files:
+    - any-glob-to-any-file: 'tests/**/**/*'  
 
 documentation:
-  - README.md
-  - ./*.md
+- all:
+  - changed-files:
+    - any-glob-to-any-file: ['*.md*', '**/*.md*']
