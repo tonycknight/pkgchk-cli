@@ -26,3 +26,6 @@ chore:
 
  bugfix:
  - head-branch: ['^bugfix', 'bugfix']
+
+ experiment:
+ - head-branch: ['^experiment', 'experiment']
