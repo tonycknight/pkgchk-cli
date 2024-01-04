@@ -38,13 +38,21 @@ type PackageCheckCommandSettings() =
     [<DefaultValue(false)>]
     member val TraceLogging = false with get, set
 
+    [<CommandOption("--no-restore")>]
+    [<Description("Don't automatically restore packages.")>]
+    [<DefaultValue(false)>]
+    member val NoRestore = false with get, set
+
 [<ExcludeFromCodeCoverage>]
 type PackageCheckCommand() =
     inherit Command<PackageCheckCommandSettings>()
 
     let console = Spectre.Console.AnsiConsole.Console |> Console.send
 
-    let genArgs (settings: PackageCheckCommandSettings) =
+    let genRestoreArgs (settings: PackageCheckCommandSettings) =
+        settings.ProjectPath |> Io.toFullPath |> sprintf "restore %s"
+
+    let genScanArgs (settings: PackageCheckCommandSettings) =
         let projPath = settings.ProjectPath |> Io.toFullPath
 
         [| yield projPath |> ScaArgs.scanVulnerabilities settings.IncludeTransitives
@@ -58,7 +66,24 @@ type PackageCheckCommand() =
         finally
             proc.Dispose()
 
-    let runProcParse run procs =
+    let runRestore (settings: PackageCheckCommandSettings) logging =
+        if settings.NoRestore then
+            Choice1Of2 false
+        else
+            let runRestoreProcParse run proc =
+                proc
+                |> run
+                |> (function
+                | Choice2Of2 error -> Choice2Of2 error
+                | _ -> Choice1Of2 true)
+
+            settings
+            |> genRestoreArgs
+            |> Io.createProcess
+            |> runRestoreProcParse (runProc logging)
+
+
+    let runScaProcParse run procs =
         procs
         |> Array.map run
         |> Array.map (function
@@ -124,26 +149,29 @@ type PackageCheckCommand() =
     override _.Execute(context, settings) =
         let logging = if settings.TraceLogging then trace else (fun _ -> ignore 0)
 
-        let results =
-            settings
-            |> genArgs
-            |> Array.map Io.createProcess
-            |> runProcParse (runProc logging)
+        match runRestore settings logging with
+        | Choice2Of2 error -> error |> returnError
+        | _ ->
+            let results =
+                settings
+                |> genScanArgs
+                |> Array.map Io.createProcess
+                |> runScaProcParse (runProc logging)
 
-        let errors = getErrors results
+            let errors = getErrors results
 
-        if Seq.isEmpty errors |> not then
-            errors |> String.joinLines |> returnError
-        else
-            let hits = getHits results
+            if Seq.isEmpty errors |> not then
+                errors |> String.joinLines |> returnError
+            else
+                let hits = getHits results
 
-            let errorHits = hits |> Sca.hitsByLevels settings.SeverityLevels
+                let errorHits = hits |> Sca.hitsByLevels settings.SeverityLevels
 
-            errorHits |> getHitCounts |> reportHitCounts logging
+                errorHits |> getHitCounts |> reportHitCounts logging
 
-            hits |> genConsole
+                hits |> genConsole
 
-            if settings.OutputDirectory <> "" then
-                hits |> genReport settings.OutputDirectory |> Console.reportFileBuilt |> console
+                if settings.OutputDirectory <> "" then
+                    hits |> genReport settings.OutputDirectory |> Console.reportFileBuilt |> console
 
-            errorHits |> returnCode
+                errorHits |> returnCode
