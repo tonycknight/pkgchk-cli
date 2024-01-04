@@ -5,7 +5,8 @@ on:
     branches: [ main ]
 
 jobs:
-  triage:
+  pr-scope:
+    name: Set PR scope
     runs-on: ubuntu-latest
     steps:
       - uses: actions/labeler@v5
@@ -13,6 +14,7 @@ jobs:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
 
   size-label:
+    name: Set change size
     runs-on: ubuntu-latest
     steps:
       - name: size-label
