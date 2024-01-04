@@ -17,3 +17,12 @@ documentation:
 - all:
   - changed-files:
     - any-glob-to-any-file: ['*.md*', '**/*.md*']
+
+feature:
+ - head-branch: ['^feature', 'feature']
+
+chore:
+ - head-branch: ['^chore', 'chore']
+
+ bugfix:
+ - head-branch: ['^bugfix', 'bugfix']
