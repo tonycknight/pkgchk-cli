@@ -19,13 +19,13 @@ documentation:
     - any-glob-to-any-file: ['*.md*', '**/*.md*']
 
 feature:
- - head-branch: ['^feature', 'feature']
+- head-branch: ['^feature', 'feature']
 
 chore:
- - head-branch: ['^chore', 'chore']
+- head-branch: ['^chore', 'chore']
 
- bugfix:
- - head-branch: ['^bugfix', 'bugfix']
+bugfix:
+- head-branch: ['^bugfix', 'bugfix']
 
- experiment:
- - head-branch: ['^experiment', 'experiment']
+experiment:
+- head-branch: ['^experiment', 'experiment']
