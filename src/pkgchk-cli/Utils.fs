@@ -36,3 +36,11 @@ module HashSet =
     let ofSeq<'a> (comparer: IEqualityComparer<'a>) (values: seq<'a>) = new HashSet<'a>(values, comparer)
 
     let contains<'a> (hashSet: HashSet<'a>) = hashSet.Contains
+
+open System.Reflection
+
+module App =
+    let version () =
+        match Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyInformationalVersionAttribute>() |> Seq.take 1 |> List.ofSeq with
+        | [x] -> x.InformationalVersion
+        | _ -> ""
