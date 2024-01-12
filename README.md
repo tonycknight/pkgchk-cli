@@ -60,7 +60,7 @@ To produce a markdown file, simply give an output folder:
 ```pkgchk <project|solution> --output ./reports_directory```
 
 
-Project restores occur automatically. To suppress:
+Project restores (`dotnet restore`) occurs automatically. To suppress:
 
 ```pkgchk <project|solution> --no-restore```
 
@@ -76,8 +76,7 @@ Simply:
 ```
 name: run SCA
 run: |
-    dotnet tool restore
-    dotnet restore
+    dotnet tool restore    
     pkgchk <project|solution>
 ```
 
@@ -89,7 +88,6 @@ Simply ensure your repository has `pkgchk-cli` in its tools manifest, your CI in
 
 ```
 dotnet tool restore
-dotnet restore
 pkgchk <project|solution>
 ```
 
