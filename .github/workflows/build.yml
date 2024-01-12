@@ -200,7 +200,7 @@ jobs:
 
       - name: Push nuget package
         if: github.event_name == 'push'
-        run: dotnet nuget push "package/*.nupkg"  --api-key ${{ secrets.NUGET_PAT }} --source "nuget.org"
+        run: dotnet nuget push "artifacts/*.nupkg"  --api-key ${{ secrets.NUGET_PAT }} --source "nuget.org"
 
   gh-release:
     name: Github release
