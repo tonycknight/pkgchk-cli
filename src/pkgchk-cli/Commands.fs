@@ -43,6 +43,11 @@ type PackageCheckCommandSettings() =
     [<DefaultValue(false)>]
     member val NoRestore = false with get, set
 
+    [<CommandOption("--no-banner", IsHidden = true)>]
+    [<Description("Don't show the banner.")>]
+    [<DefaultValue(false)>]
+    member val NoBanner = false with get, set
+
 [<ExcludeFromCodeCoverage>]
 type PackageCheckCommand() =
     inherit Command<PackageCheckCommandSettings>()
@@ -147,7 +152,10 @@ type PackageCheckCommand() =
     let trace value = $"[grey]{value}[/]" |> console
 
     override _.Execute(context, settings) =
-        let logging = if settings.TraceLogging then trace else (fun _ -> ignore 0)
+        let logging = if settings.TraceLogging then trace else (fun x -> ignore x)
+
+        if settings.NoBanner |> not then
+            "[green]Pkgchk-Cli[/]" |> console
 
         match runRestore settings logging with
         | Choice2Of2 error -> error |> returnError
