@@ -2,8 +2,7 @@ name: Pull Request Labeling
 
 on:
   pull_request:
-    branches: [ main ]
-
+    
 jobs:
   pr-scope:
     name: Set PR scope
