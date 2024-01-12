@@ -41,6 +41,12 @@ open System.Reflection
 
 module App =
     let version () =
-        match Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyInformationalVersionAttribute>() |> Seq.take 1 |> List.ofSeq with
-        | [x] -> x.InformationalVersion
+        match
+            Assembly
+                .GetExecutingAssembly()
+                .GetCustomAttributes<AssemblyInformationalVersionAttribute>()
+            |> Seq.take 1
+            |> List.ofSeq
+        with
+        | [ x ] -> x.InformationalVersion
         | _ -> ""

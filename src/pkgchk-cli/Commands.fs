@@ -155,7 +155,7 @@ type PackageCheckCommand() =
         let logging = if settings.TraceLogging then trace else (fun x -> ignore x)
 
         if settings.NoBanner |> not then
-            $"[cyan]Pkgchk-Cli[/] version [white]{App.version()}[/]" |> console
+            $"[cyan]Pkgchk-Cli[/] version [white]{App.version ()}[/]" |> console
 
         match runRestore settings logging with
         | Choice2Of2 error -> error |> returnError
