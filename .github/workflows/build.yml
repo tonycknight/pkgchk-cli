@@ -203,7 +203,7 @@ jobs:
         run: dotnet nuget push "package/*.nupkg"  --api-key ${{ secrets.NUGET_PAT }} --source "nuget.org"
 
   gh-release:
-    name: gh release
+    name: Github release
     runs-on: ubuntu-latest
     needs: [ nuget-release ]    
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' 
