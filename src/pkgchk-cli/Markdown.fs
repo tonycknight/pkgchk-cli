@@ -30,6 +30,11 @@ module Markdown =
             "---"
         }
 
+    let title hits =
+        match hits with
+        | [] -> seq { "# :heavy_check_mark: No vulnerabilities found!" }
+        | _ -> seq { "# :warning: Vulnerabilities found!" }        
+
     let formatNoHits () =
         let content = seq { "# :heavy_check_mark: No vulnerabilities found!" }
 
@@ -37,8 +42,7 @@ module Markdown =
 
     let formatHits (hits: seq<ScaHit>) =
         let grps = hits |> Seq.groupBy (fun h -> h.projectPath) |> Seq.sortBy fst
-        let hdr = seq { "# :warning: Vulnerabilities found!" }
-
+        
         let grpHdr =
             seq {
                 "| | | | |"
@@ -87,9 +91,16 @@ module Markdown =
                     |> Seq.collect fmt
             }
 
-        footer |> Seq.append (grps |> Seq.collect fmtGrp) |> Seq.append hdr
+        (grps |> Seq.collect fmtGrp)
 
-    let generate hits =
+    let generate (hits, errorHits) =
+        let title = title errorHits
+
         match hits with
-        | [] -> formatNoHits ()
-        | hits -> hits |> formatHits
+        | [] -> Seq.append title footer                    
+        | hits -> 
+            seq {
+                yield! title
+                yield! formatHits hits
+                yield! footer
+            } 

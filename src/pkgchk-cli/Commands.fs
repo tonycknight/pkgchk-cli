@@ -179,6 +179,6 @@ type PackageCheckCommand() =
                 |> console
 
                 if settings.OutputDirectory <> "" then
-                    hits |> genReport settings.OutputDirectory |> Console.reportFileBuilt |> console
+                    (hits, errorHits) |> genReport settings.OutputDirectory |> Console.reportFileBuilt |> console
 
                 errorHits |> returnCode
