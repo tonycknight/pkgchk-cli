@@ -112,7 +112,7 @@ type PackageCheckCommand() =
             | Choice1Of2 xs -> xs
             | _ -> [])
         |> List.ofSeq
-            
+
     let reportHitCounts console counts =
 
         let lines =
@@ -127,7 +127,7 @@ type PackageCheckCommand() =
         | [] -> ReturnCodes.validationOk
         | _ -> ReturnCodes.validationFailed
 
-    let reportFile outDir = 
+    let reportFile outDir =
         outDir |> Io.toFullPath |> Io.combine "pkgchk.md" |> Io.normalise
 
     let trace value = $"[grey]{value}[/]" |> console
@@ -154,8 +154,8 @@ type PackageCheckCommand() =
             else
                 let hits = getHits results
                 let errorHits = hits |> Sca.hitsByLevels settings.SeverityLevels
-                let hitCounts = errorHits |> Sca.hitCountSummary 
-                
+                let hitCounts = errorHits |> Sca.hitCountSummary
+
                 hitCounts |> reportHitCounts trace
 
                 Seq.append (errorHits |> Console.title) (hits |> Console.formatHits)
@@ -164,7 +164,7 @@ type PackageCheckCommand() =
 
                 if settings.OutputDirectory <> "" then
                     let reportFile = reportFile settings.OutputDirectory
-                    (hits, errorHits, hitCounts) |> Markdown.generate |> Io.writeFile reportFile                    
+                    (hits, errorHits, hitCounts) |> Markdown.generate |> Io.writeFile reportFile
                     reportFile |> Console.reportFileBuilt |> console
 
                 errorHits |> returnCode

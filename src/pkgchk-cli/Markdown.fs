@@ -16,8 +16,7 @@ module Markdown =
     let formatReason value =
         $"<span style='color:{Rendering.reasonColour value}'>{value}</span>"
 
-    let formatReasons =
-        Seq.map formatReason >> String.join ", "
+    let formatReasons = Seq.map formatReason >> String.join ", "
 
     let formatProject value = sprintf "## **%s**" value
 
@@ -34,7 +33,7 @@ module Markdown =
     let title hits =
         match hits with
         | [] -> seq { "# :heavy_check_mark: No vulnerabilities found!" }
-        | _ -> seq { "# :warning: Vulnerabilities found!" }        
+        | _ -> seq { "# :warning: Vulnerabilities found!" }
 
     let formatNoHits () =
         let content = seq { "# :heavy_check_mark: No vulnerabilities found!" }
@@ -42,19 +41,22 @@ module Markdown =
         footer |> Seq.append content
 
     let formatHitCounts (counts: seq<ScaHitKind * string * int>) =
-        let tableHdr = 
+        let tableHdr =
             seq {
                 "| Kind | Severity | Count |"
                 "| - | - | - |"
             }
-        let lines = 
-            counts 
-            |> Seq.map (fun (k,s,c) -> 
-                            let fmt = function 
-                                        | ScaHitKind.Vulnerability -> formatSeverity
-                                        | ScaHitKind.Deprecated -> formatReason                            
-                            $"|{k}|{fmt k s}|{c}|")
-        
+
+        let lines =
+            counts
+            |> Seq.map (fun (k, s, c) ->
+                let fmt =
+                    function
+                    | ScaHitKind.Vulnerability -> formatSeverity
+                    | ScaHitKind.Deprecated -> formatReason
+
+                $"|{k}|{fmt k s}|{c}|")
+
         if Seq.isEmpty counts then
             Seq.empty
         else
@@ -63,13 +65,13 @@ module Markdown =
                 yield! tableHdr
                 yield! lines
                 yield "---"
-            }            
-        
-        
+            }
+
+
 
     let formatHits (hits: seq<ScaHit>) =
         let grps = hits |> Seq.groupBy (fun h -> h.projectPath) |> Seq.sortBy fst
-        
+
         let grpHdr =
             seq {
                 "| | | | |"
@@ -124,11 +126,11 @@ module Markdown =
         let title = title errorHits
 
         match hits with
-        | [] -> Seq.append title footer                    
-        | hits -> 
+        | [] -> Seq.append title footer
+        | hits ->
             seq {
                 yield! title
                 yield! formatHitCounts countSummary
-                yield! formatHits hits                
+                yield! formatHits hits
                 yield! footer
-            } 
+            }
