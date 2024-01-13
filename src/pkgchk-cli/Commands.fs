@@ -142,10 +142,8 @@ type PackageCheckCommand() =
         | [] -> ReturnCodes.validationOk
         | _ -> ReturnCodes.validationFailed
 
-    let genReport outDir hits =
-        let reportFile = outDir |> Io.toFullPath |> Io.combine "pkgchk.md" |> Io.normalise
-        hits |> Markdown.generate |> Io.writeFile reportFile
-        reportFile
+    let reportFile outDir = 
+        outDir |> Io.toFullPath |> Io.combine "pkgchk.md" |> Io.normalise
 
     let trace value = $"[grey]{value}[/]" |> console
 
@@ -179,6 +177,8 @@ type PackageCheckCommand() =
                 |> console
 
                 if settings.OutputDirectory <> "" then
-                    (hits, errorHits) |> genReport settings.OutputDirectory |> Console.reportFileBuilt |> console
+                    let reportFile = reportFile settings.OutputDirectory
+                    (hits, errorHits) |> Markdown.generate |> Io.writeFile reportFile                    
+                    reportFile |> Console.reportFileBuilt |> console
 
                 errorHits |> returnCode
