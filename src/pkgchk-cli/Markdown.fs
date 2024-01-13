@@ -12,11 +12,12 @@ module Markdown =
         let url = Rendering.nugetLink (package, "")
         $"[{suggestion}]({url})"
 
-    let formatReasons values =
-        let formatReason value =
-            $"<span style='color:{Rendering.reasonColour value}'>{value}</span>"
 
-        values |> Seq.map formatReason |> String.join ", "
+    let formatReason value =
+        $"<span style='color:{Rendering.reasonColour value}'>{value}</span>"
+
+    let formatReasons =
+        Seq.map formatReason >> String.join ", "
 
     let formatProject value = sprintf "## **%s**" value
 
@@ -39,6 +40,32 @@ module Markdown =
         let content = seq { "# :heavy_check_mark: No vulnerabilities found!" }
 
         footer |> Seq.append content
+
+    let formatHitCounts (counts: seq<ScaHitKind * string * int>) =
+        let tableHdr = 
+            seq {
+                "| Kind | Severity | Count |"
+                "| - | - | - |"
+            }
+        let lines = 
+            counts 
+            |> Seq.map (fun (k,s,c) -> 
+                            let fmt = function 
+                                        | ScaHitKind.Vulnerability -> formatSeverity
+                                        | ScaHitKind.Deprecated -> formatReason                            
+                            $"|{k}|{fmt k s}|{c}|")
+        
+        if Seq.isEmpty counts then
+            Seq.empty
+        else
+            seq {
+                yield formatProject "Matching severities"
+                yield! tableHdr
+                yield! lines
+                yield "---"
+            }            
+        
+        
 
     let formatHits (hits: seq<ScaHit>) =
         let grps = hits |> Seq.groupBy (fun h -> h.projectPath) |> Seq.sortBy fst
@@ -93,7 +120,7 @@ module Markdown =
 
         (grps |> Seq.collect fmtGrp)
 
-    let generate (hits, errorHits) =
+    let generate (hits, errorHits, countSummary) =
         let title = title errorHits
 
         match hits with
@@ -101,6 +128,7 @@ module Markdown =
         | hits -> 
             seq {
                 yield! title
-                yield! formatHits hits
+                yield! formatHitCounts countSummary
+                yield! formatHits hits                
                 yield! footer
             } 

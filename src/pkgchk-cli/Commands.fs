@@ -112,22 +112,7 @@ type PackageCheckCommand() =
             | Choice1Of2 xs -> xs
             | _ -> [])
         |> List.ofSeq
-
-    let getHitCounts (hits: ScaHit list) =
-
-        hits
-        |> Seq.groupBy (fun h -> h.kind)
-        |> Seq.collect (fun (kind, hs) ->
-            hs
-            |> Seq.collect (fun h ->
-                seq {
-                    h.severity
-                    yield! h.reasons
-                }
-                |> Seq.filter String.isNotEmpty)
-            |> Seq.groupBy id
-            |> Seq.map (fun (s, xs) -> (kind, s, xs |> Seq.length)))
-
+            
     let reportHitCounts console counts =
 
         let lines =
@@ -169,8 +154,9 @@ type PackageCheckCommand() =
             else
                 let hits = getHits results
                 let errorHits = hits |> Sca.hitsByLevels settings.SeverityLevels
-
-                errorHits |> getHitCounts |> reportHitCounts trace
+                let hitCounts = errorHits |> Sca.hitCountSummary 
+                
+                hitCounts |> reportHitCounts trace
 
                 Seq.append (errorHits |> Console.title) (hits |> Console.formatHits)
                 |> String.joinLines
@@ -178,7 +164,7 @@ type PackageCheckCommand() =
 
                 if settings.OutputDirectory <> "" then
                     let reportFile = reportFile settings.OutputDirectory
-                    (hits, errorHits) |> Markdown.generate |> Io.writeFile reportFile                    
+                    (hits, errorHits, hitCounts) |> Markdown.generate |> Io.writeFile reportFile                    
                     reportFile |> Console.reportFileBuilt |> console
 
                 errorHits |> returnCode

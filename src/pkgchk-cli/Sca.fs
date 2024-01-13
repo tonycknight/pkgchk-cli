@@ -137,3 +137,17 @@ module Sca =
                 | ScaHitKind.Deprecated -> h.reasons |> Seq.exists (fun r -> r |> HashSet.contains set))
 
         hits |> List.filter levels
+
+    let hitCountSummary (hits: seq<ScaHit>) =
+        hits
+        |> Seq.groupBy (fun h -> h.kind)
+        |> Seq.collect (fun (kind, hs) ->
+            hs
+            |> Seq.collect (fun h ->
+                seq {
+                    h.severity
+                    yield! h.reasons
+                }
+                |> Seq.filter String.isNotEmpty)
+            |> Seq.groupBy id
+            |> Seq.map (fun (s, xs) -> (kind, s, xs |> Seq.length)))
