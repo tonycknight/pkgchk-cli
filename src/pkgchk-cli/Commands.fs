@@ -142,8 +142,6 @@ type PackageCheckCommand() =
         | [] -> ReturnCodes.validationOk
         | _ -> ReturnCodes.validationFailed
 
-    let genConsole = Console.generate >> String.joinLines >> console
-
     let genReport outDir hits =
         let reportFile = outDir |> Io.toFullPath |> Io.combine "pkgchk.md" |> Io.normalise
         hits |> Markdown.generate |> Io.writeFile reportFile
@@ -152,19 +150,19 @@ type PackageCheckCommand() =
     let trace value = $"[grey]{value}[/]" |> console
 
     override _.Execute(context, settings) =
-        let logging = if settings.TraceLogging then trace else (fun x -> ignore x)
+        let trace = if settings.TraceLogging then trace else (fun x -> ignore x)
 
         if settings.NoBanner |> not then
             $"[cyan]Pkgchk-Cli[/] version [white]{App.version ()}[/]" |> console
 
-        match runRestore settings logging with
+        match runRestore settings trace with
         | Choice2Of2 error -> error |> returnError
         | _ ->
             let results =
                 settings
                 |> genScanArgs
                 |> Array.map Io.createProcess
-                |> runScaProcParse (runProc logging)
+                |> runScaProcParse (runProc trace)
 
             let errors = getErrors results
 
@@ -172,12 +170,13 @@ type PackageCheckCommand() =
                 errors |> String.joinLines |> returnError
             else
                 let hits = getHits results
-
                 let errorHits = hits |> Sca.hitsByLevels settings.SeverityLevels
 
-                errorHits |> getHitCounts |> reportHitCounts logging
+                errorHits |> getHitCounts |> reportHitCounts trace
 
-                hits |> genConsole
+                Seq.append (errorHits |> Console.title) (hits |> Console.formatHits)
+                |> String.joinLines
+                |> console
 
                 if settings.OutputDirectory <> "" then
                     hits |> genReport settings.OutputDirectory |> Console.reportFileBuilt |> console

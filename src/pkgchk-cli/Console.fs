@@ -87,14 +87,10 @@ module Console =
         let grps = hits |> Seq.groupBy (fun h -> h.projectPath) |> Seq.sortBy fst
         (grps |> Seq.collect fmtGrp)
 
-    let generate hits =
+    let title hits =
         match hits with
         | [] -> seq { "[green]No vulnerabilities found.[/]" }
-        | hits ->
-            seq {
-                "[red]Vulnerabilities found![/]"
-                yield! formatHits hits
-            }
+        | _ -> seq { "[red]Vulnerabilities found![/]" }
 
     let error (error: string) = sprintf "[red]%s[/]" error
 
