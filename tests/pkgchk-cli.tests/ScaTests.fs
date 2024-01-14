@@ -152,3 +152,26 @@ module ScaTests =
             hits |> Seq.map (fun h -> { h with reasons = [| knownReasons |] }) |> List.ofSeq
 
         expected = result
+
+    [<Property(Verbose = true)>]
+    let ``hitCountSummary on deprecations produces counts`` (severities: Guid[]) =
+        let reasons =
+            severities |> Seq.map (fun g -> g.ToString()) |> Seq.distinct |> Array.ofSeq
+
+        let hits =
+            reasons
+            |> Seq.map (fun r ->
+                { pkgchk.ScaHit.empty with
+                    kind = pkgchk.ScaHitKind.Deprecated
+                    reasons = [| r |] })
+            |> List.ofSeq
+
+        let results = pkgchk.Sca.hitCountSummary hits |> Array.ofSeq
+
+        let expected = 
+            reasons
+            |> Seq.groupBy id
+            |> Seq.map (fun (r,xs) -> (pkgchk.ScaHitKind.Deprecated, r, xs |> Seq.length) )
+            |> Array.ofSeq
+
+        results = expected
