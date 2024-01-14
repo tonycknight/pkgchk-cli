@@ -130,7 +130,7 @@ type PackageCheckCommand() =
 
     override _.Execute(context, settings) =
         let trace = trace settings.TraceLogging
-        
+
         if settings.NoBanner |> not then
             $"[cyan]Pkgchk-Cli[/] version [white]{App.version ()}[/]" |> console
 
@@ -168,7 +168,11 @@ type PackageCheckCommand() =
                 if settings.OutputDirectory <> "" then
                     trace "Rendering reports..."
                     let reportFile = reportFile settings.OutputDirectory
-                    (hits, errorHits, hitCounts, settings.SeverityLevels) |> Markdown.generate |> Io.writeFile reportFile
+
+                    (hits, errorHits, hitCounts, settings.SeverityLevels)
+                    |> Markdown.generate
+                    |> Io.writeFile reportFile
+
                     reportFile |> Console.reportFileBuilt |> console
 
                 errorHits |> returnCode

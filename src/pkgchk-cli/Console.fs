@@ -96,11 +96,13 @@ module Console =
         | _ -> seq { "[red]Vulnerabilities found![/]" }
 
     let formatSeverities severities =
-        severities |> Seq.map formatSeverity |> String.join ", "
-        |> sprintf  "Vulnerabilities found matching %s"
+        severities
+        |> Seq.map formatSeverity
+        |> String.join ", "
+        |> sprintf "Vulnerabilities found matching %s"
         |> italic
-        |> Seq.singleton 
-            
+        |> Seq.singleton
+
 
     let formatHitCounts counts =
         counts

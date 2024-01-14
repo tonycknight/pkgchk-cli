@@ -23,9 +23,11 @@ module Markdown =
 
     let formatProject value = sprintf "## **%s**" value
 
-    let formatSeverities severities =        
-        severities |> Seq.map formatSeverityColour |> String.join ", "
-        |> sprintf "__Vulnerabilities found matching %s__" 
+    let formatSeverities severities =
+        severities
+        |> Seq.map formatSeverityColour
+        |> String.join ", "
+        |> sprintf "__Vulnerabilities found matching %s__"
 
     let footer =
         seq {
