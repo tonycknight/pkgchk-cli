@@ -124,7 +124,7 @@ type PackageCheckCommand() =
     let trace value = $"[grey]{value}[/]" |> console
 
     override _.Execute(context, settings) =
-        let trace = if settings.TraceLogging then trace else (fun x -> ignore x)
+        let trace = if settings.TraceLogging then trace else ignore
 
         if settings.NoBanner |> not then
             $"[cyan]Pkgchk-Cli[/] version [white]{App.version ()}[/]" |> console
