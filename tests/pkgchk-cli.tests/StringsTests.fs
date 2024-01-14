@@ -28,10 +28,10 @@ module StringsTests =
         let counts =
             result.Split(' ', StringSplitOptions.None)
             |> Array.map (fun s -> s.Replace(separator, ""))
-            |> Array.countBy id 
+            |> Array.countBy id
             |> Map.ofSeq
-                            
-        counts.["A"] = count.Get 
+
+        counts.["A"] = count.Get
 
 
     [<Property(Verbose = true)>]
@@ -42,13 +42,11 @@ module StringsTests =
 
         let result = values |> pkgchk.String.joinPretty separator finalSeparator
 
-        let decomp = 
-            result.ToCharArray()
-            |> Array.filter (fun c -> c = separator)            
-        
+        let decomp = result.ToCharArray() |> Array.filter (fun c -> c = separator)
+
         match (count.Get, decomp) with
-        | (x, [||] ) when x <= 2 -> true
-        | _ -> 
+        | (x, [||]) when x <= 2 -> true
+        | _ ->
             let counts = decomp |> Array.countBy id |> Map.ofSeq
             counts.[separator] = count.Get - 2
 
@@ -61,9 +59,7 @@ module StringsTests =
 
         let result = values |> pkgchk.String.joinPretty separator finalSeparator
 
-        let decomp =
-            result.Split(' ', StringSplitOptions.None)
-            |> Array.rev
+        let decomp = result.Split(' ', StringSplitOptions.None) |> Array.rev
 
         let counts = decomp |> Array.countBy id |> Map.ofSeq
 
@@ -73,4 +69,3 @@ module StringsTests =
             let pos = Array.IndexOf(decomp, finalSeparator)
 
             counts.[finalSeparator] = 1 && counts.["A"] = count.Get && pos = 1
-
