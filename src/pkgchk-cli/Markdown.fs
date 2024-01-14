@@ -26,7 +26,8 @@ module Markdown =
     let formatSeverities severities =
         severities
         |> Seq.map formatSeverityColour
-        |> String.join ", "
+        |> List.ofSeq
+        |> String.joinPretty "," "or"
         |> sprintf "__Vulnerabilities found matching %s__"
 
     let footer =

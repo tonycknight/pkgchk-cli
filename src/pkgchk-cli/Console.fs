@@ -98,7 +98,8 @@ module Console =
     let formatSeverities severities =
         severities
         |> Seq.map formatSeverity
-        |> String.join ", "
+        |> List.ofSeq
+        |> String.joinPretty "," "or"
         |> sprintf "Vulnerabilities found matching %s"
         |> italic
         |> Seq.singleton
