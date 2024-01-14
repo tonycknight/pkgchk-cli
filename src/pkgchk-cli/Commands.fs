@@ -157,8 +157,9 @@ type PackageCheckCommand() =
 
                 let lines =
                     seq {
-                        yield! (hits |> Console.formatHits)
+                        yield! hits |> Console.formatHits
                         yield! errorHits |> Console.title
+
                         if hitCounts |> List.isEmpty |> not then
                             yield! Console.formatSeverities settings.SeverityLevels
                             yield! Console.formatHitCounts hitCounts
