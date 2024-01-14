@@ -10,25 +10,24 @@ module Console =
         let colour = Rendering.reasonColour value
         $"[{colour}]{value}[/]"
 
-    let formatReasons values =
-        values |> Seq.map formatReason |> String.join ", "
+    let formatReasons = Seq.map formatReason >> String.join ", "
 
     let formatSeverity value =
         let code =
             $"{Rendering.severityStyle value} {Rendering.severityColour value}"
             |> String.trim
 
-        sprintf "[%s]%s[/]" code value
+        $"[{code}]{value}[/]"
 
     let nugetLinkPkgVsn package version =
-        let url = $"https://www.nuget.org/packages/{package}/{version}"
+        let url = $"{Rendering.nugetPrefix}/{package}/{version}"
         $"[link={url}]{package} {version}[/]"
 
     let nugetLinkPkgSuggestion package suggestion =
-        let url = $"https://www.nuget.org/packages/{package}"
+        let url = $"{Rendering.nugetPrefix}/{package}"
         $"[link={url}]{package} {suggestion}[/]"
 
-    let formatProject value = sprintf "[bold yellow]%s[/]" value
+    let formatProject value = $"[bold yellow]{value}[/]"
 
     let formatHits (hits: seq<ScaHit>) =
 
@@ -81,12 +80,14 @@ module Console =
                     h.packageId)
 
             seq {
-                sprintf "Project: %s" projectPath |> formatProject
+                $"Project: {projectPath}" |> formatProject
                 yield! hits |> Seq.collect fmt
             }
 
-        let grps = hits |> Seq.groupBy (fun h -> h.projectPath) |> Seq.sortBy fst
-        (grps |> Seq.collect fmtGrp)
+        hits
+        |> Seq.groupBy (fun h -> h.projectPath)
+        |> Seq.sortBy fst
+        |> Seq.collect fmtGrp
 
     let title hits =
         match hits with
@@ -109,9 +110,9 @@ module Console =
             $"{Rendering.formatHitKind k} - {fmtSeverity k s}: {fmtCount c}.")
         |> List.ofSeq
 
-    let error (error: string) = sprintf "[red]%s[/]" error
+    let error value = $"[red]{value}[/]"
 
     let reportFileBuilt path =
-        sprintf "[italic]Report file [link=%s]%s[/] built.[/]" path path
+        $"[italic]Report file [link={path}]{path}[/] built.[/]"
 
     let send (console: IAnsiConsole) = console.MarkupLine

@@ -87,7 +87,6 @@ type PackageCheckCommand() =
             |> Io.createProcess
             |> runRestoreProcParse (runProc logging)
 
-
     let runScaProcParse run procs =
         procs
         |> Array.map run
