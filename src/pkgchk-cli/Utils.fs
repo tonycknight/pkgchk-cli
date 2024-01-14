@@ -11,7 +11,7 @@ module String =
     let joinLines (lines: seq<string>) = join Environment.NewLine lines
 
     [<DebuggerStepThrough>]
-    let joinPretty separator (finalSeparator: string) (values: string list) =
+    let joinPretty separator finalSeparator (values: string list) =
         let separator = $" {separator} "
         let finalSeparator = $" {finalSeparator} "
 
