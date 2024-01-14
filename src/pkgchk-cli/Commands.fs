@@ -31,6 +31,7 @@ type PackageCheckCommandSettings() =
 
     [<CommandOption("-s|--severity")>]
     [<Description("Severity levels to scan for. Matches will return non-zero exit codes. Multiple levels can be specified.")>]
+    [<DefaultValue([| "High"; "Critical"; "Critical Bugs"; "Legacy" |])>]
     member val SeverityLevels: string array = [||] with get, set
 
     [<CommandOption("--trace")>]
@@ -53,6 +54,12 @@ type PackageCheckCommand() =
     inherit Command<PackageCheckCommandSettings>()
 
     let console = Spectre.Console.AnsiConsole.Console |> Console.send
+
+    let trace traceLogging =
+        if traceLogging then
+            (fun value -> $"[grey]{value}[/]" |> console)
+        else
+            ignore
 
     let genRestoreArgs (settings: PackageCheckCommandSettings) =
         settings.ProjectPath |> Io.toFullPath |> sprintf "restore %s"
@@ -87,7 +94,6 @@ type PackageCheckCommand() =
             |> Io.createProcess
             |> runRestoreProcParse (runProc logging)
 
-
     let runScaProcParse run procs =
         procs
         |> Array.map run
@@ -113,73 +119,62 @@ type PackageCheckCommand() =
             | _ -> [])
         |> List.ofSeq
 
-    let getHitCounts (hits: ScaHit list) =
-
-        hits
-        |> Seq.groupBy (fun h -> h.kind)
-        |> Seq.collect (fun (kind, hs) ->
-            hs
-            |> Seq.collect (fun h ->
-                seq {
-                    h.severity
-                    yield! h.reasons
-                }
-                |> Seq.filter String.isNotEmpty)
-            |> Seq.groupBy id
-            |> Seq.map (fun (s, xs) -> (kind, s, xs |> Seq.length)))
-
-    let reportHitCounts console counts =
-
-        let lines =
-            counts |> Seq.map (fun (k, s, c) -> $"{k} - {s}: {c} hits.") |> List.ofSeq
-
-        if lines |> List.isEmpty |> not then
-            "Issues found:" |> console
-            lines |> String.joinLines |> console
 
     let returnCode (hits: ScaHit list) =
         match hits with
         | [] -> ReturnCodes.validationOk
         | _ -> ReturnCodes.validationFailed
 
-    let genConsole = Console.generate >> String.joinLines >> console
-
-    let genReport outDir hits =
-        let reportFile = outDir |> Io.toFullPath |> Io.combine "pkgchk.md" |> Io.normalise
-        hits |> Markdown.generate |> Io.writeFile reportFile
-        reportFile
-
-    let trace value = $"[grey]{value}[/]" |> console
+    let reportFile outDir =
+        outDir |> Io.toFullPath |> Io.combine "pkgchk.md" |> Io.normalise
 
     override _.Execute(context, settings) =
-        let logging = if settings.TraceLogging then trace else (fun x -> ignore x)
+        let trace = trace settings.TraceLogging
 
         if settings.NoBanner |> not then
             $"[cyan]Pkgchk-Cli[/] version [white]{App.version ()}[/]" |> console
 
-        match runRestore settings logging with
+        match runRestore settings trace with
         | Choice2Of2 error -> error |> returnError
         | _ ->
             let results =
                 settings
                 |> genScanArgs
                 |> Array.map Io.createProcess
-                |> runScaProcParse (runProc logging)
+                |> runScaProcParse (runProc trace)
 
             let errors = getErrors results
 
             if Seq.isEmpty errors |> not then
                 errors |> String.joinLines |> returnError
             else
+                trace "Analysing results..."
                 let hits = getHits results
-
                 let errorHits = hits |> Sca.hitsByLevels settings.SeverityLevels
+                let hitCounts = errorHits |> Sca.hitCountSummary |> List.ofSeq
 
-                errorHits |> getHitCounts |> reportHitCounts logging
+                trace "Building display..."
 
-                hits |> genConsole
+                let lines =
+                    seq {
+                        yield! hits |> Console.formatHits
+                        yield! errorHits |> Console.title
+
+                        if hitCounts |> List.isEmpty |> not then
+                            yield! Console.formatSeverities settings.SeverityLevels
+                            yield! Console.formatHitCounts hitCounts
+                    }
+
+                lines |> String.joinLines |> console
 
                 if settings.OutputDirectory <> "" then
-                    hits |> genReport settings.OutputDirectory |> Console.reportFileBuilt |> console
+                    trace "Rendering reports..."
+                    let reportFile = reportFile settings.OutputDirectory
+
+                    (hits, errorHits, hitCounts, settings.SeverityLevels)
+                    |> Markdown.generate
+                    |> Io.writeFile reportFile
+
+                    reportFile |> Console.reportFileBuilt |> console
 
                 errorHits |> returnCode

@@ -242,7 +242,9 @@ type IntegrationTests(output: ITestOutputHelper) =
         |> assertPackagesNotFound [ regexPackage ]
 
     [<Fact>]
-    let ``Project with mixed vulnerable / good / deprecated packages with unknown severity returns Ok`` () =
+    let ``Project with mixed vulnerable / good / deprecated packages where not matching severity requirements returns Ok``
+        ()
+        =
 
         let outDir = getOutDir ()
 
@@ -257,13 +259,15 @@ type IntegrationTests(output: ITestOutputHelper) =
         [ "test" ]
         |> runPkgChkSeverityArgs outDir
         |> execSuccessPkgChk
-        |> assertTitleShowsVulnerabilities
+        |> assertTitleShowsNoVulnerabilities
         |> assertPackagesFound [ httpPackage; aadPackage ]
         |> assertPackagesNotFound [ regexPackage ]
 
 
     [<Fact>]
-    let ``Project with mixed vulnerable / good / deprecated packages with known severity returns Error`` () =
+    let ``Project with mixed vulnerable / good / deprecated packages when matching severity requirements returns Error``
+        ()
+        =
 
         let outDir = getOutDir ()
 

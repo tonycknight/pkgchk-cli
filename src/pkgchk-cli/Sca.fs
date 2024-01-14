@@ -123,11 +123,6 @@ module Sca =
             Choice2Of2("An error occurred parsing results." + Environment.NewLine)
 
     let hitsByLevels (levels: string[]) (hits: ScaHit list) =
-        let levels =
-            match levels with
-            | [||] -> [| "High"; "Critical"; "Critical Bugs"; "Legacy" |]
-            | ls -> ls
-
         let set = levels |> HashSet.ofSeq StringComparer.InvariantCultureIgnoreCase
 
         let levels =
@@ -137,3 +132,17 @@ module Sca =
                 | ScaHitKind.Deprecated -> h.reasons |> Seq.exists (fun r -> r |> HashSet.contains set))
 
         hits |> List.filter levels
+
+    let hitCountSummary (hits: seq<ScaHit>) =
+        hits
+        |> Seq.groupBy (fun h -> h.kind)
+        |> Seq.collect (fun (kind, hs) ->
+            hs
+            |> Seq.collect (fun h ->
+                seq {
+                    h.severity
+                    yield! h.reasons
+                }
+                |> Seq.filter String.isNotEmpty)
+            |> Seq.groupBy id
+            |> Seq.map (fun (s, xs) -> (kind, s, xs |> Seq.length)))

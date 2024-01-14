@@ -5,29 +5,30 @@ open Spectre.Console
 
 module Console =
 
-    let formatReasons values =
-        let formatReason value =
-            let colour = Rendering.reasonColour value
-            $"[{colour}]{value}[/]"
+    let italic value = $"[italic]{value}[/]"
 
-        values |> Seq.map formatReason |> String.join ", "
+    let formatReason value =
+        let colour = Rendering.reasonColour value
+        $"[{colour}]{value}[/]"
+
+    let formatReasons = Seq.map formatReason >> String.join ", "
 
     let formatSeverity value =
         let code =
             $"{Rendering.severityStyle value} {Rendering.severityColour value}"
             |> String.trim
 
-        sprintf "[%s]%s[/]" code value
+        $"[{code}]{value}[/]"
 
     let nugetLinkPkgVsn package version =
-        let url = $"https://www.nuget.org/packages/{package}/{version}"
+        let url = $"{Rendering.nugetPrefix}/{package}/{version}"
         $"[link={url}]{package} {version}[/]"
 
     let nugetLinkPkgSuggestion package suggestion =
-        let url = $"https://www.nuget.org/packages/{package}"
+        let url = $"{Rendering.nugetPrefix}/{package}"
         $"[link={url}]{package} {suggestion}[/]"
 
-    let formatProject value = sprintf "[bold yellow]%s[/]" value
+    let formatProject value = $"[bold yellow]{value}[/]"
 
     let formatHits (hits: seq<ScaHit>) =
 
@@ -49,7 +50,7 @@ module Console =
                         hit.resolvedVersion
 
                 if String.isNotEmpty hit.advisoryUri then
-                    sprintf "                    [italic]%s[/]" hit.advisoryUri
+                    sprintf "                    %s" (italic hit.advisoryUri)
 
                 if
                     (hit.reasons |> Array.isEmpty |> not)
@@ -63,7 +64,7 @@ module Console =
                          | x, y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> sprintf "Use %s"
                          | x, _ -> x |> sprintf "Use %s")
                 else if (hit.reasons |> Array.isEmpty |> not) then
-                    sprintf "                    [italic]%s[/]" (formatReasons hit.reasons)
+                    sprintf "                    %s" (italic (formatReasons hit.reasons))
 
                 ""
             }
@@ -80,25 +81,48 @@ module Console =
                     h.packageId)
 
             seq {
-                sprintf "Project: %s" projectPath |> formatProject
+                $"Project: {projectPath}" |> formatProject
                 yield! hits |> Seq.collect fmt
             }
 
-        let grps = hits |> Seq.groupBy (fun h -> h.projectPath) |> Seq.sortBy fst
-        (grps |> Seq.collect fmtGrp)
+        hits
+        |> Seq.groupBy (fun h -> h.projectPath)
+        |> Seq.sortBy fst
+        |> Seq.collect fmtGrp
 
-    let generate hits =
+    let title hits =
         match hits with
-        | [] -> seq { "[green]No vulnerabilities found.[/]" }
-        | hits ->
-            seq {
-                "[red]Vulnerabilities found![/]"
-                yield! formatHits hits
-            }
+        | [] -> seq { "[lime]No vulnerabilities found.[/]" }
+        | _ -> seq { "[red]Vulnerabilities found![/]" }
 
-    let error (error: string) = sprintf "[red]%s[/]" error
+    let formatSeverities severities =
+        severities
+        |> Seq.map formatSeverity
+        |> String.join ", "
+        |> sprintf "Vulnerabilities found matching %s"
+        |> italic
+        |> Seq.singleton
+
+
+    let formatHitCounts counts =
+        counts
+        |> Seq.map (fun (k, s, c) ->
+            let fmtCount value =
+                match value with
+                | 1 -> $"{value} hit"
+                | _ -> $"{value} hits"
+
+            let fmtSeverity =
+                function
+                | ScaHitKind.Vulnerability -> formatSeverity
+                | ScaHitKind.Deprecated -> formatReason
+
+            $"{Rendering.formatHitKind k} - {fmtSeverity k s}: {fmtCount c}.")
+        |> List.ofSeq
+
+    let error value = $"[red]{value}[/]"
 
     let reportFileBuilt path =
-        sprintf "[italic]Report file [link=%s]%s[/] built.[/]" path path
+        $"Report file [link={path}]{path}[/] built." |> italic
 
     let send (console: IAnsiConsole) = console.MarkupLine
