@@ -92,7 +92,7 @@ module Console =
 
     let title hits =
         match hits with
-        | [] -> seq { "[green]No vulnerabilities found.[/]" }
+        | [] -> seq { "[lime]No vulnerabilities found.[/]" }
         | _ -> seq { "[red]Vulnerabilities found![/]" }
 
     let formatSeverities severities =
