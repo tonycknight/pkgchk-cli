@@ -2,8 +2,11 @@
 
 module Markdown =
 
+    let formatSeverityColour value =
+        $"<span style='color:{Rendering.severityColour value}'>{value}</span>"
+
     let formatSeverity value =
-        $"{Rendering.severityEmote value} <span style='color:{Rendering.severityColour value}'>{value}</span>"
+        $"{Rendering.severityEmote value} {formatSeverityColour value}"
 
     let nugetLinkPkgVsn package version =
         $"[{package}]({Rendering.nugetLink (package, version)})"
@@ -19,6 +22,10 @@ module Markdown =
     let formatReasons = Seq.map formatReason >> String.join ", "
 
     let formatProject value = sprintf "## **%s**" value
+
+    let formatSeverities severities =        
+        severities |> Seq.map formatSeverityColour |> String.join ", "
+        |> sprintf "__Vulnerabilities found matching %s__" 
 
     let footer =
         seq {
@@ -40,7 +47,7 @@ module Markdown =
 
         footer |> Seq.append content
 
-    let formatHitCounts (counts: seq<ScaHitKind * string * int>) =
+    let formatHitCounts (severities: seq<string>, counts: seq<ScaHitKind * string * int>) =
         let tableHdr =
             seq {
                 "| Kind | Severity | Count |"
@@ -62,6 +69,7 @@ module Markdown =
         else
             seq {
                 yield formatProject "Matching severities"
+                yield formatSeverities severities
                 yield! tableHdr
                 yield! lines
                 yield "---"
@@ -122,7 +130,7 @@ module Markdown =
 
         (grps |> Seq.collect fmtGrp)
 
-    let generate (hits, errorHits, countSummary) =
+    let generate (hits, errorHits, countSummary, severities) =
         let title = title errorHits
 
         match hits with
@@ -130,7 +138,7 @@ module Markdown =
         | hits ->
             seq {
                 yield! title
-                yield! formatHitCounts countSummary
+                yield! formatHitCounts (severities, countSummary)
                 yield! formatHits hits
                 yield! footer
             }

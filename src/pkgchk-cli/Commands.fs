@@ -31,6 +31,7 @@ type PackageCheckCommandSettings() =
 
     [<CommandOption("-s|--severity")>]
     [<Description("Severity levels to scan for. Matches will return non-zero exit codes. Multiple levels can be specified.")>]
+    [<DefaultValue([| "High"; "Critical"; "Critical Bugs"; "Legacy" |])>]
     member val SeverityLevels: string array = [||] with get, set
 
     [<CommandOption("--trace")>]
@@ -129,7 +130,7 @@ type PackageCheckCommand() =
 
     override _.Execute(context, settings) =
         let trace = trace settings.TraceLogging
-
+        
         if settings.NoBanner |> not then
             $"[cyan]Pkgchk-Cli[/] version [white]{App.version ()}[/]" |> console
 
@@ -158,6 +159,7 @@ type PackageCheckCommand() =
                     seq {
                         yield! (hits |> Console.formatHits)
                         yield! errorHits |> Console.title
+                        yield! Console.formatSeverities settings.SeverityLevels
                         yield! Console.formatHitCounts hitCounts
                     }
 
@@ -166,7 +168,7 @@ type PackageCheckCommand() =
                 if settings.OutputDirectory <> "" then
                     trace "Rendering reports..."
                     let reportFile = reportFile settings.OutputDirectory
-                    (hits, errorHits, hitCounts) |> Markdown.generate |> Io.writeFile reportFile
+                    (hits, errorHits, hitCounts, settings.SeverityLevels) |> Markdown.generate |> Io.writeFile reportFile
                     reportFile |> Console.reportFileBuilt |> console
 
                 errorHits |> returnCode

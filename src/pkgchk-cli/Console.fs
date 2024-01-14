@@ -5,6 +5,7 @@ open Spectre.Console
 
 module Console =
 
+    let italic value = $"[italic]{value}[/]"
 
     let formatReason value =
         let colour = Rendering.reasonColour value
@@ -49,7 +50,7 @@ module Console =
                         hit.resolvedVersion
 
                 if String.isNotEmpty hit.advisoryUri then
-                    sprintf "                    [italic]%s[/]" hit.advisoryUri
+                    sprintf "                    %s" (italic hit.advisoryUri)
 
                 if
                     (hit.reasons |> Array.isEmpty |> not)
@@ -63,7 +64,7 @@ module Console =
                          | x, y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> sprintf "Use %s"
                          | x, _ -> x |> sprintf "Use %s")
                 else if (hit.reasons |> Array.isEmpty |> not) then
-                    sprintf "                    [italic]%s[/]" (formatReasons hit.reasons)
+                    sprintf "                    %s" (italic (formatReasons hit.reasons))
 
                 ""
             }
@@ -94,6 +95,13 @@ module Console =
         | [] -> seq { "[green]No vulnerabilities found.[/]" }
         | _ -> seq { "[red]Vulnerabilities found![/]" }
 
+    let formatSeverities severities =
+        severities |> Seq.map formatSeverity |> String.join ", "
+        |> sprintf  "Vulnerabilities found matching %s"
+        |> italic
+        |> Seq.singleton 
+            
+
     let formatHitCounts counts =
         counts
         |> Seq.map (fun (k, s, c) ->
@@ -113,6 +121,6 @@ module Console =
     let error value = $"[red]{value}[/]"
 
     let reportFileBuilt path =
-        $"[italic]Report file [link={path}]{path}[/] built.[/]"
+        $"Report file [link={path}]{path}[/] built." |> italic
 
     let send (console: IAnsiConsole) = console.MarkupLine
