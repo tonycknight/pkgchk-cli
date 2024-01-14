@@ -147,9 +147,12 @@ type PackageCheckCommand() =
             if Seq.isEmpty errors |> not then
                 errors |> String.joinLines |> returnError
             else
+                trace "Analysing results..."
                 let hits = getHits results
                 let errorHits = hits |> Sca.hitsByLevels settings.SeverityLevels
                 let hitCounts = errorHits |> Sca.hitCountSummary
+
+                trace "Building display..."
 
                 let lines =
                     seq {
@@ -161,6 +164,7 @@ type PackageCheckCommand() =
                 lines |> String.joinLines |> console
 
                 if settings.OutputDirectory <> "" then
+                    trace "Rendering reports..."
                     let reportFile = reportFile settings.OutputDirectory
                     (hits, errorHits, hitCounts) |> Markdown.generate |> Io.writeFile reportFile
                     reportFile |> Console.reportFileBuilt |> console
