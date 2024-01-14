@@ -70,72 +70,85 @@ module ScaTests =
         | _ -> failwith "No error raised"
 
     [<Property>]
-    let ``hitsByLevels on empty returns empty``() =
+    let ``hitsByLevels on empty returns empty`` () =
         let hits = []
         let result = hits |> pkgchk.Sca.hitsByLevels []
 
         result |> Seq.isEmpty
 
     [<Property(Verbose = true)>]
-    let ``hitsByLevels by vulnerable on given severity returns hits`` (severities: Guid list)  =
-        let severities = severities |> Seq.map (fun g -> g.ToString()) |> Seq.distinct |> List.ofSeq
-        let hits = 
+    let ``hitsByLevels by vulnerable on given severity returns hits`` (severities: Guid list) =
+        let severities =
+            severities |> Seq.map (fun g -> g.ToString()) |> Seq.distinct |> List.ofSeq
+
+        let hits =
             severities
-            |> Seq.map (fun s -> { pkgchk.ScaHit.empty with kind = pkgchk.ScaHitKind.Vulnerability; severity = s })
+            |> Seq.map (fun s ->
+                { pkgchk.ScaHit.empty with
+                    kind = pkgchk.ScaHitKind.Vulnerability
+                    severity = s })
             |> List.ofSeq
-        let knownSeverities = 
+
+        let knownSeverities =
             match severities |> Seq.tryHead with
             | Some s -> s
             | _ -> Guid.NewGuid().ToString() // if nothing there, we'll assume "empty"
 
-        let result = hits |> pkgchk.Sca.hitsByLevels [knownSeverities]
+        let result = hits |> pkgchk.Sca.hitsByLevels [ knownSeverities ]
 
         let expected =
-            hits 
-            |> Seq.filter (fun h -> h.severity = knownSeverities)
-            |> List.ofSeq
+            hits |> Seq.filter (fun h -> h.severity = knownSeverities) |> List.ofSeq
 
         expected = result
 
     [<Property(Verbose = true)>]
-    let ``hitsByLevels by deprecated on given reason returns hits`` (reasons: Guid list)  =
-        let reasons = reasons |> Seq.map (fun g -> g.ToString()) |> Seq.distinct |> List.ofSeq
-        let hits = 
+    let ``hitsByLevels by deprecated on given reason returns hits`` (reasons: Guid list) =
+        let reasons =
+            reasons |> Seq.map (fun g -> g.ToString()) |> Seq.distinct |> List.ofSeq
+
+        let hits =
             reasons
-            |> Seq.map (fun s -> { pkgchk.ScaHit.empty with kind = pkgchk.ScaHitKind.Deprecated; reasons = [| s |] })
+            |> Seq.map (fun s ->
+                { pkgchk.ScaHit.empty with
+                    kind = pkgchk.ScaHitKind.Deprecated
+                    reasons = [| s |] })
             |> List.ofSeq
-        let knownReasons = 
+
+        let knownReasons =
             match reasons |> Seq.tryHead with
             | Some s -> s
             | _ -> Guid.NewGuid().ToString() // if nothing there, we'll assume "empty"
 
-        let result = hits |> pkgchk.Sca.hitsByLevels [knownReasons]
+        let result = hits |> pkgchk.Sca.hitsByLevels [ knownReasons ]
 
         let expected =
-            hits 
+            hits
             |> Seq.filter (fun h -> h.reasons |> Seq.contains knownReasons)
             |> List.ofSeq
 
         expected = result
 
     [<Property(Verbose = true)>]
-    let ``hitsByLevels by deprecated on given reason returns trimmed hits`` (reasons: Guid list)  =
-        let reasons = reasons |> Seq.map (fun g -> g.ToString()) |> Seq.distinct |> Array.ofSeq
-        let hits = 
+    let ``hitsByLevels by deprecated on given reason returns trimmed hits`` (reasons: Guid list) =
+        let reasons =
+            reasons |> Seq.map (fun g -> g.ToString()) |> Seq.distinct |> Array.ofSeq
+
+        let hits =
             reasons
-            |> Seq.map (fun s -> { pkgchk.ScaHit.empty with kind = pkgchk.ScaHitKind.Deprecated; reasons = reasons })
+            |> Seq.map (fun s ->
+                { pkgchk.ScaHit.empty with
+                    kind = pkgchk.ScaHitKind.Deprecated
+                    reasons = reasons })
             |> List.ofSeq
-        let knownReasons = 
+
+        let knownReasons =
             match reasons |> Seq.tryHead with
             | Some s -> s
             | _ -> Guid.NewGuid().ToString() // if nothing there, we'll assume "empty"
 
-        let result = hits |> pkgchk.Sca.hitsByLevels [knownReasons]
+        let result = hits |> pkgchk.Sca.hitsByLevels [ knownReasons ]
 
         let expected =
-            hits 
-            |> Seq.map (fun h -> { h with reasons = [| knownReasons |] } )
-            |> List.ofSeq
+            hits |> Seq.map (fun h -> { h with reasons = [| knownReasons |] }) |> List.ofSeq
 
         expected = result
-
