@@ -134,7 +134,7 @@ module Sca =
         with ex ->
             Choice2Of2("An error occurred parsing results." + Environment.NewLine)
 
-    let hitsByLevels (levels: string[]) (hits: ScaHit list) =
+    let hitsByLevels levels (hits: ScaHit list) =
         let levels = levels |> HashSet.ofSeq StringComparer.InvariantCultureIgnoreCase
 
         let filter =
