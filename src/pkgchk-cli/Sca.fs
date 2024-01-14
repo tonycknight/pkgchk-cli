@@ -21,6 +21,18 @@ type ScaHit =
       suggestedReplacement: string
       alternativePackageId: string }
 
+    static member empty =
+        { ScaHit.projectPath = ""
+          framework = ""
+          packageId = ""
+          resolvedVersion = ""
+          severity = ""
+          reasons = [||]
+          suggestedReplacement = ""
+          alternativePackageId = ""
+          advisoryUri = ""
+          kind = ScaHitKind.Vulnerability }
+
 module ScaArgs =
 
     let scanArgs vulnerable includeTransitive path =
