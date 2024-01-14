@@ -151,7 +151,7 @@ type PackageCheckCommand() =
                 trace "Analysing results..."
                 let hits = getHits results
                 let errorHits = hits |> Sca.hitsByLevels settings.SeverityLevels
-                let hitCounts = errorHits |> Sca.hitCountSummary
+                let hitCounts = errorHits |> Sca.hitCountSummary |> List.ofSeq
 
                 trace "Building display..."
 
@@ -159,8 +159,9 @@ type PackageCheckCommand() =
                     seq {
                         yield! (hits |> Console.formatHits)
                         yield! errorHits |> Console.title
-                        yield! Console.formatSeverities settings.SeverityLevels
-                        yield! Console.formatHitCounts hitCounts
+                        if hitCounts |> List.isEmpty |> not then
+                            yield! Console.formatSeverities settings.SeverityLevels
+                            yield! Console.formatHitCounts hitCounts
                     }
 
                 lines |> String.joinLines |> console
