@@ -54,6 +54,12 @@ type PackageCheckCommand() =
 
     let console = Spectre.Console.AnsiConsole.Console |> Console.send
 
+    let trace traceLogging =
+        if traceLogging then
+            (fun value -> $"[grey]{value}[/]" |> console)
+        else
+            ignore
+
     let genRestoreArgs (settings: PackageCheckCommandSettings) =
         settings.ProjectPath |> Io.toFullPath |> sprintf "restore %s"
 
@@ -121,10 +127,8 @@ type PackageCheckCommand() =
     let reportFile outDir =
         outDir |> Io.toFullPath |> Io.combine "pkgchk.md" |> Io.normalise
 
-    let trace value = $"[grey]{value}[/]" |> console
-
     override _.Execute(context, settings) =
-        let trace = if settings.TraceLogging then trace else ignore
+        let trace = trace settings.TraceLogging
 
         if settings.NoBanner |> not then
             $"[cyan]Pkgchk-Cli[/] version [white]{App.version ()}[/]" |> console
