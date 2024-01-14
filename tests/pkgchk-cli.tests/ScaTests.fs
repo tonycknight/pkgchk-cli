@@ -154,9 +154,32 @@ module ScaTests =
         expected = result
 
     [<Property(Verbose = true)>]
-    let ``hitCountSummary on deprecations produces counts`` (severities: Guid[]) =
-        let reasons =
+    let ``hitCountSummary on vulnerable produces counts`` (severities: Guid[]) =
+        let severities =
             severities |> Seq.map (fun g -> g.ToString()) |> Seq.distinct |> Array.ofSeq
+
+        let hits =
+            severities
+            |> Seq.map (fun s ->
+                { pkgchk.ScaHit.empty with
+                    kind = pkgchk.ScaHitKind.Vulnerability
+                    severity = s })
+            |> List.ofSeq
+
+        let results = pkgchk.Sca.hitCountSummary hits |> Array.ofSeq
+
+        let expected =
+            severities
+            |> Seq.groupBy id
+            |> Seq.map (fun (r, xs) -> (pkgchk.ScaHitKind.Vulnerability, r, xs |> Seq.length))
+            |> Array.ofSeq
+
+        results = expected
+
+    [<Property(Verbose = true)>]
+    let ``hitCountSummary on deprecations produces counts`` (reasons: Guid[]) =
+        let reasons =
+            reasons |> Seq.map (fun g -> g.ToString()) |> Seq.distinct |> Array.ofSeq
 
         let hits =
             reasons
@@ -168,10 +191,10 @@ module ScaTests =
 
         let results = pkgchk.Sca.hitCountSummary hits |> Array.ofSeq
 
-        let expected = 
+        let expected =
             reasons
             |> Seq.groupBy id
-            |> Seq.map (fun (r,xs) -> (pkgchk.ScaHitKind.Deprecated, r, xs |> Seq.length) )
+            |> Seq.map (fun (r, xs) -> (pkgchk.ScaHitKind.Deprecated, r, xs |> Seq.length))
             |> Array.ofSeq
 
         results = expected
