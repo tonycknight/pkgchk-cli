@@ -5,11 +5,12 @@ open Spectre.Console
 
 module Console =
 
-    let formatReasons values =
-        let formatReason value =
-            let colour = Rendering.reasonColour value
-            $"[{colour}]{value}[/]"
 
+    let formatReason value =
+        let colour = Rendering.reasonColour value
+        $"[{colour}]{value}[/]"
+
+    let formatReasons values =
         values |> Seq.map formatReason |> String.join ", "
 
     let formatSeverity value =
@@ -91,6 +92,22 @@ module Console =
         match hits with
         | [] -> seq { "[green]No vulnerabilities found.[/]" }
         | _ -> seq { "[red]Vulnerabilities found![/]" }
+
+    let formatHitCounts counts =
+        counts
+        |> Seq.map (fun (k, s, c) ->
+            let fmtCount value =
+                match value with
+                | 1 -> $"{value} hit"
+                | _ -> $"{value} hits"
+
+            let fmtSeverity =
+                function
+                | ScaHitKind.Vulnerability -> formatSeverity
+                | ScaHitKind.Deprecated -> formatReason
+
+            $"{Rendering.formatHitKind k} - {fmtSeverity k s}: {fmtCount c}.")
+        |> List.ofSeq
 
     let error (error: string) = sprintf "[red]%s[/]" error
 

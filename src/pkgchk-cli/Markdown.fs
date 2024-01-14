@@ -55,7 +55,7 @@ module Markdown =
                     | ScaHitKind.Vulnerability -> formatSeverity
                     | ScaHitKind.Deprecated -> formatReason
 
-                $"|{k}|{fmt k s}|{c}|")
+                $"|{Rendering.formatHitKind k}|{fmt k s}|{c}|")
 
         if Seq.isEmpty counts then
             Seq.empty

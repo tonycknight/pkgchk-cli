@@ -113,14 +113,6 @@ type PackageCheckCommand() =
             | _ -> [])
         |> List.ofSeq
 
-    let reportHitCounts console counts =
-
-        let lines =
-            counts |> Seq.map (fun (k, s, c) -> $"{k} - {s}: {c} hits.") |> List.ofSeq
-
-        if lines |> List.isEmpty |> not then
-            "Issues found:" |> console
-            lines |> String.joinLines |> console
 
     let returnCode (hits: ScaHit list) =
         match hits with
@@ -156,11 +148,14 @@ type PackageCheckCommand() =
                 let errorHits = hits |> Sca.hitsByLevels settings.SeverityLevels
                 let hitCounts = errorHits |> Sca.hitCountSummary
 
-                hitCounts |> reportHitCounts trace
+                let lines =
+                    seq {
+                        yield! (hits |> Console.formatHits)
+                        yield! errorHits |> Console.title
+                        yield! Console.formatHitCounts hitCounts
+                    }
 
-                Seq.append (errorHits |> Console.title) (hits |> Console.formatHits)
-                |> String.joinLines
-                |> console
+                lines |> String.joinLines |> console
 
                 if settings.OutputDirectory <> "" then
                     let reportFile = reportFile settings.OutputDirectory
