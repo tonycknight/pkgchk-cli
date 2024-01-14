@@ -10,7 +10,11 @@ module String =
     [<DebuggerStepThrough>]
     let joinLines (lines: seq<string>) = join Environment.NewLine lines
 
-    let joinPretty (separator: string) (values: string list) =
+    [<DebuggerStepThrough>]
+    let joinPretty separator (finalSeparator: string) (values: string list) =
+        let separator = $" {separator} "
+        let finalSeparator = $" {finalSeparator} "
+
         let rec concat (values: string list) (accum: System.Text.StringBuilder) =
             let suffix (sep: string) (accum: System.Text.StringBuilder) =
                 if accum.Length > 0 then accum.Append(sep) else accum
@@ -18,11 +22,10 @@ module String =
             match values with
             | [] -> accum.ToString()
             | [ x ] ->
-                let accum = accum |> suffix $" {separator} "
-
+                let accum = accum |> suffix finalSeparator
                 accum.Append(x).ToString()
             | h :: t ->
-                let accum = accum |> suffix ", "
+                let accum = accum |> suffix separator
                 accum.Append(h) |> concat t
 
         concat values (new System.Text.StringBuilder())

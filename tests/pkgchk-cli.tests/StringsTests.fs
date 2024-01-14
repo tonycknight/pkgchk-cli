@@ -18,23 +18,59 @@ module StringsTests =
         expected = values
 
     [<Property(Verbose = true)>]
-    let ``joinPretty`` (count: PositiveInt) =
+    let ``joinPretty has correct value count`` (count: PositiveInt) =
         let values = [ 1 .. count.Get ] |> Seq.map (fun _ -> "A") |> List.ofSeq
-        let separator = "or"
+        let finalSeparator = "or"
+        let separator = ","
 
-        let result = values |> pkgchk.String.joinPretty separator
+        let result = values |> pkgchk.String.joinPretty separator finalSeparator
+
+        let counts =
+            result.Split(' ', StringSplitOptions.None)
+            |> Array.map (fun s -> s.Replace(separator, ""))
+            |> Array.countBy id 
+            |> Map.ofSeq
+                            
+        counts.["A"] = count.Get 
+
+
+    [<Property(Verbose = true)>]
+    let ``joinPretty has correct intermediary separators`` (count: PositiveInt) =
+        let values = [ 1 .. count.Get ] |> Seq.map (fun _ -> "A") |> List.ofSeq
+        let finalSeparator = "or"
+        let separator = ','
+
+        let result = values |> pkgchk.String.joinPretty separator finalSeparator
+
+        let decomp = 
+            result.ToCharArray()
+            |> Array.filter (fun c -> c = separator)            
+        
+        match (count.Get, decomp) with
+        | (x, [||] ) when x <= 2 -> true
+        | _ -> 
+            let counts = decomp |> Array.countBy id |> Map.ofSeq
+            counts.[separator] = count.Get - 2
+
+
+    [<Property(Verbose = true)>]
+    let ``joinPretty has correct last separator`` (count: PositiveInt) =
+        let values = [ 1 .. count.Get ] |> Seq.map (fun _ -> "A") |> List.ofSeq
+        let finalSeparator = "or"
+        let separator = ","
+
+        let result = values |> pkgchk.String.joinPretty separator finalSeparator
 
         let decomp =
             result.Split(' ', StringSplitOptions.None)
-            |> Array.map (fun s -> s.Replace(",", ""))
             |> Array.rev
 
         let counts = decomp |> Array.countBy id |> Map.ofSeq
 
         match count.Get with
-        | 1 -> counts.["A"] = count.Get && decomp |> Array.contains separator |> not
-
+        | 1 -> counts.["A"] = count.Get && decomp |> Array.contains finalSeparator |> not
         | x ->
-            let pos = Array.IndexOf(decomp, separator)
+            let pos = Array.IndexOf(decomp, finalSeparator)
 
-            counts.[separator] = 1 && counts.["A"] = count.Get && pos = 1
+            counts.[finalSeparator] = 1 && counts.["A"] = count.Get && pos = 1
+
