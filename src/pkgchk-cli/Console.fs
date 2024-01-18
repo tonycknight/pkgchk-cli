@@ -41,7 +41,6 @@ module Console =
                         (Rendering.formatHitKind hit.kind)
                         (formatSeverity hit.severity)
                         (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
-
                 | ScaHitKind.Deprecated ->
                     sprintf
                         "%s: [cyan]%s[/]"
