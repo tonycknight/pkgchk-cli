@@ -37,17 +37,15 @@ module Console =
                 match hit.kind with
                 | ScaHitKind.Vulnerability ->
                     sprintf
-                        "%s: %s - [cyan]%s[/] version [cyan]%s[/]"
+                        "%s: %s - [cyan]%s[/]"
                         (Rendering.formatHitKind hit.kind)
                         (formatSeverity hit.severity)
                         (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
-                        hit.resolvedVersion
                 | ScaHitKind.Deprecated ->
                     sprintf
-                        "%s: [cyan]%s[/] version [cyan]%s[/]"
+                        "%s: [cyan]%s[/]"
                         (Rendering.formatHitKind hit.kind)
                         (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
-                        hit.resolvedVersion
 
                 if String.isNotEmpty hit.advisoryUri then
                     sprintf "                    %s" (italic hit.advisoryUri)
