@@ -57,15 +57,16 @@ module Console =
                 if (hit.reasons |> Array.isEmpty |> not) then
                     if String.isNotEmpty hit.suggestedReplacement then
                         sprintf
-                            "%s[italic]%s - use [cyan]%s[/][/]"
+                            "%s%s - use [cyan]%s[/]"
                             (kindIndent hit.kind)
                             (formatReasons hit.reasons)
                             (match (hit.suggestedReplacement, hit.alternativePackageId) with
                              | "", _ -> ""
                              | x, y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> sprintf "Use %s"
                              | x, _ -> x |> sprintf "Use %s")
+                        |> italic
                     else 
-                        sprintf "%s%s" (kindIndent hit.kind) (formatReasons hit.reasons |> italic)
+                        sprintf "%s%s" (kindIndent hit.kind) (formatReasons hit.reasons) |> italic
 
                 ""
             }
