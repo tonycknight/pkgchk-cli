@@ -35,6 +35,7 @@ module Console =
         let fmt (hit: ScaHit) =
             seq {
                 match hit.kind with
+                | ScaHitKind.VulnerabilityTransitive
                 | ScaHitKind.Vulnerability ->
                     sprintf
                         "%s: %s - [cyan]%s[/]"
@@ -113,6 +114,7 @@ module Console =
 
             let fmtSeverity =
                 function
+                | ScaHitKind.VulnerabilityTransitive
                 | ScaHitKind.Vulnerability -> formatSeverity
                 | ScaHitKind.Deprecated -> formatReason
 

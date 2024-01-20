@@ -7,6 +7,7 @@ module Rendering =
 
     let formatHitKind =
         function
+        | ScaHitKind.VulnerabilityTransitive -> "Vulnerable transitive package"
         | ScaHitKind.Vulnerability -> "Vulnerable package"
         | ScaHitKind.Deprecated -> "Deprecated package"
 
