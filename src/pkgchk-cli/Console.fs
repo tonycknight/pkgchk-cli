@@ -54,20 +54,18 @@ module Console =
                 if String.isNotEmpty hit.advisoryUri then
                     sprintf "%s%s" (kindIndent hit.kind) (italic hit.advisoryUri)
 
-                if
-                    (hit.reasons |> Array.isEmpty |> not)
-                    && String.isNotEmpty hit.suggestedReplacement
-                then
-                    sprintf
-                        "%s[italic]%s - use [cyan]%s[/][/]"
-                        (kindIndent hit.kind)
-                        (formatReasons hit.reasons)
-                        (match (hit.suggestedReplacement, hit.alternativePackageId) with
-                         | "", _ -> ""
-                         | x, y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> sprintf "Use %s"
-                         | x, _ -> x |> sprintf "Use %s")
-                else if (hit.reasons |> Array.isEmpty |> not) then
-                    sprintf "%s%s" (kindIndent hit.kind) (italic (formatReasons hit.reasons))
+                if (hit.reasons |> Array.isEmpty |> not) then
+                    if String.isNotEmpty hit.suggestedReplacement then
+                        sprintf
+                            "%s[italic]%s - use [cyan]%s[/][/]"
+                            (kindIndent hit.kind)
+                            (formatReasons hit.reasons)
+                            (match (hit.suggestedReplacement, hit.alternativePackageId) with
+                             | "", _ -> ""
+                             | x, y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> sprintf "Use %s"
+                             | x, _ -> x |> sprintf "Use %s")
+                    else 
+                        sprintf "%s%s" (kindIndent hit.kind) (formatReasons hit.reasons |> italic)
 
                 ""
             }
