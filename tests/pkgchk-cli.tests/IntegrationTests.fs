@@ -59,7 +59,6 @@ type IntegrationTests(output: ITestOutputHelper) =
         let (exec, args) = cmdArgs cmd
         let proc = new Process()
         proc.StartInfo.UseShellExecute <- false
-        proc.StartInfo.RedirectStandardOutput <- true
         proc.StartInfo.FileName <- exec
         proc.StartInfo.Arguments <- args
         proc.StartInfo.CreateNoWindow <- true
