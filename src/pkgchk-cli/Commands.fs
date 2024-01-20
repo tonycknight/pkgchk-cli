@@ -53,7 +53,7 @@ type PackageCheckCommandSettings() =
 type PackageCheckCommand() =
     inherit Command<PackageCheckCommandSettings>()
 
-    let console = Spectre.Console.AnsiConsole.Console |> Console.send
+    let console = Spectre.Console.AnsiConsole.MarkupLine 
 
     let trace traceLogging =
         if traceLogging then
@@ -131,6 +131,9 @@ type PackageCheckCommand() =
     override _.Execute(context, settings) =
         let trace = trace settings.TraceLogging
 
+        let render (value: Spectre.Console.Rendering.IRenderable) =
+            value |> Spectre.Console.AnsiConsole.Console.Write
+
         if settings.NoBanner |> not then
             $"[cyan]Pkgchk-Cli[/] version [white]{App.version ()}[/]" |> console
 
@@ -154,21 +157,11 @@ type PackageCheckCommand() =
                 let hitCounts = errorHits |> Sca.hitCountSummary |> List.ofSeq
 
                 trace "Building display..."
-
-                let lines =
-                    seq {
-                        yield! hits |> Console.formatHits
-                        yield! errorHits |> Console.title
-
-                        if hitCounts |> List.isEmpty |> not then
-                            yield! Console.formatSeverities settings.SeverityLevels
-                            yield! Console.formatHitCounts hitCounts
-                    }
-
-                lines |> String.joinLines |> console
-                // TODO: end of table
-                hits |> Console.tabularHits |> Console.write Spectre.Console.AnsiConsole.Console
-                // TODO:
+                hits |> Console.tabularHits |> render
+                errorHits |> Console.tableHeadline |> render
+                if hitCounts |> List.isEmpty |> not then
+                    settings.SeverityLevels |> Console.tableSeveritySettings |> render
+                    hitCounts |> Console.tableHitSummary |> render
 
                 if settings.OutputDirectory <> "" then
                     trace "Rendering reports..."

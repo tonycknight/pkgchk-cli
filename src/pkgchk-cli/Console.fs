@@ -4,33 +4,30 @@ open System
 open Spectre.Console
 
 module Console =
-
-    let italic value = $"[italic]{value}[/]"
-    let cyan value = $"[cyan]{value}[/]"
-    let error value = $"[red]{value}[/]"
-
-    let kindIndent (kind: ScaHitKind) =
-        kind |> Rendering.formatHitKind |> _.Length |> (+) 2 |> String.indent
-
-    let maxKindIndent () =
+    let markup (style: string) (value: string) = $"[{style}]{value}[/]"
+    let colourise (colour: string) = markup colour
+    let italic = colourise "italic"
+    let green = colourise "lime"
+    let cyan = colourise "cyan"
+    let error = colourise "red"
+    let colouriseReason value =
+        let colour = Rendering.reasonColour value
+        value |> colourise colour
+        
+    let maxKindLength () =
         [ ScaHitKind.VulnerabilityTransitive
           ScaHitKind.Vulnerability
           ScaHitKind.Deprecated ]
-        |> Seq.map (kindIndent >> _.Length)
+        |> Seq.map (Rendering.formatHitKind >> _.Length)
         |> Seq.max
-
-    let formatReason value =
-        let colour = Rendering.reasonColour value
-        $"[{colour}]{value}[/]"
-
-    let formatReasons = Seq.map formatReason >> String.join ", "
-
+                
     let formatSeverity value =
         let code =
             $"{Rendering.severityStyle value} {Rendering.severityColour value}"
             |> String.trim
+        value |> colourise code
 
-        $"[{code}]{value}[/]"
+    let formatProject = colourise "bold yellow"
 
     let nugetLinkPkgVsn package version =
         let url = $"{Rendering.nugetPrefix}/{package}/{version}"
@@ -39,72 +36,11 @@ module Console =
     let nugetLinkPkgSuggestion package suggestion =
         let url = $"{Rendering.nugetPrefix}/{package}"
         $"[link={url}]{package} {suggestion}[/]"
-
-    let formatProject value = $"[bold yellow]{value}[/]"
-
-    let formatHits (hits: seq<ScaHit>) =
-
-        let fmt (hit: ScaHit) =
-            seq {
-                match hit.kind with
-                | ScaHitKind.VulnerabilityTransitive
-                | ScaHitKind.Vulnerability ->
-                    sprintf
-                        "%s: %s - %s"
-                        (Rendering.formatHitKind hit.kind)
-                        (formatSeverity hit.severity)
-                        (nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan)
-                | ScaHitKind.Deprecated ->
-                    sprintf
-                        "%s: %s"
-                        (Rendering.formatHitKind hit.kind)
-                        (nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan)
-
-                if String.isNotEmpty hit.advisoryUri then
-                    sprintf "%s%s" (kindIndent hit.kind) (italic hit.advisoryUri)
-
-                if (hit.reasons |> Array.isEmpty |> not) then
-                    if String.isNotEmpty hit.suggestedReplacement then
-                        sprintf
-                            "%s%s - %s"
-                            (kindIndent hit.kind)
-                            (formatReasons hit.reasons)
-                            (match (hit.suggestedReplacement, hit.alternativePackageId) with
-                             | "", _ -> ""
-                             | x, y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> cyan |> sprintf "Use %s"
-                             | x, _ -> x |> cyan |> sprintf "Use %s")
-                        |> italic
-                    else
-                        sprintf "%s%s" (kindIndent hit.kind) (formatReasons hit.reasons) |> italic
-
-                ""
-            }
-
-        let fmtGrp (hit: (string * seq<ScaHit>)) =
-            let projectPath, hits = hit
-
-            let hits =
-                hits
-                |> Seq.sortBy (fun h ->
-                    (match h.kind with
-                     | ScaHitKind.Vulnerability -> 0
-                     | _ -> 1),
-                    h.packageId)
-
-            seq {
-                $"Project: {projectPath}" |> formatProject
-                yield! hits |> Seq.collect fmt
-            }
-
-        hits
-        |> Seq.groupBy (fun h -> h.projectPath)
-        |> Seq.sortBy fst
-        |> Seq.collect fmtGrp
-
+        
     let title hits =
         match hits with
-        | [] -> seq { "[lime]No vulnerabilities found.[/]" }
-        | _ -> seq { "[red]Vulnerabilities found![/]" }
+        | [] -> seq { green "No vulnerabilities found."  }
+        | _ -> seq { error "Vulnerabilities found!" }
 
     let formatSeverities severities =
         severities
@@ -115,42 +51,14 @@ module Console =
         |> italic
         |> Seq.singleton
 
-
-    let formatHitCounts counts =
-        counts
-        |> Seq.map (fun (k, s, c) ->
-            let fmtCount value =
-                match value with
-                | 1 -> $"{value} hit"
-                | _ -> $"{value} hits"
-
-            let fmtSeverity =
-                function
-                | ScaHitKind.VulnerabilityTransitive
-                | ScaHitKind.Vulnerability -> formatSeverity
-                | ScaHitKind.Deprecated -> formatReason
-
-            $"{Rendering.formatHitKind k} - {fmtSeverity k s}: {fmtCount c}.")
-        |> List.ofSeq
-
-
-
     let reportFileBuilt path =
         $"Report file [link={path}]{path}[/] built." |> italic
-
-    let send (console: IAnsiConsole) = console.MarkupLine
-    let write (console: IAnsiConsole) = console.Write
-
+            
     let tabularProject (project: string) =
         let table = (new Table()).LeftAligned().AddColumn("")
-        //table.Width <- 80 // use standard builder for this???
         table.Border <- TableBorder.None
         table.ShowHeaders <- false
-        // TODO: clean up
-        $"Project {project}" |> formatProject |> Array.singleton |> table.AddRow //|> ignore
-
-    //table
-
+        $"Project {project}" |> formatProject |> Array.singleton |> table.AddRow
 
     let tableHitRow hit =
         match hit.kind with
@@ -170,7 +78,7 @@ module Console =
             if hit.severity |> String.isNotEmpty then
                 yield formatSeverity hit.severity
 
-            yield! hit.reasons |> Seq.map formatReason
+            yield! hit.reasons |> Seq.map colouriseReason
         }
         |> Seq.filter String.isNotEmpty
         |> String.joinLines
@@ -197,7 +105,7 @@ module Console =
                 .AddColumn("Severity")
                 .AddColumn("Resolution")
 
-        table.Columns[0].Width <- maxKindIndent ()
+        table.Columns[0].Width <- maxKindLength ()
         table.ShowHeaders <- false
         table.Border <- TableBorder.None
 
@@ -233,9 +141,54 @@ module Console =
                     project |> tabularProject
                     hits |> tabularHitGroup
                 })
-            |> Seq.map (fun tr -> [| tr :> Spectre.Console.Rendering.IRenderable |])        
+            |> Seq.map (fun tr -> [| tr :> Spectre.Console.Rendering.IRenderable |])
 
-        innerTables        
-        |> Seq.iter (fun tr -> table.AddRow tr |> ignore)
+        innerTables |> Seq.iter (fun tr -> table.AddRow tr |> ignore)
+
+        table
+
+    let tableHeadline errorHits =
+        let table = (new Table()).AddColumn("")
+        table.Border <- TableBorder.None
+        table.ShowHeaders <- false
+
+        let title = errorHits |> title |> Array.ofSeq
+
+        table.AddRow title
+
+
+    let tableSeveritySettings severities =
+        let table = (new Table()).AddColumn("")
+        table.Border <- TableBorder.None
+        table.ShowHeaders <- false
+
+        let row = formatSeverities severities |> Array.ofSeq
+
+        table.AddRow row
+
+    let tableHitSummary counts =
+        let table =
+            (new Table()).AddColumn("Kind").AddColumn("Severity").AddColumn("Counts")
+
+        table.Border <- TableBorder.None
+        table.ShowHeaders <- false
+
+        let fmtSeverity kind severity =
+            match kind with
+            | ScaHitKind.VulnerabilityTransitive
+            | ScaHitKind.Vulnerability -> formatSeverity severity
+            | ScaHitKind.Deprecated -> colouriseReason severity
+
+        let fmtCount value =
+            match value with
+            | 1 -> $"{value} hit"
+            | _ -> $"{value} hits"
+
+        let row (kind: ScaHitKind, severity: string, count: int) =
+            [| Rendering.formatHitKind kind; fmtSeverity kind severity; fmtCount count |]
+
+        let rows = counts |> Seq.map row |> Array.ofSeq
+
+        rows |> Seq.iter (table.AddRow >> ignore)
 
         table
