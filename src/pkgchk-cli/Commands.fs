@@ -160,7 +160,8 @@ type PackageCheckCommand() =
 
                 if settings.OutputDirectory <> "" then
                     trace "Building reports..."
-                    let reportFile = 
+
+                    let reportFile =
                         (hits, errorHits, hitCounts, settings.SeverityLevels)
                         |> Markdown.generate
                         |> Io.writeFile (reportFile settings.OutputDirectory)

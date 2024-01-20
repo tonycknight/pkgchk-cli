@@ -138,7 +138,7 @@ module Console =
                     hits |> hitGroupTable
                     new Text("")
                 })
-            
+
         innerTables |> Seq.iter (fun tr -> table.AddRow tr |> ignore)
 
         table
