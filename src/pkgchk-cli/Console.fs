@@ -7,6 +7,9 @@ module Console =
 
     let italic value = $"[italic]{value}[/]"
 
+    let kindIndent (kind: ScaHitKind) =
+        kind |> Rendering.formatHitKind |> _.Length |> (+) 2 |> String.indent
+
     let formatReason value =
         let colour = Rendering.reasonColour value
         $"[{colour}]{value}[/]"
@@ -47,16 +50,17 @@ module Console =
                         "%s: [cyan]%s[/]"
                         (Rendering.formatHitKind hit.kind)
                         (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
-
+                                        
                 if String.isNotEmpty hit.advisoryUri then
-                    sprintf "                    %s" (italic hit.advisoryUri)
+                    sprintf "%s%s" (kindIndent hit.kind) (italic hit.advisoryUri)
 
                 if
                     (hit.reasons |> Array.isEmpty |> not)
                     && String.isNotEmpty hit.suggestedReplacement
                 then
                     sprintf
-                        "                    [italic]%s - use [cyan]%s[/][/]"
+                        "%s[italic]%s - use [cyan]%s[/][/]"
+                        (kindIndent hit.kind)
                         (formatReasons hit.reasons)
                         (match (hit.suggestedReplacement, hit.alternativePackageId) with
                          | "", _ -> ""

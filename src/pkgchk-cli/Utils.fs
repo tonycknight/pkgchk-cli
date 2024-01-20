@@ -39,6 +39,9 @@ module String =
     [<DebuggerStepThrough>]
     let trim (value: string) = value.Trim()
 
+    [<DebuggerStepThrough>]
+    let indent length = new String(' ', length)
+
 module ReturnCodes =
 
     [<Literal>]
