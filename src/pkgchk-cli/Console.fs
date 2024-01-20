@@ -6,6 +6,10 @@ open Spectre.Console
 module Console =
 
     let italic value = $"[italic]{value}[/]"
+    let cyan value = $"[cyan]{value}[/]"
+
+    let kindIndent (kind: ScaHitKind) =
+        kind |> Rendering.formatHitKind |> _.Length |> (+) 2 |> String.indent
 
     let formatReason value =
         let colour = Rendering.reasonColour value
@@ -35,34 +39,35 @@ module Console =
         let fmt (hit: ScaHit) =
             seq {
                 match hit.kind with
+                | ScaHitKind.VulnerabilityTransitive
                 | ScaHitKind.Vulnerability ->
                     sprintf
-                        "%s: %s - [cyan]%s[/]"
+                        "%s: %s - %s"
                         (Rendering.formatHitKind hit.kind)
                         (formatSeverity hit.severity)
-                        (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
+                        (nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan)
                 | ScaHitKind.Deprecated ->
                     sprintf
-                        "%s: [cyan]%s[/]"
+                        "%s: %s"
                         (Rendering.formatHitKind hit.kind)
-                        (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
+                        (nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan)
 
                 if String.isNotEmpty hit.advisoryUri then
-                    sprintf "                    %s" (italic hit.advisoryUri)
+                    sprintf "%s%s" (kindIndent hit.kind) (italic hit.advisoryUri)
 
-                if
-                    (hit.reasons |> Array.isEmpty |> not)
-                    && String.isNotEmpty hit.suggestedReplacement
-                then
-                    sprintf
-                        "                    [italic]%s - use [cyan]%s[/][/]"
-                        (formatReasons hit.reasons)
-                        (match (hit.suggestedReplacement, hit.alternativePackageId) with
-                         | "", _ -> ""
-                         | x, y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> sprintf "Use %s"
-                         | x, _ -> x |> sprintf "Use %s")
-                else if (hit.reasons |> Array.isEmpty |> not) then
-                    sprintf "                    %s" (italic (formatReasons hit.reasons))
+                if (hit.reasons |> Array.isEmpty |> not) then
+                    if String.isNotEmpty hit.suggestedReplacement then
+                        sprintf
+                            "%s%s - %s"
+                            (kindIndent hit.kind)
+                            (formatReasons hit.reasons)
+                            (match (hit.suggestedReplacement, hit.alternativePackageId) with
+                             | "", _ -> ""
+                             | x, y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> cyan |> sprintf "Use %s"
+                             | x, _ -> x |> cyan |> sprintf "Use %s")
+                        |> italic
+                    else
+                        sprintf "%s%s" (kindIndent hit.kind) (formatReasons hit.reasons) |> italic
 
                 ""
             }
@@ -113,6 +118,7 @@ module Console =
 
             let fmtSeverity =
                 function
+                | ScaHitKind.VulnerabilityTransitive
                 | ScaHitKind.Vulnerability -> formatSeverity
                 | ScaHitKind.Deprecated -> formatReason
 

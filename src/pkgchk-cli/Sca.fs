@@ -7,6 +7,7 @@ type ScaData = JsonProvider<"ScaSample.json">
 
 type ScaHitKind =
     | Vulnerability
+    | VulnerabilityTransitive
     | Deprecated
 
 type ScaHit =
@@ -114,7 +115,7 @@ module Sca =
                             tp.Vulnerabilities
                             |> Seq.map (fun v ->
                                 { ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
-                                  kind = ScaHitKind.Vulnerability
+                                  kind = ScaHitKind.VulnerabilityTransitive
                                   framework = f.Framework
                                   packageId = tp.Id
                                   resolvedVersion = tp.ResolvedVersion
@@ -140,6 +141,7 @@ module Sca =
         let filter =
             (fun (h: ScaHit) ->
                 match h.kind with
+                | ScaHitKind.VulnerabilityTransitive
                 | ScaHitKind.Vulnerability -> h.severity |> HashSet.contains levels
                 | ScaHitKind.Deprecated -> h.reasons |> Seq.exists (fun r -> r |> HashSet.contains levels))
 

@@ -62,6 +62,7 @@ module Markdown =
             |> Seq.map (fun (k, s, c) ->
                 let fmt =
                     function
+                    | ScaHitKind.VulnerabilityTransitive
                     | ScaHitKind.Vulnerability -> formatSeverity
                     | ScaHitKind.Deprecated -> formatReason
 
@@ -92,6 +93,7 @@ module Markdown =
         let fmt (hit: ScaHit) =
             seq {
                 match hit.kind with
+                | ScaHitKind.VulnerabilityTransitive
                 | ScaHitKind.Vulnerability ->
                     sprintf
                         "| %s | %s | %s %s | [Advisory](%s) | "
