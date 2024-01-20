@@ -166,6 +166,9 @@ type PackageCheckCommand() =
                     }
 
                 lines |> String.joinLines |> console
+                // TODO: end of table
+                hits |> Console.tabularHits |> Console.write Spectre.Console.AnsiConsole.Console
+                // TODO:
 
                 if settings.OutputDirectory <> "" then
                     trace "Rendering reports..."

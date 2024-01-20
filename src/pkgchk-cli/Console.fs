@@ -7,9 +7,17 @@ module Console =
 
     let italic value = $"[italic]{value}[/]"
     let cyan value = $"[cyan]{value}[/]"
+    let error value = $"[red]{value}[/]"
 
     let kindIndent (kind: ScaHitKind) =
         kind |> Rendering.formatHitKind |> _.Length |> (+) 2 |> String.indent
+
+    let maxKindIndent () =
+        [ ScaHitKind.VulnerabilityTransitive
+          ScaHitKind.Vulnerability
+          ScaHitKind.Deprecated ]
+        |> Seq.map (kindIndent >> _.Length)
+        |> Seq.max
 
     let formatReason value =
         let colour = Rendering.reasonColour value
@@ -125,9 +133,109 @@ module Console =
             $"{Rendering.formatHitKind k} - {fmtSeverity k s}: {fmtCount c}.")
         |> List.ofSeq
 
-    let error value = $"[red]{value}[/]"
+
 
     let reportFileBuilt path =
         $"Report file [link={path}]{path}[/] built." |> italic
 
     let send (console: IAnsiConsole) = console.MarkupLine
+    let write (console: IAnsiConsole) = console.Write
+
+    let tabularProject (project: string) =
+        let table = (new Table()).LeftAligned().AddColumn("")
+        //table.Width <- 80 // use standard builder for this???
+        table.Border <- TableBorder.None
+        table.ShowHeaders <- false
+        // TODO: clean up
+        $"Project {project}" |> formatProject |> Array.singleton |> table.AddRow //|> ignore
+
+    //table
+
+
+    let tableHitRow hit =
+        match hit.kind with
+        | ScaHitKind.VulnerabilityTransitive
+        | ScaHitKind.Vulnerability -> nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan
+        | ScaHitKind.Deprecated -> nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan
+        |> Seq.singleton
+
+    let tableHitAdvisory hit =
+        seq {
+            if String.isNotEmpty hit.advisoryUri then
+                yield (italic hit.advisoryUri)
+        }
+
+    let tableHitSeverities hit =
+        seq {
+            if hit.severity |> String.isNotEmpty then
+                yield formatSeverity hit.severity
+
+            yield! hit.reasons |> Seq.map formatReason
+        }
+        |> Seq.filter String.isNotEmpty
+        |> String.joinLines
+
+    let tableHitReasons hit =
+        seq {
+            if
+                (hit.reasons |> Array.isEmpty |> not)
+                && String.isNotEmpty hit.suggestedReplacement
+            then
+                yield
+                    (match (hit.suggestedReplacement, hit.alternativePackageId) with
+                     | "", _ -> ""
+                     | x, y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> cyan |> sprintf "Use %s"
+                     | x, _ -> x |> cyan |> sprintf "Use %s")
+                    |> italic
+        }
+
+    let tabularHitGroup (hits: seq<ScaHit>) =
+        let table =
+            (new Table())
+                .LeftAligned()
+                .AddColumn("Kind")
+                .AddColumn("Severity")
+                .AddColumn("Resolution")
+
+        table.Columns[0].Width <- maxKindIndent ()
+        table.ShowHeaders <- false
+        table.Border <- TableBorder.None
+
+        let rows =
+            hits
+            |> Seq.map (fun h ->
+                [| Rendering.formatHitKind h.kind
+                   tableHitSeverities h
+                   seq {
+                       tableHitRow h
+                       tableHitAdvisory h
+                       tableHitReasons h
+                   }
+                   |> Seq.collect id
+                   |> Seq.filter String.isNotEmpty
+                   |> String.joinLines |])
+
+        rows |> Seq.iter (fun r -> table.AddRow r |> ignore)
+
+        table
+
+
+    let tabularHits (hits: seq<ScaHit>) =
+        let table = (new Table()).AddColumn("")
+        table.Border <- TableBorder.None
+
+        let innerTables =
+            hits
+            |> Seq.groupBy _.projectPath
+            |> Seq.sortBy fst
+            |> Seq.collect (fun (project, hits) ->
+                seq {
+                    project |> tabularProject
+                    hits |> tabularHitGroup
+                })
+            |> Seq.map (fun tr -> [| tr :> Spectre.Console.Rendering.IRenderable |])        
+
+        innerTables        
+        |> Seq.iter (fun tr -> table.AddRow tr |> ignore)
+
+        table
