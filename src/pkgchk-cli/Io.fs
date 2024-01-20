@@ -27,6 +27,7 @@ module Io =
         let dir = System.IO.Path.GetDirectoryName path
         System.IO.Directory.CreateDirectory dir |> ignore
         System.IO.File.AppendAllLines(path, lines)
+        path
 
     let createProcess args =
         let p = new Process()
