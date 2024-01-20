@@ -50,7 +50,7 @@ module Console =
                         "%s: [cyan]%s[/]"
                         (Rendering.formatHitKind hit.kind)
                         (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
-                                        
+
                 if String.isNotEmpty hit.advisoryUri then
                     sprintf "%s%s" (kindIndent hit.kind) (italic hit.advisoryUri)
 
@@ -65,7 +65,7 @@ module Console =
                              | x, y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> sprintf "Use %s"
                              | x, _ -> x |> sprintf "Use %s")
                         |> italic
-                    else 
+                    else
                         sprintf "%s%s" (kindIndent hit.kind) (formatReasons hit.reasons) |> italic
 
                 ""
