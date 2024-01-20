@@ -52,8 +52,8 @@ type PackageCheckCommandSettings() =
 [<ExcludeFromCodeCoverage>]
 type PackageCheckCommand() =
     inherit Command<PackageCheckCommandSettings>()
-    
-    let console = Spectre.Console.AnsiConsole.MarkupLine 
+
+    let console = Spectre.Console.AnsiConsole.MarkupLine
 
     let trace traceLogging =
         if traceLogging then
@@ -62,9 +62,8 @@ type PackageCheckCommand() =
             ignore
 
     let renderTables (values: seq<Spectre.Console.Table>) =
-        values
-        |> Seq.iter Spectre.Console.AnsiConsole.Write
-            
+        values |> Seq.iter Spectre.Console.AnsiConsole.Write
+
     let runProc logging proc =
         try
             proc |> Io.run logging
@@ -83,7 +82,7 @@ type PackageCheckCommand() =
                 | _ -> Choice1Of2 true)
 
             settings.ProjectPath
-            |> Sca.restoreArgs 
+            |> Sca.restoreArgs
             |> Io.createProcess
             |> runRestoreProcParse (runProc logging)
 
@@ -111,7 +110,7 @@ type PackageCheckCommand() =
             | Choice1Of2 xs -> xs
             | _ -> [])
         |> List.ofSeq
-            
+
     let returnCode (hits: ScaHit list) =
         match hits with
         | [] -> ReturnCodes.validationOk
@@ -131,7 +130,7 @@ type PackageCheckCommand() =
         | _ ->
             let results =
                 (settings.ProjectPath, settings.IncludeTransitives, settings.IncludeDeprecations)
-                |> Sca.scanArgs 
+                |> Sca.scanArgs
                 |> Array.map Io.createProcess
                 |> runScaProcParse (runProc trace)
 
@@ -146,14 +145,17 @@ type PackageCheckCommand() =
                 let hitCounts = errorHits |> Sca.hitCountSummary |> List.ofSeq
 
                 trace "Building display..."
+
                 let renderables =
                     seq {
-                        hits |> Console.hitsTable 
+                        hits |> Console.hitsTable
                         errorHits |> Console.headlineTable
+
                         if hitCounts |> List.isEmpty |> not then
                             settings.SeverityLevels |> Console.severitySettingsTable
                             hitCounts |> Console.hitSummaryTable
                     }
+
                 renderables |> renderTables
 
                 if settings.OutputDirectory <> "" then

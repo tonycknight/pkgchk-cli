@@ -53,7 +53,7 @@ module ScaArgs =
     let scanDeprecations = scanArgs false
 
 module Sca =
-    
+
     let restoreArgs projectPath =
         projectPath |> Io.toFullPath |> sprintf "restore %s"
 

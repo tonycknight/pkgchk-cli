@@ -7,7 +7,7 @@ open Spectre.Console.Cli
 [<ExcludeFromCodeCoverage>]
 module Program =
 
-    let console = Spectre.Console.AnsiConsole.MarkupLine 
+    let console = Spectre.Console.AnsiConsole.MarkupLine
 
     [<EntryPoint>]
     let main argv =

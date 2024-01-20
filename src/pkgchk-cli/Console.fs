@@ -10,14 +10,16 @@ module Console =
     let green = colourise "lime"
     let cyan = colourise "cyan"
     let error = colourise "red"
+
     let colouriseReason value =
         let colour = Rendering.reasonColour value
         value |> colourise colour
-                   
+
     let colouriseSeverity value =
         let code =
             $"{Rendering.severityStyle value} {Rendering.severityColour value}"
             |> String.trim
+
         value |> colourise code
 
     let colouriseProject = colourise "bold yellow"
@@ -29,10 +31,10 @@ module Console =
     let nugetLinkPkgSuggestion package suggestion =
         let url = $"{Rendering.nugetPrefix}/{package}"
         $"[link={url}]{package} {suggestion}[/]"
-        
+
     let title hits =
         match hits with
-        | [] -> seq { green "No vulnerabilities found."  }
+        | [] -> seq { green "No vulnerabilities found." }
         | _ -> seq { error "Vulnerabilities found!" }
 
     let formatSeverities severities =
@@ -46,7 +48,7 @@ module Console =
 
     let reportFileBuilt path =
         $"Report file [link={path}]{path}[/] built." |> italic
-            
+
     let projectTable (project: string) =
         let table = (new Table()).LeftAligned().AddColumn("")
         table.Border <- TableBorder.None
@@ -98,14 +100,10 @@ module Console =
         }
         |> Seq.collect id
         |> Seq.filter String.isNotEmpty
-        |> String.joinLines 
+        |> String.joinLines
 
     let hitRow (hit: ScaHit) =
-        [| 
-            Rendering.formatHitKind hit.kind
-            hitSeverities hit
-            hitDetails hit
-        |]
+        [| Rendering.formatHitKind hit.kind; hitSeverities hit; hitDetails hit |]
 
     let hitGroupTable (hits: seq<ScaHit>) =
         let table =

@@ -127,7 +127,9 @@ type IntegrationTests(output: ITestOutputHelper) =
         (rc, out, err)
 
     let assertPackagesNotFound (misses: string list) (rc, out, err) =
-        misses |> Seq.iter (fun h -> out |> clean80Columns |> should not' (haveSubstring h))
+        misses
+        |> Seq.iter (fun h -> out |> clean80Columns |> should not' (haveSubstring h))
+
         (rc, out, err)
 
     let execSuccess =
