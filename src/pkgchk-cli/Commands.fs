@@ -166,6 +166,6 @@ type PackageCheckCommand() =
                         |> Markdown.generate
                         |> Io.writeFile (reportFile settings.OutputDirectory)
 
-                    [ ""; reportFile |> Console.reportFileBuilt ] |> Seq.iter console
+                    $"{Environment.NewLine}Report file [link={reportFile}]{reportFile}[/] built." |> Console.italic |> console
 
                 errorHits |> returnCode

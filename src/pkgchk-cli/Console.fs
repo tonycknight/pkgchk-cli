@@ -46,9 +46,6 @@ module Console =
         |> italic
         |> Seq.singleton
 
-    let reportFileBuilt path =
-        $"Report file [link={path}]{path}[/] built." |> italic
-
     let projectTable (project: string) =
         let table = (new Table()).LeftAligned().AddColumn("")
         table.Border <- TableBorder.None
