@@ -50,7 +50,7 @@ module Markdown =
 
         footer |> Seq.append content
 
-    let formatHitCounts (severities: seq<string>, counts: seq<ScaHitKind * string * int>) =
+    let formatHitCounts (severities: seq<string>, counts: seq<ScaHitSummary>) =
         let tableHdr =
             seq {
                 "| Kind | Severity | Count |"
@@ -59,14 +59,14 @@ module Markdown =
 
         let lines =
             counts
-            |> Seq.map (fun (k, s, c) ->
+            |> Seq.map (fun hks ->
                 let fmt =
                     function
                     | ScaHitKind.VulnerabilityTransitive
                     | ScaHitKind.Vulnerability -> formatSeverity
                     | ScaHitKind.Deprecated -> formatReason
 
-                $"|{Rendering.formatHitKind k}|{fmt k s}|{c}|")
+                $"|{Rendering.formatHitKind hks.kind}|{fmt hks.kind hks.severity}|{hks.count}|")
 
         if Seq.isEmpty counts then
             Seq.empty

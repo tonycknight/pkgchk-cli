@@ -34,6 +34,11 @@ type ScaHit =
           advisoryUri = ""
           kind = ScaHitKind.Vulnerability }
 
+type ScaHitSummary =
+    { kind: ScaHitKind
+      severity: string
+      count: int }
+
 module ScaArgs =
 
     let scanArgs vulnerable includeTransitive path =
@@ -176,4 +181,4 @@ module Sca =
                 }
                 |> Seq.filter String.isNotEmpty)
             |> Seq.groupBy id
-            |> Seq.map (fun (s, xs) -> (kind, s, xs |> Seq.length)))
+            |> Seq.map (fun (s, xs) -> { ScaHitSummary.kind = kind; severity = s; count = xs |> Seq.length }))

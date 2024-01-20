@@ -55,7 +55,7 @@ module Console =
         table.ShowHeaders <- false
         $"Project {project}" |> colouriseProject |> Array.singleton |> table.AddRow
 
-    let hitPackage hit =
+    let hitPackage (hit: ScaHit) =
         match hit.kind with
         | ScaHitKind.VulnerabilityTransitive
         | ScaHitKind.Vulnerability -> nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan
@@ -68,7 +68,7 @@ module Console =
                 yield (italic hit.advisoryUri)
         }
 
-    let hitSeverities hit =
+    let hitSeverities (hit: ScaHit) =
         seq {
             if hit.severity |> String.isNotEmpty then
                 yield colouriseSeverity hit.severity
@@ -162,7 +162,7 @@ module Console =
 
         table.AddRow row
 
-    let hitSummaryTable counts =
+    let hitSummaryTable (counts: seq<ScaHitSummary>) =
         let table =
             (new Table()).AddColumn("Kind").AddColumn("Severity").AddColumn("Counts")
 
@@ -180,8 +180,8 @@ module Console =
             | 1 -> $"{value} hit"
             | _ -> $"{value} hits"
 
-        let row (kind: ScaHitKind, severity: string, count: int) =
-            [| Rendering.formatHitKind kind; fmtSeverity kind severity; fmtCount count |]
+        let row (value: ScaHitSummary) =
+            [| Rendering.formatHitKind value.kind; fmtSeverity value.kind value.severity; fmtCount value.count |]
 
         let rows = counts |> Seq.map row |> Array.ofSeq
 
