@@ -67,7 +67,7 @@ module Console =
                          | x, y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> sprintf "Use %s"
                          | x, _ -> x |> sprintf "Use %s")
                 else if (hit.reasons |> Array.isEmpty |> not) then
-                    sprintf "                    %s" (italic (formatReasons hit.reasons))
+                    sprintf "%s%s" (kindIndent hit.kind) (italic (formatReasons hit.reasons))
 
                 ""
             }
