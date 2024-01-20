@@ -12,7 +12,7 @@ module ConsoleTests =
     [<InlineData("x.csproj")>]
     let ``formatProject returns yellow`` proj =
 
-        let r = formatProject proj
+        let r = colouriseProject proj
 
         r |> should haveSubstring "yellow"
         r |> should haveSubstring proj
@@ -24,6 +24,6 @@ module ConsoleTests =
     [<InlineData("Critical", "italic red")>]
     [<InlineData("Moderate", "#d75f00")>]
     let ``formatSeverity returns colouration`` value expected =
-        let r = formatSeverity value
+        let r = colouriseSeverity value
 
         r |> should haveSubstring expected

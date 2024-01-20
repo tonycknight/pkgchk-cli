@@ -14,13 +14,13 @@ module Console =
         let colour = Rendering.reasonColour value
         value |> colourise colour
                    
-    let formatSeverity value =
+    let colouriseSeverity value =
         let code =
             $"{Rendering.severityStyle value} {Rendering.severityColour value}"
             |> String.trim
         value |> colourise code
 
-    let formatProject = colourise "bold yellow"
+    let colouriseProject = colourise "bold yellow"
 
     let nugetLinkPkgVsn package version =
         let url = $"{Rendering.nugetPrefix}/{package}/{version}"
@@ -37,7 +37,7 @@ module Console =
 
     let formatSeverities severities =
         severities
-        |> Seq.map formatSeverity
+        |> Seq.map colouriseSeverity
         |> List.ofSeq
         |> String.joinPretty "," "or"
         |> sprintf "Vulnerabilities found matching %s"
@@ -51,7 +51,7 @@ module Console =
         let table = (new Table()).LeftAligned().AddColumn("")
         table.Border <- TableBorder.None
         table.ShowHeaders <- false
-        $"Project {project}" |> formatProject |> Array.singleton |> table.AddRow
+        $"Project {project}" |> colouriseProject |> Array.singleton |> table.AddRow
 
     let hitPackage hit =
         match hit.kind with
@@ -69,7 +69,7 @@ module Console =
     let hitSeverities hit =
         seq {
             if hit.severity |> String.isNotEmpty then
-                yield formatSeverity hit.severity
+                yield colouriseSeverity hit.severity
 
             yield! hit.reasons |> Seq.map colouriseReason
         }
@@ -174,7 +174,7 @@ module Console =
         let fmtSeverity kind severity =
             match kind with
             | ScaHitKind.VulnerabilityTransitive
-            | ScaHitKind.Vulnerability -> formatSeverity severity
+            | ScaHitKind.Vulnerability -> colouriseSeverity severity
             | ScaHitKind.Deprecated -> colouriseReason severity
 
         let fmtCount value =
