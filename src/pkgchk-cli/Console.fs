@@ -13,14 +13,7 @@ module Console =
     let colouriseReason value =
         let colour = Rendering.reasonColour value
         value |> colourise colour
-        
-    let maxKindLength () =
-        [ ScaHitKind.VulnerabilityTransitive
-          ScaHitKind.Vulnerability
-          ScaHitKind.Deprecated ]
-        |> Seq.map (Rendering.formatHitKind >> _.Length)
-        |> Seq.max
-                
+                   
     let formatSeverity value =
         let code =
             $"{Rendering.severityStyle value} {Rendering.severityColour value}"
@@ -122,7 +115,7 @@ module Console =
                 .AddColumn("Severity")
                 .AddColumn("Resolution")
 
-        table.Columns[0].Width <- maxKindLength ()
+        table.Columns[0].Width <- Rendering.maxHitKindLength ()
         table.ShowHeaders <- false
         table.Border <- TableBorder.None
 
