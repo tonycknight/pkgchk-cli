@@ -53,6 +53,16 @@ module ScaArgs =
     let scanDeprecations = scanArgs false
 
 module Sca =
+    
+    let restoreArgs projectPath =
+        projectPath |> Io.toFullPath |> sprintf "restore %s"
+
+    let scanArgs (projectPath, includeTransitives, includeDeprecations) =
+        let projPath = projectPath |> Io.toFullPath
+
+        [| yield projPath |> ScaArgs.scanVulnerabilities includeTransitives
+           if includeDeprecations then
+               yield projPath |> ScaArgs.scanDeprecations includeTransitives |]
 
     let parse json =
 
