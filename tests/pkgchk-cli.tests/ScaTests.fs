@@ -171,9 +171,10 @@ module ScaTests =
         let expected =
             severities
             |> Seq.groupBy id
-            |> Seq.map (fun (r, xs) -> { pkgchk.ScaHitSummary.kind = pkgchk.ScaHitKind.Vulnerability; 
-                                        pkgchk.ScaHitSummary.severity = r; 
-                                        pkgchk.ScaHitSummary.count = xs |> Seq.length } )
+            |> Seq.map (fun (r, xs) ->
+                { pkgchk.ScaHitSummary.kind = pkgchk.ScaHitKind.Vulnerability
+                  pkgchk.ScaHitSummary.severity = r
+                  pkgchk.ScaHitSummary.count = xs |> Seq.length })
             |> Array.ofSeq
 
         results = expected
@@ -196,9 +197,10 @@ module ScaTests =
         let expected =
             reasons
             |> Seq.groupBy id
-            |> Seq.map (fun (r, xs) -> { pkgchk.ScaHitSummary.kind = pkgchk.ScaHitKind.Deprecated; 
-                                        pkgchk.ScaHitSummary.severity = r; 
-                                        pkgchk.ScaHitSummary.count = xs |> Seq.length })
+            |> Seq.map (fun (r, xs) ->
+                { pkgchk.ScaHitSummary.kind = pkgchk.ScaHitKind.Deprecated
+                  pkgchk.ScaHitSummary.severity = r
+                  pkgchk.ScaHitSummary.count = xs |> Seq.length })
             |> Array.ofSeq
 
         results = expected

@@ -181,4 +181,7 @@ module Sca =
                 }
                 |> Seq.filter String.isNotEmpty)
             |> Seq.groupBy id
-            |> Seq.map (fun (s, xs) -> { ScaHitSummary.kind = kind; severity = s; count = xs |> Seq.length }))
+            |> Seq.map (fun (s, xs) ->
+                { ScaHitSummary.kind = kind
+                  severity = s
+                  count = xs |> Seq.length }))

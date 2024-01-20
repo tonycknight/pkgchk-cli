@@ -181,7 +181,9 @@ module Console =
             | _ -> $"{value} hits"
 
         let row (value: ScaHitSummary) =
-            [| Rendering.formatHitKind value.kind; fmtSeverity value.kind value.severity; fmtCount value.count |]
+            [| Rendering.formatHitKind value.kind
+               fmtSeverity value.kind value.severity
+               fmtCount value.count |]
 
         let rows = counts |> Seq.map row |> Array.ofSeq
 
