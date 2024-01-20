@@ -157,11 +157,11 @@ type PackageCheckCommand() =
                 let hitCounts = errorHits |> Sca.hitCountSummary |> List.ofSeq
 
                 trace "Building display..."
-                hits |> Console.tabularHits |> render
-                errorHits |> Console.tableHeadline |> render
+                hits |> Console.hitsTable |> render
+                errorHits |> Console.headlineTable |> render
                 if hitCounts |> List.isEmpty |> not then
-                    settings.SeverityLevels |> Console.tableSeveritySettings |> render
-                    hitCounts |> Console.tableHitSummary |> render
+                    settings.SeverityLevels |> Console.severitySettingsTable |> render
+                    hitCounts |> Console.hitSummaryTable |> render
 
                 if settings.OutputDirectory <> "" then
                     trace "Rendering reports..."

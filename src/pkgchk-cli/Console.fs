@@ -54,26 +54,26 @@ module Console =
     let reportFileBuilt path =
         $"Report file [link={path}]{path}[/] built." |> italic
             
-    let tabularProject (project: string) =
+    let projectTable (project: string) =
         let table = (new Table()).LeftAligned().AddColumn("")
         table.Border <- TableBorder.None
         table.ShowHeaders <- false
         $"Project {project}" |> formatProject |> Array.singleton |> table.AddRow
 
-    let tableHitRow hit =
+    let hitPackage hit =
         match hit.kind with
         | ScaHitKind.VulnerabilityTransitive
         | ScaHitKind.Vulnerability -> nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan
         | ScaHitKind.Deprecated -> nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan
         |> Seq.singleton
 
-    let tableHitAdvisory hit =
+    let hitAdvisory hit =
         seq {
             if String.isNotEmpty hit.advisoryUri then
                 yield (italic hit.advisoryUri)
         }
 
-    let tableHitSeverities hit =
+    let hitSeverities hit =
         seq {
             if hit.severity |> String.isNotEmpty then
                 yield formatSeverity hit.severity
@@ -83,7 +83,7 @@ module Console =
         |> Seq.filter String.isNotEmpty
         |> String.joinLines
 
-    let tableHitReasons hit =
+    let hitReasons hit =
         seq {
             if
                 (hit.reasons |> Array.isEmpty |> not)
@@ -97,7 +97,24 @@ module Console =
                     |> italic
         }
 
-    let tabularHitGroup (hits: seq<ScaHit>) =
+    let hitDetails (hit: ScaHit) =
+        seq {
+            hitPackage hit
+            hitAdvisory hit
+            hitReasons hit
+        }
+        |> Seq.collect id
+        |> Seq.filter String.isNotEmpty
+        |> String.joinLines 
+
+    let hitRow (hit: ScaHit) =
+        [| 
+            Rendering.formatHitKind hit.kind
+            hitSeverities hit
+            hitDetails hit
+        |]
+
+    let hitGroupTable (hits: seq<ScaHit>) =
         let table =
             (new Table())
                 .LeftAligned()
@@ -109,26 +126,14 @@ module Console =
         table.ShowHeaders <- false
         table.Border <- TableBorder.None
 
-        let rows =
-            hits
-            |> Seq.map (fun h ->
-                [| Rendering.formatHitKind h.kind
-                   tableHitSeverities h
-                   seq {
-                       tableHitRow h
-                       tableHitAdvisory h
-                       tableHitReasons h
-                   }
-                   |> Seq.collect id
-                   |> Seq.filter String.isNotEmpty
-                   |> String.joinLines |])
+        let rows = hits |> Seq.map hitRow
 
         rows |> Seq.iter (fun r -> table.AddRow r |> ignore)
 
         table
 
 
-    let tabularHits (hits: seq<ScaHit>) =
+    let hitsTable (hits: seq<ScaHit>) =
         let table = (new Table()).AddColumn("")
         table.Border <- TableBorder.None
 
@@ -138,8 +143,8 @@ module Console =
             |> Seq.sortBy fst
             |> Seq.collect (fun (project, hits) ->
                 seq {
-                    project |> tabularProject
-                    hits |> tabularHitGroup
+                    project |> projectTable
+                    hits |> hitGroupTable
                 })
             |> Seq.map (fun tr -> [| tr :> Spectre.Console.Rendering.IRenderable |])
 
@@ -147,7 +152,7 @@ module Console =
 
         table
 
-    let tableHeadline errorHits =
+    let headlineTable errorHits =
         let table = (new Table()).AddColumn("")
         table.Border <- TableBorder.None
         table.ShowHeaders <- false
@@ -157,7 +162,7 @@ module Console =
         table.AddRow title
 
 
-    let tableSeveritySettings severities =
+    let severitySettingsTable severities =
         let table = (new Table()).AddColumn("")
         table.Border <- TableBorder.None
         table.ShowHeaders <- false
@@ -166,7 +171,7 @@ module Console =
 
         table.AddRow row
 
-    let tableHitSummary counts =
+    let hitSummaryTable counts =
         let table =
             (new Table()).AddColumn("Kind").AddColumn("Severity").AddColumn("Counts")
 
