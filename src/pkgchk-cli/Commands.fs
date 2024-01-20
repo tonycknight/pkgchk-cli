@@ -166,6 +166,6 @@ type PackageCheckCommand() =
                     |> Markdown.generate
                     |> Io.writeFile reportFile
 
-                    reportFile |> Console.reportFileBuilt |> console
+                    [ ""; reportFile |> Console.reportFileBuilt ] |> Seq.iter console
 
                 errorHits |> returnCode
