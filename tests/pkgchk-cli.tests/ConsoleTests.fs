@@ -1,6 +1,5 @@
 ﻿namespace pkgchk.tests
 
-open System
 open FsUnit.Xunit
 open FsCheck.Xunit
 open pkgchk.Console
