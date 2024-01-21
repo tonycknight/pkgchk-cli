@@ -11,7 +11,7 @@ on:
       token:
         required: false
   schedule:
-    - cron: '1 0 * * 6'
+    - cron: '0 0 * * *'
 
 jobs:
   sca:
