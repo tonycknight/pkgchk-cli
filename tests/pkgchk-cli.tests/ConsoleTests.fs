@@ -6,13 +6,25 @@ open Xunit
 
 module ConsoleTests =
     
+    let scrumbMarkdown (value: string) =
+        value.Replace("[", "").Replace("]", "")
+
     let scrubScaHitSummary (value: pkgchk.ScaHitSummary) =
         // Scrub because:
         // - FsCheck can provide null strings
         // - FsCheck can provide unbalanced markup characters;
-        let severity = (value.severity |> pkgchk.String.nullToEmpty).Replace("[", "").Replace("]", "")
+        let severity = (value.severity |> pkgchk.String.nullToEmpty) |> scrumbMarkdown
         { value with severity = severity }
 
+    let applyScaHitSummarySeverity (severity: string) (value: pkgchk.ScaHitSummary) =
+        { value with severity = severity }
+
+    let rowCellsAsMarkup (row: Spectre.Console.TableRow) =
+        row |> Seq.map (fun r -> r :?> Spectre.Console.Markup) 
+        
+    let markupsHaveContent (values: seq<Spectre.Console.Markup>) = 
+        values |> Seq.forall (fun v -> v.Length > 0)
+       
     [<Theory>]
     [<InlineData("")>]
     [<InlineData(" a ")>]
@@ -86,12 +98,13 @@ module ConsoleTests =
         && result |> Array.exists (fun r -> r.IndexOf(value.count.ToString()) >= 0)
 
     [<FsCheck.Xunit.Property>]
-    let ``hitSummaryTable produces table containing row`` (value: pkgchk.ScaHitSummary) =
-        let value = scrubScaHitSummary value
-        let values = [ value ]
+    let ``hitSummaryTable produces table containing row`` (value: pkgchk.ScaHitSummary, severity: FsCheck.NonEmptyString) =
+        let values = [ value |> scrubScaHitSummary |> applyScaHitSummarySeverity severity.Get ]
         
         let t = pkgchk.Console.hitSummaryTable values
         
-        t.Rows.Count = 1 &&
-        t.Columns.Count = 3
+        t.Rows.Count = 1 
+        && t.Columns.Count = 3
+        // Markup objects do not expose their contents, hence we check for basic existence
+        && t.Rows |> Seq.collect rowCellsAsMarkup |> markupsHaveContent 
         
