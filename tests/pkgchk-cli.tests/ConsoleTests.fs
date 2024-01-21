@@ -1,6 +1,7 @@
 ﻿namespace pkgchk.tests
 
 open FsUnit.Xunit
+open FsCheck.Xunit
 open pkgchk.Console
 open Xunit
 
@@ -12,10 +13,7 @@ module ConsoleTests =
     let markupsHaveContent (values: seq<Spectre.Console.Markup>) =
         values |> Seq.forall (fun v -> v.Length > 0)
 
-    [<Theory>]
-    [<InlineData("")>]
-    [<InlineData(" a ")>]
-    [<InlineData("x.csproj")>]
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``formatProject returns yellow`` proj =
 
         let r = colouriseProject proj
@@ -34,7 +32,7 @@ module ConsoleTests =
 
         r |> should haveSubstring expected
 
-    [<FsCheck.Xunit.Property>]
+    [<Property>]
     let ``nugetLinkPkgVsn produces link`` (package: FsCheck.NonEmptyString, version: FsCheck.NonEmptyString) =
         let r = pkgchk.Console.nugetLinkPkgVsn package.Get version.Get
 
@@ -42,7 +40,7 @@ module ConsoleTests =
         && r.IndexOf(package.Get) >= 0
         && r.IndexOf(version.Get) >= 0
 
-    [<FsCheck.Xunit.Property>]
+    [<Property>]
     let ``nugetLinkPkgSuggestion produces link`` (package: FsCheck.NonEmptyString, suggestion: FsCheck.NonEmptyString) =
         let r = pkgchk.Console.nugetLinkPkgSuggestion package.Get suggestion.Get
 
@@ -68,13 +66,13 @@ module ConsoleTests =
         t2.Columns.Count |> should equal 1
         t2 |> should equal t
 
-    [<FsCheck.Xunit.Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``hitSummaryRow yields non-empty values`` (value: pkgchk.ScaHitSummary) =
         let result = pkgchk.Console.hitSummaryRow value
 
         result |> Array.exists (pkgchk.String.isNotEmpty >> not) |> not
 
-    [<FsCheck.Xunit.Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``hitSummaryRow yields formatted values`` (value: pkgchk.ScaHitSummary) =
         let result = pkgchk.Console.hitSummaryRow value
 
@@ -82,7 +80,7 @@ module ConsoleTests =
         && result |> Array.exists (fun r -> r.IndexOf(value.severity) >= 0)
         && result |> Array.exists (fun r -> r.IndexOf(value.count.ToString()) >= 0)
 
-    [<FsCheck.Xunit.Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``hitSummaryTable produces table containing row`` (value: pkgchk.ScaHitSummary) =
         let values = [ value ]
 
@@ -92,3 +90,35 @@ module ConsoleTests =
         && t.Columns.Count = 3
         // Markup objects do not expose their contents, hence we check for basic existence
         && t.Rows |> Seq.collect rowCellsAsMarkup |> markupsHaveContent
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``title returns appropriate title`` (hits: pkgchk.ScaHit list) =
+        let result = pkgchk.Console.title hits |> pkgchk.String.joinLines
+
+        match hits with
+        | [] -> result.StartsWith("[lime]No vulnerabilities found!")
+        | xs -> result.StartsWith("[red]Vulnerabilities found!")
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``hitPackage produces nuget link`` (hit: pkgchk.ScaHit) =
+        match pkgchk.Console.hitPackage hit |> List.ofSeq with
+        | [ h ] -> h.Contains($"https://www.nuget.org/packages/{hit.packageId}/{hit.resolvedVersion}")
+        | _ -> false
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``hitAdvisory produces appropriate rows`` (hit: pkgchk.ScaHit) =
+        let result = pkgchk.Console.hitAdvisory hit |> List.ofSeq
+
+        match result with
+        | [ r ] -> r.Contains(hit.advisoryUri)
+        | _ -> false
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``hitAdvisory on empty advisoryUri produces empty set`` (hit: pkgchk.ScaHit) =
+        let result =
+            hit
+            |> (fun h -> { h with advisoryUri = "" })
+            |> pkgchk.Console.hitAdvisory
+            |> List.ofSeq
+
+        result |> Seq.isEmpty

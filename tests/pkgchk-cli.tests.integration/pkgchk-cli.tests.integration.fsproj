@@ -1,8 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
-    <RootNamespace>pkgchk.tests</RootNamespace>
+    <RootNamespace>pkgchk.tests.integration</RootNamespace>
 
     <IsPackable>false</IsPackable>
     <GenerateProgramFile>false</GenerateProgramFile>
@@ -10,15 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="ScaSampleWithVulnerabilities.json" />
-    <EmbeddedResource Include="ScaSampleEmpty.json" />
-    <Compile Include="TestDataGenerators.fs" />
-    <Compile Include="StringsTests.fs" />
-    <Compile Include="ScaArgsTests.fs" />
-    <Compile Include="ScaHitTests.fs" />
-    <Compile Include="ScaTests.fs" />
-    <Compile Include="ConsoleTests.fs" />
-    <Compile Include="MarkdownTests.fs" />
+    <Compile Include="TestUtils.fs" />
+    <Compile Include="DeprecatedPackageTests.fs" />
+    <Compile Include="CleanProjectTests.fs" />
+    <Compile Include="VulnerablePackageTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

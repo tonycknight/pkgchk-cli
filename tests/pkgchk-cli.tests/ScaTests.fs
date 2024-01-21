@@ -69,138 +69,103 @@ module ScaTests =
             | _ -> failwith "Unrecognised list returned"
         | _ -> failwith "No error raised"
 
-    [<Property>]
+    [<Property(MaxTest = 1)>]
     let ``hitsByLevels on empty returns empty`` () =
         let hits = []
         let result = hits |> pkgchk.Sca.hitsByLevels []
 
         result |> Seq.isEmpty
 
-    [<Property(Verbose = true)>]
-    let ``hitsByLevels by vulnerable on given severity returns hits`` (severities: Guid list) =
-        let severities =
-            severities |> Seq.map (fun g -> g.ToString()) |> Seq.distinct |> List.ofSeq
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``hitsByLevels by unknown severities returns empty`` (hits: pkgchk.ScaHit list) =
+        hits |> pkgchk.Sca.hitsByLevels [] |> Seq.isEmpty
 
-        let hits =
-            severities
-            |> Seq.map (fun s ->
-                { pkgchk.ScaHit.empty with
-                    kind = pkgchk.ScaHitKind.Vulnerability
-                    severity = s })
-            |> List.ofSeq
+    [<Property(Arbitrary = [| typeof<AlphaNumericString>; typeof<VulnerableScaHitKind> |], Verbose = true)>]
+    let ``hitsByLevels vulnerable by known severities returns hits`` (hits: pkgchk.ScaHit list) =
+        if hits |> List.isEmpty then
+            true
+        else
+            let severities = hits |> List.map _.severity |> List.distinct
+            let severity = severities |> List.head
+            let sort (h: pkgchk.ScaHit) = (h.kind, h.severity)
 
-        let knownSeverities =
-            match severities |> Seq.tryHead with
-            | Some s -> s
-            | _ -> Guid.NewGuid().ToString() // if nothing there, we'll assume "empty"
+            let result = hits |> pkgchk.Sca.hitsByLevels [ severity ] |> List.sortBy sort
 
-        let result = hits |> pkgchk.Sca.hitsByLevels [ knownSeverities ]
+            let expectedHits =
+                hits
+                |> List.filter (fun h -> StringComparer.InvariantCultureIgnoreCase.Equals(h.severity, severity))
+                |> List.sortBy sort
 
-        let expected =
-            hits |> Seq.filter (fun h -> h.severity = knownSeverities) |> List.ofSeq
+            result = expectedHits
 
-        expected = result
+    [<Property(Arbitrary =
+                   [| typeof<AlphaNumericString>
+                      typeof<AlphaNumericStringArray>
+                      typeof<DeprecatedScaHitKind> |],
+               Verbose = true)>]
+    let ``hitsByLevels deprecated by known reasons returns hits`` (hits: pkgchk.ScaHit list) =
+        if hits |> List.isEmpty then
+            true
+        else
+            let reasons = hits |> Seq.collect _.reasons |> Seq.distinct |> List.ofSeq
+            let reason = reasons |> List.head
 
-    [<Property(Verbose = true)>]
-    let ``hitsByLevels by deprecated on given reason returns hits`` (reasons: Guid list) =
-        let reasons =
-            reasons |> Seq.map (fun g -> g.ToString()) |> Seq.distinct |> List.ofSeq
+            let sort (h: pkgchk.ScaHit) = (h.kind, h.reasons |> Array.head)
 
-        let hits =
-            reasons
-            |> Seq.map (fun s ->
-                { pkgchk.ScaHit.empty with
-                    kind = pkgchk.ScaHitKind.Deprecated
-                    reasons = [| s |] })
-            |> List.ofSeq
+            let result = hits |> pkgchk.Sca.hitsByLevels [ reason ] |> List.sortBy sort
 
-        let knownReasons =
-            match reasons |> Seq.tryHead with
-            | Some s -> s
-            | _ -> Guid.NewGuid().ToString() // if nothing there, we'll assume "empty"
+            let expectedHits =
+                hits
+                |> List.filter (fun h ->
+                    StringComparer.InvariantCultureIgnoreCase.Equals(h.reasons |> Array.head, reason))
+                |> List.sortBy sort
 
-        let result = hits |> pkgchk.Sca.hitsByLevels [ knownReasons ]
+            result = expectedHits
 
-        let expected =
-            hits
-            |> Seq.filter (fun h -> h.reasons |> Seq.contains knownReasons)
-            |> List.ofSeq
+    [<Property(Arbitrary = [| typeof<AlphaNumericString>; typeof<VulnerableScaHitKind> |], Verbose = true)>]
+    let ``hitCountSummary on vulnerable produces counts`` (hits: pkgchk.ScaHit list) =
+        let hits = hits |> List.map (fun h -> { h with reasons = [||] })
+        let sort (h: pkgchk.ScaHitSummary) = (h.kind, h.severity)
+        let results = pkgchk.Sca.hitCountSummary hits |> Seq.sortBy sort |> Array.ofSeq
 
-        expected = result
-
-    [<Property(Verbose = true)>]
-    let ``hitsByLevels by deprecated on given reason returns trimmed hits`` (reasons: Guid list) =
-        let reasons =
-            reasons |> Seq.map (fun g -> g.ToString()) |> Seq.distinct |> Array.ofSeq
-
-        let hits =
-            reasons
-            |> Seq.map (fun s ->
-                { pkgchk.ScaHit.empty with
-                    kind = pkgchk.ScaHitKind.Deprecated
-                    reasons = reasons })
-            |> List.ofSeq
-
-        let knownReasons =
-            match reasons |> Seq.tryHead with
-            | Some s -> s
-            | _ -> Guid.NewGuid().ToString() // if nothing there, we'll assume "empty"
-
-        let result = hits |> pkgchk.Sca.hitsByLevels [ knownReasons ]
+        let groupedHits = hits |> Seq.groupBy (fun h -> (h.kind, h.severity))
 
         let expected =
-            hits |> Seq.map (fun h -> { h with reasons = [| knownReasons |] }) |> List.ofSeq
-
-        expected = result
-
-    [<Property(Verbose = true)>]
-    let ``hitCountSummary on vulnerable produces counts`` (severities: Guid[]) =
-        let severities =
-            severities |> Seq.map (fun g -> g.ToString()) |> Seq.distinct |> Array.ofSeq
-
-        let hits =
-            severities
-            |> Seq.map (fun s ->
-                { pkgchk.ScaHit.empty with
-                    kind = pkgchk.ScaHitKind.Vulnerability
-                    severity = s })
-            |> List.ofSeq
-
-        let results = pkgchk.Sca.hitCountSummary hits |> Array.ofSeq
-
-        let expected =
-            severities
-            |> Seq.groupBy id
-            |> Seq.map (fun (r, xs) ->
-                { pkgchk.ScaHitSummary.kind = pkgchk.ScaHitKind.Vulnerability
-                  pkgchk.ScaHitSummary.severity = r
-                  pkgchk.ScaHitSummary.count = xs |> Seq.length })
+            groupedHits
+            |> Seq.map (fun ((k, s), xs) ->
+                { pkgchk.ScaHitSummary.kind = k
+                  pkgchk.ScaHitSummary.severity = s
+                  pkgchk.ScaHitSummary.count = Seq.length xs })
+            |> Seq.sortBy sort
             |> Array.ofSeq
 
         results = expected
 
-    [<Property(Verbose = true)>]
-    let ``hitCountSummary on deprecations produces counts`` (reasons: Guid[]) =
-        let reasons =
-            reasons |> Seq.map (fun g -> g.ToString()) |> Seq.distinct |> Array.ofSeq
-
+    [<Property(Arbitrary =
+                   [| typeof<AlphaNumericString>
+                      typeof<AlphaNumericStringArray>
+                      typeof<DeprecatedScaHitKind> |],
+               Verbose = true)>]
+    let ``hitCountSummary on deprecated produces counts`` (hits: pkgchk.ScaHit list) =
         let hits =
-            reasons
-            |> Seq.map (fun r ->
-                { pkgchk.ScaHit.empty with
-                    kind = pkgchk.ScaHitKind.Deprecated
-                    reasons = [| r |] })
-            |> List.ofSeq
+            hits
+            |> List.map (fun h ->
+                { h with
+                    severity = ""
+                    reasons = [| h.reasons.[0] |] })
 
-        let results = pkgchk.Sca.hitCountSummary hits |> Array.ofSeq
+        let sort (h: pkgchk.ScaHitSummary) = (h.kind, h.severity)
+        let results = pkgchk.Sca.hitCountSummary hits |> Seq.sortBy sort |> Array.ofSeq
+
+        let groupedHits = hits |> Seq.groupBy (fun h -> (h.kind, h.reasons |> Seq.head))
 
         let expected =
-            reasons
-            |> Seq.groupBy id
-            |> Seq.map (fun (r, xs) ->
-                { pkgchk.ScaHitSummary.kind = pkgchk.ScaHitKind.Deprecated
-                  pkgchk.ScaHitSummary.severity = r
-                  pkgchk.ScaHitSummary.count = xs |> Seq.length })
+            groupedHits
+            |> Seq.map (fun ((k, s), xs) ->
+                { pkgchk.ScaHitSummary.kind = k
+                  pkgchk.ScaHitSummary.severity = s
+                  pkgchk.ScaHitSummary.count = Seq.length xs })
+            |> Seq.sortBy sort
             |> Array.ofSeq
 
         results = expected

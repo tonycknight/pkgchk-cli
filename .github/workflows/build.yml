@@ -76,7 +76,7 @@ jobs:
         run: dotnet restore
 
       - name: Run Tests
-        run: dotnet test -c Debug --filter DisplayName!~IntegrationTests /p:CollectCoverage=true /p:CoverletOutput=./TestResults/coverage.info /p:CoverletOutputFormat=cobertura --logger "trx;LogFileName=test_results.trx" 
+        run: dotnet test -c Debug --filter FullyQualifiedName!~integration /p:CollectCoverage=true /p:CoverletOutput=./TestResults/coverage.info /p:CoverletOutputFormat=cobertura --logger "trx;LogFileName=test_results.trx" 
       
       - name: Unit test results
         uses: dorny/test-reporter@v1
@@ -133,14 +133,14 @@ jobs:
         run: dotnet restore
 
       - name: Run Tests
-        run: dotnet test -c Release --filter DisplayName~IntegrationTests --logger "trx;LogFileName=test_results.trx" 
+        run: dotnet test -c Release --filter FullyQualifiedName~integration --logger "trx;LogFileName=test_results.trx" -v n
 
       - name: Integration test results
         uses: dorny/test-reporter@v1
         if: always()
         with:
           name: integration test results - ${{ matrix.os }}
-          path: ${{ github.workspace }}/tests/pkgchk-cli.tests/TestResults/test_results.trx
+          path: ${{ github.workspace }}/tests/pkgchk-cli.tests.integration/TestResults/test_results.trx
           reporter: dotnet-trx
           path-replace-backslashes: true
           token: ${{ secrets.GITHUB_TOKEN }}          
