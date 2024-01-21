@@ -15,6 +15,7 @@
     <Compile Include="TestDataGenerators.fs" />
     <Compile Include="StringsTests.fs" />
     <Compile Include="ScaArgsTests.fs" />
+    <Compile Include="ScaHitTests.fs" />
     <Compile Include="ScaTests.fs" />
     <Compile Include="ConsoleTests.fs" />
     <Compile Include="MarkdownTests.fs" />
