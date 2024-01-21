@@ -42,6 +42,3 @@ type VulnerablePackageTests(output: ITestOutputHelper) =
         |> assertTitleShowsVulnerabilities
         |> assertPackagesFound [ httpPackage ]
         |> assertPackagesNotFound [ regexPackage ]
-
-
-

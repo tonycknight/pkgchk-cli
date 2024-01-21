@@ -7,7 +7,7 @@ open Xunit.Abstractions
 
 [<AutoOpen>]
 module TestUtils =
-    
+
     [<Literal>]
     let httpPackage = "System.Net.Http"
 
@@ -17,7 +17,7 @@ module TestUtils =
     [<Literal>]
     let aadPackage = "Microsoft.IdentityModel.Clients.ActiveDirectory"
 
-    
+
     let clean80Columns (value: string) =
         value.Replace(" ", "").Replace(Environment.NewLine, "")
 
@@ -141,12 +141,15 @@ module TestUtils =
         >> assertSuccessfulExecution
 
     let execFailedPkgChk (output: ITestOutputHelper) =
-        createProc >> logProcArgs output >> executeProc >> logExecution output >> assertFailedPkgChk
+        createProc
+        >> logProcArgs output
+        >> executeProc
+        >> logExecution output
+        >> assertFailedPkgChk
 
-    let execSuccessPkgChk (output: ITestOutputHelper)=
+    let execSuccessPkgChk (output: ITestOutputHelper) =
         createProc
         >> logProcArgs output
         >> executeProc
         >> logExecution output
         >> assertSuccessfulPkgChk
-

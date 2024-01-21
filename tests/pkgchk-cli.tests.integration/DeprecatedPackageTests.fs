@@ -9,8 +9,8 @@ type DeprecatedPackageTests(output: ITestOutputHelper) =
     let execSuccess = execSuccess output
     let execSuccessPkgChk = execSuccessPkgChk output
     let execFailedPkgChk = execFailedPkgChk output
-    
-       
+
+
 
     [<Fact>]
     let ``Project with multiple deprecated packages returns Error`` () =
