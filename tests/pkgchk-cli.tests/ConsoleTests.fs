@@ -95,7 +95,7 @@ module ConsoleTests =
         && t.Rows |> Seq.collect rowCellsAsMarkup |> markupsHaveContent
 
     [<FsCheck.Xunit.Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
-    let ``title returns appropriate title``(hits: pkgchk.ScaHit list) =
+    let ``title returns appropriate title`` (hits: pkgchk.ScaHit list) =
         let result = pkgchk.Console.title hits |> pkgchk.String.joinLines
 
         match hits with
@@ -103,13 +103,13 @@ module ConsoleTests =
         | xs -> result.StartsWith("[red]Vulnerabilities found!")
 
     [<FsCheck.Xunit.Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
-    let ``hitPackage produces nuget link``(hit: pkgchk.ScaHit) =        
+    let ``hitPackage produces nuget link`` (hit: pkgchk.ScaHit) =
         match pkgchk.Console.hitPackage hit |> List.ofSeq with
         | [ h ] -> h.Contains($"https://www.nuget.org/packages/{hit.packageId}/{hit.resolvedVersion}")
         | _ -> false
 
     [<FsCheck.Xunit.Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
-    let ``hitAdvisory produces appropriate rows``(hit: pkgchk.ScaHit) =
+    let ``hitAdvisory produces appropriate rows`` (hit: pkgchk.ScaHit) =
         let result = pkgchk.Console.hitAdvisory hit |> List.ofSeq
 
         match result with
@@ -117,7 +117,11 @@ module ConsoleTests =
         | _ -> false
 
     [<FsCheck.Xunit.Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
-    let ``hitAdvisory on empty advisoryUri produces empty set``(hit: pkgchk.ScaHit) =
-        let result = hit |> (fun h -> { h with advisoryUri = "" } ) |> pkgchk.Console.hitAdvisory |> List.ofSeq
+    let ``hitAdvisory on empty advisoryUri produces empty set`` (hit: pkgchk.ScaHit) =
+        let result =
+            hit
+            |> (fun h -> { h with advisoryUri = "" })
+            |> pkgchk.Console.hitAdvisory
+            |> List.ofSeq
 
         result |> Seq.isEmpty

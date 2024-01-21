@@ -25,16 +25,16 @@ type AlphaNumericStringArray =
         |> Arb.fromGen
 
 type VulnerableScaHitKind =
-    
+
     static member Generate() =
-        let kinds = [ pkgchk.ScaHitKind.Vulnerability; pkgchk.ScaHitKind.VulnerabilityTransitive ]
-        Gen.elements kinds
-        |> Arb.fromGen
-        
-        
+        let kinds =
+            [ pkgchk.ScaHitKind.Vulnerability; pkgchk.ScaHitKind.VulnerabilityTransitive ]
+
+        Gen.elements kinds |> Arb.fromGen
+
+
 type DeprecatedScaHitKind =
-    
+
     static member Generate() =
         let kinds = [ pkgchk.ScaHitKind.Deprecated ]
-        Gen.elements kinds
-        |> Arb.fromGen
+        Gen.elements kinds |> Arb.fromGen
