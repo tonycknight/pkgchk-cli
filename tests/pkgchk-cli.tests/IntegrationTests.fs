@@ -119,7 +119,7 @@ type IntegrationTests(output: ITestOutputHelper) =
         (rc, out, err)
 
     let assertTitleShowsNoVulnerabilities (rc, out, err) =
-        out |> should haveSubstring "No vulnerabilities found."
+        out |> should haveSubstring "No vulnerabilities found!"
         (rc, out, err)
 
     let assertPackagesFound (hits: string list) (rc, out, err) =

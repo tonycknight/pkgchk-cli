@@ -99,7 +99,7 @@ module ConsoleTests =
         let result = pkgchk.Console.title hits |> pkgchk.String.joinLines
 
         match hits with
-        | [] -> result.StartsWith("[lime]No vulnerabilities found.")
+        | [] -> result.StartsWith("[lime]No vulnerabilities found!")
         | xs -> result.StartsWith("[red]Vulnerabilities found!")
 
     [<FsCheck.Xunit.Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
