@@ -40,7 +40,7 @@ Add the tool to your repository's toolset:
 
 ```dotnet tool install pkgchk-cli```
 
-## Installing into your machine
+## Installing onto your machine
 
 If you want to use it _in every directory_ just add the tool to your global toolset:
 
