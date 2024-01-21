@@ -123,7 +123,10 @@ type PackageCheckCommand() =
         let trace = trace settings.TraceLogging
 
         if settings.NoBanner |> not then
-            $"[cyan]Pkgchk-Cli[/] version [white]{App.version ()}[/]" |> console
+            seq {
+                Console.cyan "Pkgchk-Cli"
+                App.version () |> sprintf "Version %s"
+            } |> Seq.iter console
 
         match runRestore settings trace with
         | Choice2Of2 error -> error |> returnError

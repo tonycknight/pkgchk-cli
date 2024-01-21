@@ -7,6 +7,7 @@ module Console =
     let markup (style: string) (value: string) = $"[{style}]{value}[/]"
     let colourise (colour: string) = markup colour
     let italic = colourise "italic"
+    let white = colourise "white"
     let green = colourise "lime"
     let cyan = colourise "cyan"
     let error = colourise "red"
