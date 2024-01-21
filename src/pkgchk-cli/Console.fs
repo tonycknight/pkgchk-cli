@@ -49,7 +49,7 @@ module Console =
         severities
         |> Seq.map colouriseSeverity
         |> List.ofSeq
-        |> String.joinPretty "," "or"
+        |> String.joinPretty ", " " or "
         |> sprintf "Vulnerabilities found matching %s"
         |> italic
         |> Seq.singleton
