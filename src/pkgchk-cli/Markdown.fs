@@ -7,7 +7,7 @@ module Markdown =
 
     let formatSeverityColour value =
         value |> colourise (Rendering.severityColour value)
-        
+
     let formatSeverity value =
         $"{Rendering.severityEmote value} {formatSeverityColour value}"
 

@@ -10,17 +10,15 @@ module MarkdownTests =
     [<FsCheck.Xunit.Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``colourise projects colour & value`` (colour: string, value: string) =
         let result = colourise colour value
-        result.IndexOf(colour) >= 0 
-        && result.IndexOf(value) >= 0
-    
+        result.IndexOf(colour) >= 0 && result.IndexOf(value) >= 0
+
 
     [<FsCheck.Xunit.Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``formatSeverityColour projects colour and value`` (value: string) =
         let result = formatSeverityColour value
         let colour = pkgchk.Rendering.severityColour value
 
-        result.IndexOf(colour) >= 0 
-        && result.IndexOf(value) >= 0
+        result.IndexOf(colour) >= 0 && result.IndexOf(value) >= 0
 
     [<FsCheck.Xunit.Property(Arbitrary = [| typeof<KnownHitSeverity> |], Verbose = true)>]
     let ``formatSeverity projects emote, colour and value`` (value: string) =
@@ -28,7 +26,7 @@ module MarkdownTests =
         let colour = pkgchk.Rendering.severityColour value
         let emote = pkgchk.Rendering.severityEmote value
 
-        result.IndexOf(colour) >= 0 
+        result.IndexOf(colour) >= 0
         && result.IndexOf(emote) >= 0
         && result.IndexOf(value) >= 0
 
@@ -37,8 +35,7 @@ module MarkdownTests =
         let result = formatReasonColour value
         let colour = pkgchk.Rendering.reasonColour value
 
-        result.IndexOf(colour) >= 0 
-        && result.IndexOf(value) >= 0
+        result.IndexOf(colour) >= 0 && result.IndexOf(value) >= 0
 
     [<FsCheck.Xunit.Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``title returns appropriate title`` (hits: pkgchk.ScaHit list) =

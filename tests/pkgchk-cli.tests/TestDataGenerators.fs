@@ -40,13 +40,13 @@ type DeprecatedScaHitKind =
         Gen.elements kinds |> Arb.fromGen
 
 type KnownHitSeverity =
-    
+
     static member Generate() =
         let kinds = [ "High"; "Critical"; "Moderate" ]
         Gen.elements kinds |> Arb.fromGen
 
 type KnownHitReason =
-    
+
     static member Generate() =
         let kinds = [ "Critical Bugs"; "Legacy"; "Other" ]
         Gen.elements kinds |> Arb.fromGen
