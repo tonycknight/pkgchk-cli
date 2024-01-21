@@ -18,11 +18,10 @@ module Markdown =
         let url = Rendering.nugetLink (package, "")
         $"[{suggestion}]({url})"
 
-
-    let formatReason value =
+    let formatReasonColour value =
         value |> colourise (Rendering.reasonColour value)
 
-    let formatReasons = Seq.map formatReason >> String.join ", "
+    let formatReasons = Seq.map formatReasonColour >> String.join ", "
 
     let formatProject value = sprintf "## **%s**" value
 
@@ -67,7 +66,7 @@ module Markdown =
                     function
                     | ScaHitKind.VulnerabilityTransitive
                     | ScaHitKind.Vulnerability -> formatSeverity
-                    | ScaHitKind.Deprecated -> formatReason
+                    | ScaHitKind.Deprecated -> formatReasonColour
 
                 $"|{Rendering.formatHitKind hks.kind}|{fmt hks.kind hks.severity}|{hks.count}|")
 
