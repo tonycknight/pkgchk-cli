@@ -76,61 +76,60 @@ module Markdown =
                 yield "---"
             }
 
+    let formatHit (hit: ScaHit) =
+        seq {
+            match hit.kind with
+            | ScaHitKind.VulnerabilityTransitive
+            | ScaHitKind.Vulnerability ->
+                sprintf
+                    "| %s | %s | %s %s | [Advisory](%s) | "
+                    (Rendering.formatHitKind hit.kind)
+                    (formatSeverity hit.severity)
+                    (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
+                    hit.resolvedVersion
+                    hit.advisoryUri
+            | ScaHitKind.Deprecated ->
+                sprintf
+                    "| %s | %s | %s %s | %s | "
+                    (Rendering.formatHitKind hit.kind)
+                    (formatReasons hit.reasons)
+                    (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
+                    hit.resolvedVersion
+                    (match (hit.suggestedReplacement, hit.alternativePackageId) with
+                     | "", _ -> ""
+                     | x, y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> sprintf "Use %s"
+                     | x, _ -> x |> sprintf "Use %s")
+        }
 
-
-    let formatHits (hits: seq<ScaHit>) =
-        let grps = hits |> Seq.groupBy (fun h -> h.projectPath) |> Seq.sortBy fst
-
+    let formatHitGroup (hit: (string * seq<ScaHit>)) =
         let grpHdr =
             seq {
                 "| | | | |"
                 "|-|-|-|-|"
             }
 
-        let fmt (hit: ScaHit) =
-            seq {
-                match hit.kind with
-                | ScaHitKind.VulnerabilityTransitive
-                | ScaHitKind.Vulnerability ->
-                    sprintf
-                        "| %s | %s | %s %s | [Advisory](%s) | "
-                        (Rendering.formatHitKind hit.kind)
-                        (formatSeverity hit.severity)
-                        (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
-                        hit.resolvedVersion
-                        hit.advisoryUri
-                | ScaHitKind.Deprecated ->
-                    sprintf
-                        "| %s | %s | %s %s | %s | "
-                        (Rendering.formatHitKind hit.kind)
-                        (formatReasons hit.reasons)
-                        (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
-                        hit.resolvedVersion
-                        (match (hit.suggestedReplacement, hit.alternativePackageId) with
-                         | "", _ -> ""
-                         | x, y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> sprintf "Use %s"
-                         | x, _ -> x |> sprintf "Use %s")
-            }
+        let projectPath, hits = hit
 
-        let fmtGrp (hit: (string * seq<ScaHit>)) =
-            let projectPath, hits = hit
+        seq {
+            projectPath |> formatProject
+            ""
+            yield! grpHdr
 
-            seq {
-                projectPath |> formatProject
-                ""
-                yield! grpHdr
+            yield!
+                hits
+                |> Seq.sortBy (fun h ->
+                    ((match h.kind with
+                      | ScaHitKind.Vulnerability -> 0
+                      | _ -> 1),
+                     h.packageId))
+                |> Seq.collect formatHit
+        }
 
-                yield!
-                    hits
-                    |> Seq.sortBy (fun h ->
-                        ((match h.kind with
-                          | ScaHitKind.Vulnerability -> 0
-                          | _ -> 1),
-                         h.packageId))
-                    |> Seq.collect fmt
-            }
+    let formatHits (hits: seq<ScaHit>) =
+        let grps = hits |> Seq.groupBy (fun h -> h.projectPath) |> Seq.sortBy fst
 
-        (grps |> Seq.collect fmtGrp)
+
+        (grps |> Seq.collect formatHitGroup)
 
     let generate (hits, errorHits, countSummary, severities) =
         let title = title errorHits
