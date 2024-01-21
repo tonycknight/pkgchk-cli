@@ -23,7 +23,7 @@ module StringsTests =
         let finalSeparator = " or "
         let separator = ", "
         let values = [ 1 .. count.Get ] |> Seq.map (fun _ -> word) |> List.ofSeq
-        
+
         let result = values |> pkgchk.String.joinPretty separator finalSeparator
 
         let decomp = result.Split([| word |], StringSplitOptions.RemoveEmptyEntries)
@@ -41,11 +41,11 @@ module StringsTests =
 
         let result = values |> pkgchk.String.joinPretty separator finalSeparator
 
-        let decomp = result.Split([| word |], StringSplitOptions.RemoveEmptyEntries) 
-        
+        let decomp = result.Split([| word |], StringSplitOptions.RemoveEmptyEntries)
+
         let matches = decomp |> Array.filter (fun d -> d = separator)
         matches.Length = Math.Max(0, count.Get - 2)
-        
+
 
     [<Property(Verbose = true)>]
     let ``joinPretty has correct last separator`` (count: PositiveInt) =
@@ -55,9 +55,9 @@ module StringsTests =
         let values = [ 1 .. count.Get ] |> Seq.map (fun _ -> word) |> List.ofSeq
 
         let result = values |> pkgchk.String.joinPretty separator finalSeparator
-                
-        match result.Split([| word |], StringSplitOptions.RemoveEmptyEntries)  with
+
+        match result.Split([| word |], StringSplitOptions.RemoveEmptyEntries) with
         | [||] -> true
-        | xs -> 
+        | xs ->
             let idx = xs |> Array.findIndex (fun d -> d = finalSeparator)
             idx = xs.Length - 1

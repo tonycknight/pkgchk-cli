@@ -19,7 +19,7 @@ module String =
 
     [<DebuggerStepThrough>]
     let joinPretty separator finalSeparator (values: string list) =
-        
+
         let rec concat (values: string list) (accum: System.Text.StringBuilder) =
             let suffix (sep: string) (accum: System.Text.StringBuilder) =
                 if accum.Length > 0 then accum.Append(sep) else accum
