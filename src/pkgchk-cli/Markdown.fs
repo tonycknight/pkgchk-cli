@@ -47,11 +47,6 @@ module Markdown =
         | [] -> seq { "# :heavy_check_mark: No vulnerabilities found!" }
         | _ -> seq { "# :warning: Vulnerabilities found!" }
 
-    let formatNoHits () =
-        let content = seq { "# :heavy_check_mark: No vulnerabilities found!" }
-
-        footer |> Seq.append content
-
     let formatHitCounts (severities: seq<string>, counts: seq<ScaHitSummary>) =
         let tableHdr =
             seq {
