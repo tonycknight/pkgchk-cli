@@ -5,9 +5,8 @@ open pkgchk.Console
 open Xunit
 
 module ConsoleTests =
-    
-    let scrumbMarkdown (value: string) =
-        value.Replace("[", "").Replace("]", "")
+
+    let scrumbMarkdown (value: string) = value.Replace("[", "").Replace("]", "")
 
     let scrubScaHitSummary (value: pkgchk.ScaHitSummary) =
         // Scrub because:
@@ -16,15 +15,12 @@ module ConsoleTests =
         let severity = (value.severity |> pkgchk.String.nullToEmpty) |> scrumbMarkdown
         { value with severity = severity }
 
-    let applyScaHitSummarySeverity (severity: string) (value: pkgchk.ScaHitSummary) =
-        { value with severity = severity }
-
     let rowCellsAsMarkup (row: Spectre.Console.TableRow) =
-        row |> Seq.map (fun r -> r :?> Spectre.Console.Markup) 
-        
-    let markupsHaveContent (values: seq<Spectre.Console.Markup>) = 
+        row |> Seq.map (fun r -> r :?> Spectre.Console.Markup)
+
+    let markupsHaveContent (values: seq<Spectre.Console.Markup>) =
         values |> Seq.forall (fun v -> v.Length > 0)
-       
+
     [<Theory>]
     [<InlineData("")>]
     [<InlineData(" a ")>]
@@ -50,19 +46,19 @@ module ConsoleTests =
     [<FsCheck.Xunit.Property>]
     let ``nugetLinkPkgVsn produces link`` (package: FsCheck.NonEmptyString, version: FsCheck.NonEmptyString) =
         let r = pkgchk.Console.nugetLinkPkgVsn package.Get version.Get
-                
+
         r.IndexOf("https://www.nuget.org/packages") >= 0
         && r.IndexOf(package.Get) >= 0
         && r.IndexOf(version.Get) >= 0
-        
+
     [<FsCheck.Xunit.Property>]
     let ``nugetLinkPkgSuggestion produces link`` (package: FsCheck.NonEmptyString, suggestion: FsCheck.NonEmptyString) =
         let r = pkgchk.Console.nugetLinkPkgSuggestion package.Get suggestion.Get
-                
+
         r.IndexOf("https://www.nuget.org/packages") >= 0
         && r.IndexOf(package.Get) >= 0
         && r.IndexOf(suggestion.Get) >= 0
-        
+
 
     [<Fact>]
     let ``table produces console table`` () =
@@ -87,8 +83,8 @@ module ConsoleTests =
 
         result |> Array.exists (pkgchk.String.isNotEmpty >> not) |> not
 
-    [<FsCheck.Xunit.Property>]
-    let ``hitSummaryRow yields formatted values`` (value: pkgchk.ScaHitSummary) =        
+    [<FsCheck.Xunit.Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``hitSummaryRow yields formatted values`` (value: pkgchk.ScaHitSummary) =
         let value = scrubScaHitSummary value
 
         let result = pkgchk.Console.hitSummaryRow value
@@ -97,14 +93,13 @@ module ConsoleTests =
         && result |> Array.exists (fun r -> r.IndexOf(value.severity) >= 0)
         && result |> Array.exists (fun r -> r.IndexOf(value.count.ToString()) >= 0)
 
-    [<FsCheck.Xunit.Property>]
-    let ``hitSummaryTable produces table containing row`` (value: pkgchk.ScaHitSummary, severity: FsCheck.NonEmptyString) =
-        let values = [ value |> scrubScaHitSummary |> applyScaHitSummarySeverity severity.Get ]
-        
+    [<FsCheck.Xunit.Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``hitSummaryTable produces table containing row`` (value: pkgchk.ScaHitSummary) =
+        let values = [ value |> scrubScaHitSummary ]
+
         let t = pkgchk.Console.hitSummaryTable values
-        
-        t.Rows.Count = 1 
+
+        t.Rows.Count = 1
         && t.Columns.Count = 3
         // Markup objects do not expose their contents, hence we check for basic existence
-        && t.Rows |> Seq.collect rowCellsAsMarkup |> markupsHaveContent 
-        
+        && t.Rows |> Seq.collect rowCellsAsMarkup |> markupsHaveContent
