@@ -1,4 +1,4 @@
-name: "SCA"
+name: "Scheduled SCA"
 
 on:
   workflow_dispatch:
