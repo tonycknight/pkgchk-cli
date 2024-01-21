@@ -53,24 +53,16 @@ type PackageCheckCommandSettings() =
 type PackageCheckCommand() =
     inherit Command<PackageCheckCommandSettings>()
 
-    let console = Spectre.Console.AnsiConsole.Console |> Console.send
+    let console = Spectre.Console.AnsiConsole.MarkupLine
 
     let trace traceLogging =
         if traceLogging then
-            (fun value -> $"[grey]{value}[/]" |> console)
+            (Console.markup "grey" >> console)
         else
             ignore
 
-    let genRestoreArgs (settings: PackageCheckCommandSettings) =
-        settings.ProjectPath |> Io.toFullPath |> sprintf "restore %s"
-
-    let genScanArgs (settings: PackageCheckCommandSettings) =
-        let projPath = settings.ProjectPath |> Io.toFullPath
-
-        [| yield projPath |> ScaArgs.scanVulnerabilities settings.IncludeTransitives
-           if settings.IncludeDeprecations then
-               yield projPath |> ScaArgs.scanDeprecations settings.IncludeTransitives |]
-
+    let renderTables (values: seq<Spectre.Console.Table>) =
+        values |> Seq.iter Spectre.Console.AnsiConsole.Write
 
     let runProc logging proc =
         try
@@ -89,8 +81,8 @@ type PackageCheckCommand() =
                 | Choice2Of2 error -> Choice2Of2 error
                 | _ -> Choice1Of2 true)
 
-            settings
-            |> genRestoreArgs
+            settings.ProjectPath
+            |> Sca.restoreArgs
             |> Io.createProcess
             |> runRestoreProcParse (runProc logging)
 
@@ -119,7 +111,6 @@ type PackageCheckCommand() =
             | _ -> [])
         |> List.ofSeq
 
-
     let returnCode (hits: ScaHit list) =
         match hits with
         | [] -> ReturnCodes.validationOk
@@ -132,14 +123,18 @@ type PackageCheckCommand() =
         let trace = trace settings.TraceLogging
 
         if settings.NoBanner |> not then
-            $"[cyan]Pkgchk-Cli[/] version [white]{App.version ()}[/]" |> console
+            seq {
+                Console.cyan "Pkgchk-Cli"
+                App.version () |> sprintf "Version %s"
+            }
+            |> Seq.iter console
 
         match runRestore settings trace with
         | Choice2Of2 error -> error |> returnError
         | _ ->
             let results =
-                settings
-                |> genScanArgs
+                (settings.ProjectPath, settings.IncludeTransitives, settings.IncludeDeprecations)
+                |> Sca.scanArgs
                 |> Array.map Io.createProcess
                 |> runScaProcParse (runProc trace)
 
@@ -155,26 +150,28 @@ type PackageCheckCommand() =
 
                 trace "Building display..."
 
-                let lines =
+                let renderables =
                     seq {
-                        yield! hits |> Console.formatHits
-                        yield! errorHits |> Console.title
+                        hits |> Console.hitsTable
+                        errorHits |> Console.headlineTable
 
                         if hitCounts |> List.isEmpty |> not then
-                            yield! Console.formatSeverities settings.SeverityLevels
-                            yield! Console.formatHitCounts hitCounts
+                            settings.SeverityLevels |> Console.severitySettingsTable
+                            hitCounts |> Console.hitSummaryTable
                     }
 
-                lines |> String.joinLines |> console
+                renderables |> renderTables
 
                 if settings.OutputDirectory <> "" then
-                    trace "Rendering reports..."
-                    let reportFile = reportFile settings.OutputDirectory
+                    trace "Building reports..."
 
-                    (hits, errorHits, hitCounts, settings.SeverityLevels)
-                    |> Markdown.generate
-                    |> Io.writeFile reportFile
+                    let reportFile =
+                        (hits, errorHits, hitCounts, settings.SeverityLevels)
+                        |> Markdown.generate
+                        |> Io.writeFile (reportFile settings.OutputDirectory)
 
-                    reportFile |> Console.reportFileBuilt |> console
+                    $"{Environment.NewLine}Report file [link={reportFile}]{reportFile}[/] built."
+                    |> Console.italic
+                    |> console
 
                 errorHits |> returnCode

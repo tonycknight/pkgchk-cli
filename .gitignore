@@ -399,3 +399,5 @@ FodyWeavers.xsd
 
 launchSettings.json
 package/*
+
+reports/*

@@ -11,6 +11,13 @@ module Rendering =
         | ScaHitKind.Vulnerability -> "Vulnerable package"
         | ScaHitKind.Deprecated -> "Deprecated package"
 
+    let maxHitKindLength () =
+        [ ScaHitKind.VulnerabilityTransitive
+          ScaHitKind.Vulnerability
+          ScaHitKind.Deprecated ]
+        |> Seq.map (formatHitKind >> _.Length)
+        |> Seq.max
+
     let reasonColour =
         function
         | "Critical Bugs" -> "red"

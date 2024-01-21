@@ -7,7 +7,7 @@ open Spectre.Console.Cli
 [<ExcludeFromCodeCoverage>]
 module Program =
 
-    let send = Console.send AnsiConsole.Console
+    let console = Spectre.Console.AnsiConsole.MarkupLine
 
     [<EntryPoint>]
     let main argv =
@@ -20,5 +20,5 @@ module Program =
         try
             app.Run(argv)
         with ex ->
-            ex.Message |> Console.error |> send
+            ex.Message |> Console.error |> console
             ReturnCodes.sysError

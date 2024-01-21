@@ -2,6 +2,13 @@
 
 open System
 open System.Diagnostics
+open System.Diagnostics.CodeAnalysis
+
+[<ExcludeFromCodeCoverage>]
+module Combinators =
+    let (&&>>) x y = (fun (v: 'a) -> x v && y v)
+
+    let (||>>) x y = (fun (v: 'a) -> x v || y v)
 
 module String =
     [<DebuggerStepThrough>]
@@ -41,6 +48,10 @@ module String =
 
     [<DebuggerStepThrough>]
     let indent length = new String(' ', length)
+
+    [<DebuggerStepThrough>]
+    let nullToEmpty (value: string) =
+        if obj.ReferenceEquals(value, null) then "" else value
 
 module ReturnCodes =
 

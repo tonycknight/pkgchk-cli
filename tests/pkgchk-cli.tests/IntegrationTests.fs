@@ -17,6 +17,9 @@ type IntegrationTests(output: ITestOutputHelper) =
     [<Literal>]
     let aadPackage = "Microsoft.IdentityModel.Clients.ActiveDirectory"
 
+    let clean80Columns (value: string) =
+        value.Replace(" ", "").Replace(Environment.NewLine, "")
+
     let cmdArgs (cmd: string) =
         let x = cmd.IndexOf(' ')
 
@@ -59,7 +62,6 @@ type IntegrationTests(output: ITestOutputHelper) =
         let (exec, args) = cmdArgs cmd
         let proc = new Process()
         proc.StartInfo.UseShellExecute <- false
-        proc.StartInfo.RedirectStandardOutput <- true
         proc.StartInfo.FileName <- exec
         proc.StartInfo.Arguments <- args
         proc.StartInfo.CreateNoWindow <- true
@@ -121,11 +123,13 @@ type IntegrationTests(output: ITestOutputHelper) =
         (rc, out, err)
 
     let assertPackagesFound (hits: string list) (rc, out, err) =
-        hits |> Seq.iter (fun h -> out |> should haveSubstring h)
+        hits |> Seq.iter (fun h -> out |> clean80Columns |> should haveSubstring h)
         (rc, out, err)
 
     let assertPackagesNotFound (misses: string list) (rc, out, err) =
-        misses |> Seq.iter (fun h -> out |> should not' (haveSubstring h))
+        misses
+        |> Seq.iter (fun h -> out |> clean80Columns |> should not' (haveSubstring h))
+
         (rc, out, err)
 
     let execSuccess =

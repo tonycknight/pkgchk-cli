@@ -34,6 +34,11 @@ type ScaHit =
           advisoryUri = ""
           kind = ScaHitKind.Vulnerability }
 
+type ScaHitSummary =
+    { kind: ScaHitKind
+      severity: string
+      count: int }
+
 module ScaArgs =
 
     let scanArgs vulnerable includeTransitive path =
@@ -53,6 +58,16 @@ module ScaArgs =
     let scanDeprecations = scanArgs false
 
 module Sca =
+
+    let restoreArgs projectPath =
+        projectPath |> Io.toFullPath |> sprintf "restore %s"
+
+    let scanArgs (projectPath, includeTransitives, includeDeprecations) =
+        let projPath = projectPath |> Io.toFullPath
+
+        [| yield projPath |> ScaArgs.scanVulnerabilities includeTransitives
+           if includeDeprecations then
+               yield projPath |> ScaArgs.scanDeprecations includeTransitives |]
 
     let parse json =
 
@@ -166,4 +181,7 @@ module Sca =
                 }
                 |> Seq.filter String.isNotEmpty)
             |> Seq.groupBy id
-            |> Seq.map (fun (s, xs) -> (kind, s, xs |> Seq.length)))
+            |> Seq.map (fun (s, xs) ->
+                { ScaHitSummary.kind = kind
+                  severity = s
+                  count = xs |> Seq.length }))
