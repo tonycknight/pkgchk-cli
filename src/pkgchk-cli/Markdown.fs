@@ -2,9 +2,12 @@
 
 module Markdown =
 
-    let formatSeverityColour value =
-        $"<span style='color:{Rendering.severityColour value}'>{value}</span>"
+    let colourise colour value =
+        $"<span style='color:{colour}'>{value}</span>"
 
+    let formatSeverityColour value =
+        value |> colourise (Rendering.severityColour value)
+        
     let formatSeverity value =
         $"{Rendering.severityEmote value} {formatSeverityColour value}"
 
@@ -17,7 +20,7 @@ module Markdown =
 
 
     let formatReason value =
-        $"<span style='color:{Rendering.reasonColour value}'>{value}</span>"
+        value |> colourise (Rendering.reasonColour value)
 
     let formatReasons = Seq.map formatReason >> String.join ", "
 
