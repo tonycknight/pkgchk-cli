@@ -29,8 +29,7 @@ jobs:
       - name: Check SCA
         run: |
           dotnet tool restore
-          dotnet restore
-          dotnet pkgchk -t -o ./report
+          dotnet pkgchk --transitive true --output ./report
 
       - name: SCA summary
         if: always()

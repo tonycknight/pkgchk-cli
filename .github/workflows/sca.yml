@@ -15,6 +15,7 @@ on:
 
 jobs:
   sca:
+    name: Scheduled SCA
     runs-on: ubuntu-latest
 
     steps:
@@ -26,10 +27,8 @@ jobs:
       - name: Check SCA
         run: |
           dotnet tool restore
-          dotnet restore
-          dotnet pkgchk -t -o ./report
-
-      - name: SCA summary
-        if: always()
-        run: |          
+          set +e
+          dotnet pkgchk --transitive true --output ./report
+          exitcode="$?"
           cat ./report/pkgchk.md >> $GITHUB_STEP_SUMMARY
+          exit "$exitcode"
