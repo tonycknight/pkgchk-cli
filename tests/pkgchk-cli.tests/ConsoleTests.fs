@@ -1,5 +1,6 @@
 ﻿namespace pkgchk.tests
 
+open System
 open FsUnit.Xunit
 open pkgchk.Console
 open Xunit
@@ -92,3 +93,31 @@ module ConsoleTests =
         && t.Columns.Count = 3
         // Markup objects do not expose their contents, hence we check for basic existence
         && t.Rows |> Seq.collect rowCellsAsMarkup |> markupsHaveContent
+
+    [<FsCheck.Xunit.Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``title returns appropriate title``(hits: pkgchk.ScaHit list) =
+        let result = pkgchk.Console.title hits |> pkgchk.String.joinLines
+
+        match hits with
+        | [] -> result.StartsWith("[lime]No vulnerabilities found.")
+        | xs -> result.StartsWith("[red]Vulnerabilities found!")
+
+    [<FsCheck.Xunit.Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``hitPackage produces nuget link``(hit: pkgchk.ScaHit) =        
+        match pkgchk.Console.hitPackage hit |> List.ofSeq with
+        | [ h ] -> h.Contains($"https://www.nuget.org/packages/{hit.packageId}/{hit.resolvedVersion}")
+        | _ -> false
+
+    [<FsCheck.Xunit.Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``hitAdvisory produces appropriate rows``(hit: pkgchk.ScaHit) =
+        let result = pkgchk.Console.hitAdvisory hit |> List.ofSeq
+
+        match result with
+        | [ r ] -> r.Contains(hit.advisoryUri)
+        | _ -> false
+
+    [<FsCheck.Xunit.Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``hitAdvisory on empty advisoryUri produces empty set``(hit: pkgchk.ScaHit) =
+        let result = hit |> (fun h -> { h with advisoryUri = "" } ) |> pkgchk.Console.hitAdvisory |> List.ofSeq
+
+        result |> Seq.isEmpty
