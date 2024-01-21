@@ -133,7 +133,7 @@ jobs:
         run: dotnet restore
 
       - name: Run Tests
-        run: dotnet test -c Release --filter FullyQualifiedName~integration --logger "trx;LogFileName=test_results.trx" 
+        run: dotnet test -c Release --filter FullyQualifiedName~integration --logger "trx;LogFileName=test_results.trx" -v n
 
       - name: Integration test results
         uses: dorny/test-reporter@v1
