@@ -1,4 +1,4 @@
-namespace pkgchk.tests
+namespace pkgchk.tests.integration
 
 open System
 open System.Diagnostics
