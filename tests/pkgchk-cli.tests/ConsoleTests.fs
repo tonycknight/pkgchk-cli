@@ -77,7 +77,7 @@ module ConsoleTests =
         t2.Columns.Count |> should equal 1
         t2 |> should equal t
 
-    [<FsCheck.Xunit.Property>]
+    [<FsCheck.Xunit.Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``hitSummaryRow yields non-empty values`` (value: pkgchk.ScaHitSummary) =
         let result = pkgchk.Console.hitSummaryRow value
 

@@ -2,6 +2,13 @@
 
 open System
 open System.Diagnostics
+open System.Diagnostics.CodeAnalysis
+
+[<ExcludeFromCodeCoverage>]
+module Combinators =
+    let (&&>>) x y = (fun (v: 'a) -> x v && y v)
+
+    let (||>>) x y = (fun (v: 'a) -> x v || y v)
 
 module String =
     [<DebuggerStepThrough>]
