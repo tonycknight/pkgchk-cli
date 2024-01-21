@@ -69,7 +69,7 @@ module ScaTests =
             | _ -> failwith "Unrecognised list returned"
         | _ -> failwith "No error raised"
 
-    [<Property>]
+    [<Property(MaxTest = 1)>]
     let ``hitsByLevels on empty returns empty`` () =
         let hits = []
         let result = hits |> pkgchk.Sca.hitsByLevels []
