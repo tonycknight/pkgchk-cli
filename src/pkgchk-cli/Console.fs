@@ -12,6 +12,14 @@ module Console =
     let cyan = colourise "cyan"
     let error = colourise "red"
 
+    let table () =
+        let table = (new Table()).LeftAligned()
+        table.Border <- TableBorder.None
+        table.ShowHeaders <- false
+        table
+
+    let tableColumn (name: string) (table: Table) = table.AddColumn(name)
+
     let colouriseReason value =
         let colour = Rendering.reasonColour value
         value |> colourise colour
@@ -48,9 +56,7 @@ module Console =
         |> Seq.singleton
 
     let projectTable (project: string) =
-        let table = (new Table()).LeftAligned().AddColumn("")
-        table.Border <- TableBorder.None
-        table.ShowHeaders <- false
+        let table = table () |> tableColumn ""
         $"Project {project}" |> colouriseProject |> Array.singleton |> table.AddRow
 
     let hitPackage (hit: ScaHit) =
@@ -105,15 +111,12 @@ module Console =
 
     let hitGroupTable (hits: seq<ScaHit>) =
         let table =
-            (new Table())
-                .LeftAligned()
-                .AddColumn("Kind")
-                .AddColumn("Severity")
-                .AddColumn("Resolution")
+            table ()
+            |> tableColumn "Kind"
+            |> tableColumn "Severity"
+            |> tableColumn "Resolution"
 
         table.Columns[0].Width <- Rendering.maxHitKindLength ()
-        table.ShowHeaders <- false
-        table.Border <- TableBorder.None
 
         let rows = hits |> Seq.map hitRow
 
@@ -123,8 +126,7 @@ module Console =
 
 
     let hitsTable (hits: seq<ScaHit>) =
-        let table = (new Table()).AddColumn("")
-        table.Border <- TableBorder.None
+        let table = table () |> tableColumn ""
 
         let innerTables =
             hits
@@ -142,9 +144,7 @@ module Console =
         table
 
     let headlineTable errorHits =
-        let table = (new Table()).AddColumn("")
-        table.Border <- TableBorder.None
-        table.ShowHeaders <- false
+        let table = table () |> tableColumn ""
 
         let title = errorHits |> title |> Array.ofSeq
 
@@ -152,21 +152,13 @@ module Console =
 
 
     let severitySettingsTable severities =
-        let table = (new Table()).AddColumn("")
-        table.Border <- TableBorder.None
-        table.ShowHeaders <- false
+        let table = table () |> tableColumn ""
 
         let row = formatSeverities severities |> Array.ofSeq
 
         table.AddRow row
 
-    let hitSummaryTable (counts: seq<ScaHitSummary>) =
-        let table =
-            (new Table()).AddColumn("Kind").AddColumn("Severity").AddColumn("Counts")
-
-        table.Border <- TableBorder.None
-        table.ShowHeaders <- false
-
+    let hitSummaryRow (value: ScaHitSummary) =
         let fmtSeverity kind severity =
             match kind with
             | ScaHitKind.VulnerabilityTransitive
@@ -178,12 +170,15 @@ module Console =
             | 1 -> $"{value} hit"
             | _ -> $"{value} hits"
 
-        let row (value: ScaHitSummary) =
-            [| Rendering.formatHitKind value.kind
-               fmtSeverity value.kind value.severity
-               fmtCount value.count |]
+        [| Rendering.formatHitKind value.kind
+           fmtSeverity value.kind value.severity
+           fmtCount value.count |]
 
-        let rows = counts |> Seq.map row |> Array.ofSeq
+    let hitSummaryTable (counts: seq<ScaHitSummary>) =
+        let table =
+            table () |> tableColumn "Kind" |> tableColumn "Severity" |> tableColumn "Counts"
+
+        let rows = counts |> Seq.map hitSummaryRow
 
         rows |> Seq.iter (table.AddRow >> ignore)
 

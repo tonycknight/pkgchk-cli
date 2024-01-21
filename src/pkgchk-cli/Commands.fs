@@ -126,7 +126,8 @@ type PackageCheckCommand() =
             seq {
                 Console.cyan "Pkgchk-Cli"
                 App.version () |> sprintf "Version %s"
-            } |> Seq.iter console
+            }
+            |> Seq.iter console
 
         match runRestore settings trace with
         | Choice2Of2 error -> error |> returnError
@@ -169,6 +170,8 @@ type PackageCheckCommand() =
                         |> Markdown.generate
                         |> Io.writeFile (reportFile settings.OutputDirectory)
 
-                    $"{Environment.NewLine}Report file [link={reportFile}]{reportFile}[/] built." |> Console.italic |> console
+                    $"{Environment.NewLine}Report file [link={reportFile}]{reportFile}[/] built."
+                    |> Console.italic
+                    |> console
 
                 errorHits |> returnCode

@@ -42,6 +42,10 @@ module String =
     [<DebuggerStepThrough>]
     let indent length = new String(' ', length)
 
+    [<DebuggerStepThrough>]
+    let nullToEmpty (value: string) =
+        if obj.ReferenceEquals(value, null) then "" else value
+
 module ReturnCodes =
 
     [<Literal>]
