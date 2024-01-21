@@ -6,15 +6,6 @@ open Xunit
 
 module ConsoleTests =
 
-    let scrumbMarkdown (value: string) = value.Replace("[", "").Replace("]", "")
-
-    let scrubScaHitSummary (value: pkgchk.ScaHitSummary) =
-        // Scrub because:
-        // - FsCheck can provide null strings
-        // - FsCheck can provide unbalanced markup characters;
-        let severity = (value.severity |> pkgchk.String.nullToEmpty) |> scrumbMarkdown
-        { value with severity = severity }
-
     let rowCellsAsMarkup (row: Spectre.Console.TableRow) =
         row |> Seq.map (fun r -> r :?> Spectre.Console.Markup)
 
@@ -85,8 +76,6 @@ module ConsoleTests =
 
     [<FsCheck.Xunit.Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``hitSummaryRow yields formatted values`` (value: pkgchk.ScaHitSummary) =
-        let value = scrubScaHitSummary value
-
         let result = pkgchk.Console.hitSummaryRow value
 
         result |> Array.exists (fun r -> r = pkgchk.Rendering.formatHitKind value.kind)
@@ -95,7 +84,7 @@ module ConsoleTests =
 
     [<FsCheck.Xunit.Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``hitSummaryTable produces table containing row`` (value: pkgchk.ScaHitSummary) =
-        let values = [ value |> scrubScaHitSummary ]
+        let values = [ value  ]
 
         let t = pkgchk.Console.hitSummaryTable values
 
