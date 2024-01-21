@@ -46,7 +46,7 @@ If you want to use it _in every directory_ just add the tool to your global tool
 
 ```dotnet tool install pkgchk-cli -g```
 
-## Use
+## How to use it
 
 To get help:
 
@@ -63,20 +63,21 @@ To check only for top-level dependency vulnerabilities:
 
 ```pkgchk <project|solution> --transitive false```
 
+To add deprecated packages in a scan:
+
+```pkgchk <project|solution> --deprecated```
 
 To produce a markdown file, simply give an output folder:
 
 ```pkgchk <project|solution> --output ./reports_directory```
 
-
-Project restores (`dotnet restore`) occurs automatically. To suppress:
+Project restores (`dotnet restore`) occur automatically. To suppress restores, just add `--no-restore`:
 
 ```pkgchk <project|solution> --no-restore```
 
+By default only `High`, `Critical`, `Critical Bugs` and `Legacy` vulnerabilities and deprecations are detected. Specify the vulnerability severities (or deprecation reasons) with ``--severity`` switches, e.g. to just check for `Moderate` issues:
 
-By default only `High`, `Critical`, `Critical Bugs` and `Legacy` vulnerabilities and deprecations are detected. Specify the vulnerability severities (or deprecation reasons) with ``--severity`` switches, e.g.
-
-```pkgchk <project|solution> --severity Moderate --severity Legacy```
+```pkgchk <project|solution> --severity Moderate```
 
 ## Integration within Github actions
 
