@@ -46,15 +46,15 @@ module MarkdownTests =
         | xs -> result.Contains("Vulnerabilities found!")
 
     [<FsCheck.Xunit.Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
-    let ``nugetLinkPkgVsn builds markdown link``(packageId: string, version: string)=
+    let ``nugetLinkPkgVsn builds markdown link`` (packageId: string, version: string) =
         let result = pkgchk.Markdown.nugetLinkPkgVsn packageId version
-                
+
         result.StartsWith($"[{packageId}]")
         && result.EndsWith($"({pkgchk.Rendering.nugetLink (packageId, version)})")
 
     [<FsCheck.Xunit.Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
-    let ``nugetLinkPkgSuggestion builds markdown link`` (packageId: string, suggestion: string)=
+    let ``nugetLinkPkgSuggestion builds markdown link`` (packageId: string, suggestion: string) =
         let result = pkgchk.Markdown.nugetLinkPkgSuggestion packageId suggestion
-        
+
         result.StartsWith($"[{suggestion}]")
         && result.EndsWith($"({pkgchk.Rendering.nugetLink (packageId, String.Empty)})")
