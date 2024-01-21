@@ -5,12 +5,11 @@ open Spectre.Console
 
 module Console =
     let markup (style: string) (value: string) = $"[{style}]{value}[/]"
-    let colourise (colour: string) = markup colour
-    let italic = colourise "italic"
-    let white = colourise "white"
-    let green = colourise "lime"
-    let cyan = colourise "cyan"
-    let error = colourise "red"
+    let italic = markup "italic"
+    let white = markup "white"
+    let green = markup "lime"
+    let cyan = markup "cyan"
+    let error = markup "red"
 
     let table () =
         let table = (new Table()).LeftAligned()
@@ -22,16 +21,16 @@ module Console =
 
     let colouriseReason value =
         let colour = Rendering.reasonColour value
-        value |> colourise colour
+        value |> markup colour
 
     let colouriseSeverity value =
         let code =
             $"{Rendering.severityStyle value} {Rendering.severityColour value}"
             |> String.trim
 
-        value |> colourise code
+        value |> markup code
 
-    let colouriseProject = colourise "bold yellow"
+    let colouriseProject = markup "bold yellow"
 
     let nugetLinkPkgVsn package version =
         let url = $"{Rendering.nugetPrefix}/{package}/{version}"
