@@ -6,36 +6,45 @@
 
 A dotnet tool for package dependency checks.
 
-`dotnet list package` is a wonderful tool, and with its `--vulnerable` switch it is essential for verifying dependencies. If you're not famlilar with it or why it's recommended, [see this blog post](https://devblogs.microsoft.com/nuget/how-to-scan-nuget-packages-for-security-vulnerabilities/).
+`dotnet list package` is a wonderful tool and with its `--vulnerable` option it is essential for verifying your project's dependencies. It's quick, easy and _free_. If you're not famlilar with it or why you should depend on it (pun intented), [read this blog post](https://devblogs.microsoft.com/nuget/how-to-scan-nuget-packages-for-security-vulnerabilities/).
 
-Unfortunately, CI pipeline integration isn't simple: the tool does not return a non-zero return code when vulnerabilities are found; and CI pipelines rely on return codes. Users are left to parse the tool's console output, and so must maintain different scripts for different environments.
+Unfortunately, integrating it into your CI pipelines isn't as simple as you'd hope: the tool does not return a non-zero return code when vulnerabilities are found (what _every_ pipeline needs), and doesn't produce any reports for things like PR checks. We're left to dig into the build logs and parse the tool's console output to see what's up.
 
-There are long-lived issues on the Dotnet & Nuget boards, which seem to be stuck:
+There are long-lived issues on the Dotnet & Nuget boards:
 - [Dotnet issue 16852](https://github.com/dotnet/sdk/issues/16852)
 - [Dotnet issue 25091](https://github.com/dotnet/sdk/issues/25091)
 - [Nuget issue 11781](https://github.com/NuGet/Home/issues/11781)
 
 So until those issues are resolved, `dotnet list package` needs some workarounds in CI pipelines.
 
-This tool wraps `dotnet list package` and interprets the output for vulnerabilities. Anything found will return in a non-zero return code. CI integration is as easy as local use.
+This tool tries to do just that. It wraps `dotnet list package` and interprets the output for vulnerabilities. Anything found will return in a non-zero return code, and you get some nice markdown to make your PRs obvious. And because it's a `dotnet tool`, using it in a CI pipeline is as easy as using it on your dev machine.
 
-## Installation requirements
+## What you need to install it
 
 :warning: This tool only works with .Net SDK 7.0.200 or higher. 
 
 You'll need .Net SDK 7.0.200 installed. Any `global.json` files must use .Net SDK 7.0.200 or higher.
 
-If your effective SDK is lower than 7.0.200, this tool will work with unexpected results.
+If your SDK is lower than 7.0.200, this tool will not work: you'll get some unexpected results. Sorry about that.
+.Net 7.0.200 introduced JSON output, which `pkgchk-cli` leans on.
 
-## Installation into your repository
+## Installing into your repository
 
-Create a tool manifest for your reepository:
+If you want it in your pipelines, you'll need to install a version into your repository.
+
+Create a tool manifest for your repository:
 
 ```dotnet new tool-manifest```
 
 Add the tool to your repository's toolset:
 
 ```dotnet tool install pkgchk-cli```
+
+## Installing into your machine
+
+If you want to use it _in every directory_ just add the tool to your global toolset:
+
+```dotnet tool install pkgchk-cli -g```
 
 ## Use
 
