@@ -84,7 +84,7 @@ module ConsoleTests =
 
     [<FsCheck.Xunit.Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``hitSummaryTable produces table containing row`` (value: pkgchk.ScaHitSummary) =
-        let values = [ value  ]
+        let values = [ value ]
 
         let t = pkgchk.Console.hitSummaryTable values
 

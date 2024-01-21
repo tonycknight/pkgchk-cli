@@ -12,5 +12,4 @@ type AlphaNumericString =
 
         let isNotNullOrEmpty = String.IsNullOrEmpty >> not
 
-        Arb.Default.String()
-        |> Arb.filter (isNotNullOrEmpty &&>> isAlphaNumeric)
+        Arb.Default.String() |> Arb.filter (isNotNullOrEmpty &&>> isAlphaNumeric)
