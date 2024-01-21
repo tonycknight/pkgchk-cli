@@ -103,6 +103,7 @@ type PackageCheckCommand() =
             | Choice2Of2 x -> x
             | _ -> "")
         |> Seq.filter String.isNotEmpty
+        |> Seq.distinct
 
     let getHits procResults =
         procResults

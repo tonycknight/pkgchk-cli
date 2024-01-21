@@ -19,53 +19,45 @@ module StringsTests =
 
     [<Property(Verbose = true)>]
     let ``joinPretty has correct value count`` (count: PositiveInt) =
-        let values = [ 1 .. count.Get ] |> Seq.map (fun _ -> "A") |> List.ofSeq
-        let finalSeparator = "or"
-        let separator = ","
+        let word = "A"
+        let finalSeparator = " or "
+        let separator = ", "
+        let values = [ 1 .. count.Get ] |> Seq.map (fun _ -> word) |> List.ofSeq
 
         let result = values |> pkgchk.String.joinPretty separator finalSeparator
 
-        let counts =
-            result.Split(' ', StringSplitOptions.None)
-            |> Array.map (fun s -> s.Replace(separator, ""))
-            |> Array.countBy id
-            |> Map.ofSeq
+        let decomp = result.Split([| word |], StringSplitOptions.RemoveEmptyEntries)
 
-        counts.["A"] = count.Get
+        decomp.Length = count.Get - 1
+
 
 
     [<Property(Verbose = true)>]
     let ``joinPretty has correct intermediary separators`` (count: PositiveInt) =
-        let values = [ 1 .. count.Get ] |> Seq.map (fun _ -> "A") |> List.ofSeq
-        let finalSeparator = "or"
-        let separator = ','
+        let word = "A"
+        let finalSeparator = " or "
+        let separator = ", "
+        let values = [ 1 .. count.Get ] |> Seq.map (fun _ -> word) |> List.ofSeq
 
         let result = values |> pkgchk.String.joinPretty separator finalSeparator
 
-        let decomp = result.ToCharArray() |> Array.filter (fun c -> c = separator)
+        let decomp = result.Split([| word |], StringSplitOptions.RemoveEmptyEntries)
 
-        match (count.Get, decomp) with
-        | (x, [||]) when x <= 2 -> true
-        | _ ->
-            let counts = decomp |> Array.countBy id |> Map.ofSeq
-            counts.[separator] = count.Get - 2
+        let matches = decomp |> Array.filter (fun d -> d = separator)
+        matches.Length = Math.Max(0, count.Get - 2)
 
 
     [<Property(Verbose = true)>]
     let ``joinPretty has correct last separator`` (count: PositiveInt) =
-        let values = [ 1 .. count.Get ] |> Seq.map (fun _ -> "A") |> List.ofSeq
-        let finalSeparator = "or"
-        let separator = ","
+        let word = "A"
+        let finalSeparator = " or "
+        let separator = ", "
+        let values = [ 1 .. count.Get ] |> Seq.map (fun _ -> word) |> List.ofSeq
 
         let result = values |> pkgchk.String.joinPretty separator finalSeparator
 
-        let decomp = result.Split(' ', StringSplitOptions.None) |> Array.rev
-
-        let counts = decomp |> Array.countBy id |> Map.ofSeq
-
-        match count.Get with
-        | 1 -> counts.["A"] = count.Get && decomp |> Array.contains finalSeparator |> not
-        | x ->
-            let pos = Array.IndexOf(decomp, finalSeparator)
-
-            counts.[finalSeparator] = 1 && counts.["A"] = count.Get && pos = 1
+        match result.Split([| word |], StringSplitOptions.RemoveEmptyEntries) with
+        | [||] -> true
+        | xs ->
+            let idx = xs |> Array.findIndex (fun d -> d = finalSeparator)
+            idx = xs.Length - 1
