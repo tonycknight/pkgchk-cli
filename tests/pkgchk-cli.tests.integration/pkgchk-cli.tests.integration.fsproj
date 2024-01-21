@@ -11,7 +11,9 @@
 
   <ItemGroup>
     <Compile Include="TestUtils.fs" />
-    <Compile Include="IntegrationTests.fs" />
+    <Compile Include="DeprecatedPackageTests.fs" />
+    <Compile Include="CleanProjectTests.fs" />
+    <Compile Include="VulnerablePackageTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
