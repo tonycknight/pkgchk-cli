@@ -26,6 +26,7 @@
   <ItemGroup>
     <None Include="../../README.md" Pack="true" PackagePath="" Visible="False" />
     <Content Include="ScaSample.json" />
+    <Content Include="PackageDependencyTreeSample.json" />
     <Compile Include="Utils.fs" />
     <Compile Include="Io.fs" />
     <Compile Include="Sca.fs" />
