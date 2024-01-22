@@ -90,7 +90,7 @@ type PackageCheckCommand() =
         procs
         |> Array.map run
         |> Array.map (function
-            | Choice1Of2 json -> Sca.parse json
+            | Choice1Of2 json -> Sca.parseVulnerabilities json
             | Choice2Of2 x -> Choice2Of2 x)
 
     let returnError error =

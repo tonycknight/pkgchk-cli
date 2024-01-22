@@ -69,7 +69,7 @@ module Sca =
            if includeDeprecations then
                yield projPath |> ScaArgs.scanDeprecations includeTransitives |]
 
-    let parse json =
+    let parseVulnerabilities json =
 
         try
             let r = ScaVulnerabilityData.Parse(json)

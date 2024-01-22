@@ -19,19 +19,19 @@ module ScaTests =
     [<Theory>]
     [<InlineData(" ")>]
     [<InlineData("ABC")>]
-    let ``parse of plain text`` (text) =
-        match text |> pkgchk.Sca.parse with
+    let ``parseVulnerabilities of plain text`` (text) =
+        match text |> pkgchk.Sca.parseVulnerabilities with
         | Choice2Of2 msg -> ignore 0
         | _ -> failwith "No error raised"
 
     [<Fact>]
-    let ``parse for empty results`` () =
+    let ``parseVulnerabilities for empty results`` () =
 
         use f = getFile "ScaSampleEmpty.json"
 
         use reader = new System.IO.StreamReader(f)
 
-        let r = reader.ReadToEnd() |> pkgchk.Sca.parse
+        let r = reader.ReadToEnd() |> pkgchk.Sca.parseVulnerabilities
 
         match r with
         | Choice1Of2 xs ->
@@ -42,13 +42,13 @@ module ScaTests =
 
 
     [<Fact>]
-    let ``parse for vulnerabilities`` () =
+    let ``parseVulnerabilities for vulnerabilities`` () =
 
         use f = getFile "ScaSampleWithVulnerabilities.json"
 
         use reader = new System.IO.StreamReader(f)
 
-        let r = reader.ReadToEnd() |> pkgchk.Sca.parse
+        let r = reader.ReadToEnd() |> pkgchk.Sca.parseVulnerabilities
 
         match r with
         | Choice1Of2 xs ->
