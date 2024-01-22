@@ -10,6 +10,9 @@ module Rendering =
         | ScaHitKind.VulnerabilityTransitive -> "Vulnerable transitive"
         | ScaHitKind.Vulnerability -> "Vulnerable package"
         | ScaHitKind.Deprecated -> "Deprecated package"
+        | ScaHitKind.Dependency -> "Dependency"
+        | ScaHitKind.DependencyTransitive -> "Transitive Dependency"
+
 
     let maxHitKindLength () =
         [ ScaHitKind.VulnerabilityTransitive

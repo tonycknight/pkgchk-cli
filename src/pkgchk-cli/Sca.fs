@@ -10,6 +10,8 @@ type ScaHitKind =
     | Vulnerability
     | VulnerabilityTransitive
     | Deprecated
+    | Dependency
+    | DependencyTransitive
 
 type ScaHit =
     { kind: ScaHitKind
@@ -165,7 +167,7 @@ module Sca =
                         |> Seq.map (fun tp ->
                             
                                 { ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
-                                  kind = ScaHitKind.Vulnerability // TODO: need new kind
+                                  kind = ScaHitKind.Dependency
                                   framework = f.Framework
                                   packageId = tp.Id
                                   resolvedVersion = tp.ResolvedVersion
@@ -183,7 +185,7 @@ module Sca =
                         f.TransitivePackages
                         |> Seq.map (fun tp ->                            
                                 { ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
-                                  kind = ScaHitKind.VulnerabilityTransitive // TODO: need new kind
+                                  kind = ScaHitKind.DependencyTransitive
                                   framework = f.Framework
                                   packageId = tp.Id
                                   resolvedVersion = tp.ResolvedVersion
@@ -210,7 +212,9 @@ module Sca =
                 match h.kind with
                 | ScaHitKind.VulnerabilityTransitive
                 | ScaHitKind.Vulnerability -> h.severity |> HashSet.contains levels
-                | ScaHitKind.Deprecated -> h.reasons |> Seq.exists (fun r -> r |> HashSet.contains levels))
+                | ScaHitKind.Deprecated -> h.reasons |> Seq.exists (HashSet.contains levels)
+                | ScaHitKind.Dependency
+                | ScaHitKind.DependencyTransitive -> false)
 
         let remap (hit: ScaHit) =
             match hit.kind with
