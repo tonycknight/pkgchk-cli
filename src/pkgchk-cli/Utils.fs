@@ -73,12 +73,10 @@ open System.Reflection
 
 module App =
     let version () =
-        match
-            Assembly
-                .GetExecutingAssembly()
-                .GetCustomAttributes<AssemblyInformationalVersionAttribute>()
-            |> Seq.take 1
-            |> List.ofSeq
-        with
-        | [ x ] -> x.InformationalVersion
-        | _ -> ""
+        Assembly
+            .GetExecutingAssembly()
+            .GetCustomAttributes<AssemblyInformationalVersionAttribute>()
+        |> Seq.map _.InformationalVersion
+        |> Seq.tryHead
+        
+    let repo = "https://github.com/tonycknight/pkgchk-cli"
