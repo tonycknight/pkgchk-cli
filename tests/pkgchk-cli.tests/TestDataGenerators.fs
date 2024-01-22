@@ -11,16 +11,18 @@ module Arbitraries =
 
     let isNotNullOrEmpty = String.IsNullOrEmpty >> not
 
+    let isValidString = isNotNullOrEmpty &&>> isAlphaNumeric
+
 type AlphaNumericString =
 
     static member Generate() =
-        Arb.Default.String() |> Arb.filter (isNotNullOrEmpty &&>> isAlphaNumeric)
+        Arb.Default.String() |> Arb.filter isValidString
 
-type AlphaNumericStringArray =
+type AlphaNumericStringSingletonArray =
 
     static member Generate() =
         Arb.generate<string>
-        |> Gen.filter (isNotNullOrEmpty &&>> isAlphaNumeric)
+        |> Gen.filter isValidString
         |> Gen.map (fun s -> [| s |])
         |> Arb.fromGen
 
