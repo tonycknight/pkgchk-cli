@@ -100,7 +100,7 @@ module ScaTests =
 
     [<Property(Arbitrary =
                    [| typeof<AlphaNumericString>
-                      typeof<AlphaNumericStringArray>
+                      typeof<AlphaNumericStringSingletonArray>
                       typeof<DeprecatedScaHitKind> |],
                Verbose = true)>]
     let ``hitsByLevels deprecated by known reasons returns hits`` (hits: pkgchk.ScaHit list) =
@@ -143,7 +143,7 @@ module ScaTests =
 
     [<Property(Arbitrary =
                    [| typeof<AlphaNumericString>
-                      typeof<AlphaNumericStringArray>
+                      typeof<AlphaNumericStringSingletonArray>
                       typeof<DeprecatedScaHitKind> |],
                Verbose = true)>]
     let ``hitCountSummary on deprecated produces counts`` (hits: pkgchk.ScaHit list) =

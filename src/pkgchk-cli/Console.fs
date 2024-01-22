@@ -9,6 +9,7 @@ module Console =
     let white = markup "white"
     let green = markup "lime"
     let cyan = markup "cyan"
+    let yellow = markup "yellow"
     let error = markup "red"
 
     let table () =

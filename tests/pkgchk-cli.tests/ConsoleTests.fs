@@ -88,7 +88,8 @@ module ConsoleTests =
 
         t.Rows.Count = 1
         && t.Columns.Count = 3
-        // Markup objects do not expose their contents, hence we check for basic existence
+        // Spectre.Console.Testing for a later iteration,
+        // but for now Markup objects do not expose their contents, hence we check for basic existence
         && t.Rows |> Seq.collect rowCellsAsMarkup |> markupsHaveContent
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
@@ -122,3 +123,12 @@ module ConsoleTests =
             |> List.ofSeq
 
         result |> Seq.isEmpty
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``formatSeverities produces severities`` (severities: string[]) =
+        let result =
+            severities |> pkgchk.Console.formatSeverities |> pkgchk.String.joinLines
+
+        result |> pkgchk.String.isNotEmpty
+        && severities |> Array.forall result.Contains
+        && result.Contains "Vulnerabilities found matching"

@@ -126,7 +126,16 @@ type PackageCheckCommand() =
         if settings.NoBanner |> not then
             seq {
                 Console.cyan "Pkgchk-Cli"
-                App.version () |> sprintf "Version %s"
+
+                App.version ()
+                |> Option.defaultValue "unknown"
+                |> Console.yellow
+                |> sprintf "Version %s"
+
+                App.repo
+                |> Console.cyan
+                |> sprintf "For more information, see %s"
+                |> Console.italic
             }
             |> Seq.iter console
 
