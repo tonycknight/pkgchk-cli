@@ -3,7 +3,7 @@
 open System
 open FSharp.Data
 
-type ScaData = JsonProvider<"ScaSample.json">
+type ScaVulnerabilityData = JsonProvider<"ScaVulnerabilitySample.json">
 
 type ScaHitKind =
     | Vulnerability
@@ -72,7 +72,7 @@ module Sca =
     let parse json =
 
         try
-            let r = ScaData.Parse(json)
+            let r = ScaVulnerabilityData.Parse(json)
 
             let topLevelVuls =
                 r.Projects
