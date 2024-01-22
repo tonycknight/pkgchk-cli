@@ -88,7 +88,7 @@ module ConsoleTests =
 
         t.Rows.Count = 1
         && t.Columns.Count = 3
-        // Spectre.Console.Testing for a later iteration, 
+        // Spectre.Console.Testing for a later iteration,
         // but for now Markup objects do not expose their contents, hence we check for basic existence
         && t.Rows |> Seq.collect rowCellsAsMarkup |> markupsHaveContent
 
