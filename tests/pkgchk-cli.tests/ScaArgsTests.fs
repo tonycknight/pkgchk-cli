@@ -36,3 +36,14 @@ module ScaArgsTests =
             $"list {project} package --deprecated {includeTransitives transitives} --format json --output-version 1"
 
         r |> should equal expected
+
+    [<Theory>]
+    [<InlineData("")>]
+    [<InlineData("test.csproj")>]
+    let ``Dependencies with project`` project =
+        let r = scanDependencies project
+
+        let expected =
+            $"list {project} package  {includeTransitives true} --format json --output-version 1"
+
+        r |> should equal expected

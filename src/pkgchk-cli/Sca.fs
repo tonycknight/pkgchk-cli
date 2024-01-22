@@ -44,21 +44,24 @@ type ScaHitSummary =
 
 module ScaArgs =
 
-    let scanArgs vulnerable includeTransitive path =
+    let scanArgs vulnerable deprecated includeTransitive path =
         sprintf
             "%s %s %s %s"
             (sprintf "list %s package" path)
-            (match vulnerable with
-             | true -> "--vulnerable"
-             | false -> "--deprecated")
+            (match (vulnerable, deprecated) with
+             | (true,_) -> "--vulnerable"
+             | (_,true) -> "--deprecated"
+             | (false, false) -> "")
             (match includeTransitive with
              | true -> "--include-transitive"
              | _ -> "")
             "--format json --output-version 1"
 
-    let scanVulnerabilities = scanArgs true
+    let scanVulnerabilities = scanArgs true false
 
-    let scanDeprecations = scanArgs false
+    let scanDeprecations = scanArgs false true
+
+    let scanDependencies = scanArgs false false true
 
 module Sca =
 
