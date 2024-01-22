@@ -4,6 +4,7 @@ open System
 open FSharp.Data
 
 type ScaVulnerabilityData = JsonProvider<"ScaVulnerabilitySample.json">
+type ScaPackageTreeData = JsonProvider<"PackageDependencyTreeSample.json">
 
 type ScaHitKind =
     | Vulnerability
@@ -143,6 +144,57 @@ module Sca =
             let hits =
                 topLevelDeprecations
                 |> Seq.append transitiveVuls
+                |> Seq.append topLevelVuls
+                |> List.ofSeq
+
+            Choice1Of2 hits
+        with ex ->
+            Choice2Of2("An error occurred parsing results." + Environment.NewLine)
+
+    let parsePackageTree json =
+
+        try
+            let r = ScaPackageTreeData.Parse(json)
+
+            let topLevelVuls =
+                r.Projects
+                |> Seq.collect (fun p ->
+                    p.Frameworks
+                    |> Seq.collect (fun f ->
+                        f.TopLevelPackages
+                        |> Seq.map (fun tp ->
+                            
+                                { ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
+                                  kind = ScaHitKind.Vulnerability // TODO: need new kind
+                                  framework = f.Framework
+                                  packageId = tp.Id
+                                  resolvedVersion = tp.ResolvedVersion
+                                  severity = ""
+                                  reasons = [||]
+                                  suggestedReplacement = ""
+                                  alternativePackageId = ""
+                                  advisoryUri = "" })))
+
+            let transitiveVuls =
+                r.Projects
+                |> Seq.collect (fun p ->
+                    p.Frameworks
+                    |> Seq.collect (fun f ->
+                        f.TransitivePackages
+                        |> Seq.map (fun tp ->                            
+                                { ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
+                                  kind = ScaHitKind.VulnerabilityTransitive // TODO: need new kind
+                                  framework = f.Framework
+                                  packageId = tp.Id
+                                  resolvedVersion = tp.ResolvedVersion
+                                  severity = ""
+                                  reasons = [||]
+                                  suggestedReplacement = ""
+                                  alternativePackageId = ""
+                                  advisoryUri = "" })))
+
+            let hits =
+                transitiveVuls
                 |> Seq.append topLevelVuls
                 |> List.ofSeq
 
