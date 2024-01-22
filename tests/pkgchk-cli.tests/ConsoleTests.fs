@@ -125,11 +125,9 @@ module ConsoleTests =
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``formatSeverities produces severities`` (severities: string[]) =
-        let result = 
-            severities
-            |> pkgchk.Console.formatSeverities
-            |> pkgchk.String.joinLines
-        
+        let result =
+            severities |> pkgchk.Console.formatSeverities |> pkgchk.String.joinLines
+
         result |> pkgchk.String.isNotEmpty
         && severities |> Array.forall result.Contains
         && result.Contains "Vulnerabilities found matching"

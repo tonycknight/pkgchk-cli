@@ -78,5 +78,5 @@ module App =
             .GetCustomAttributes<AssemblyInformationalVersionAttribute>()
         |> Seq.map _.InformationalVersion
         |> Seq.tryHead
-        
+
     let repo = "https://github.com/tonycknight/pkgchk-cli"
