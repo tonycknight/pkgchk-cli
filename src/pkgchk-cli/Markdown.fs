@@ -123,15 +123,7 @@ module Markdown =
             projectPath |> formatProject
             ""
             yield! grpHdr
-
-            yield!
-                hits
-                |> Seq.sortBy (fun h ->
-                    ((match h.kind with
-                      | ScaHitKind.Vulnerability -> 0
-                      | _ -> 1),
-                     h.packageId))
-                |> Seq.collect formatHit
+            yield! hits |> Seq.collect formatHit
         }
 
     let formatHits (hits: seq<ScaHit>) =

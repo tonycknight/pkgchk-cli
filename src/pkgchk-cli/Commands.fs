@@ -108,12 +108,26 @@ type PackageCheckCommand() =
         |> Seq.filter String.isNotEmpty
         |> Seq.distinct
 
-    let getHits procResults =
+    let liftHits procResults =
         procResults
         |> Seq.collect (function
             | Choice1Of2 xs -> xs
             | _ -> [])
         |> List.ofSeq
+
+    let sortHits (hits: seq<ScaHit>) =
+        hits
+        |> Seq.sortBy (fun h ->
+                    ((match h.kind with
+                      | ScaHitKind.Vulnerability -> 0
+                      | ScaHitKind.Dependency -> 1
+                      | ScaHitKind.VulnerabilityTransitive -> 2
+                      | ScaHitKind.Deprecated -> 3
+                      | ScaHitKind.DependencyTransitive -> 4
+                      | _ -> Int32.MaxValue),
+                     h.packageId))
+
+    let getHits = liftHits >> sortHits >> List.ofSeq
 
     let returnCode (hits: ScaHit list) =
         match hits with
