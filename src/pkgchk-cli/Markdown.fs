@@ -106,7 +106,7 @@ module Markdown =
                 sprintf
                     "| %s |  | %s %s |  | "
                     (Rendering.formatHitKind hit.kind)
-                    (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)                    
+                    (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
                     hit.resolvedVersion
         }
 

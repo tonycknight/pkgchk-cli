@@ -95,7 +95,7 @@ type PackageCheckCommand() =
             |> Sca.restoreArgs
             |> Io.createProcess
             |> runRestoreProcParse (runProc logging)
-                
+
     let returnError error =
         error |> Console.error |> console
         ReturnCodes.sysError
@@ -118,14 +118,14 @@ type PackageCheckCommand() =
     let sortHits (hits: seq<ScaHit>) =
         hits
         |> Seq.sortBy (fun h ->
-                    ((match h.kind with
-                      | ScaHitKind.Vulnerability -> 0
-                      | ScaHitKind.Dependency -> 1
-                      | ScaHitKind.VulnerabilityTransitive -> 2
-                      | ScaHitKind.Deprecated -> 3
-                      | ScaHitKind.DependencyTransitive -> 4
-                      | _ -> Int32.MaxValue),
-                     h.packageId))
+            ((match h.kind with
+              | ScaHitKind.Vulnerability -> 0
+              | ScaHitKind.Dependency -> 1
+              | ScaHitKind.VulnerabilityTransitive -> 2
+              | ScaHitKind.Deprecated -> 3
+              | ScaHitKind.DependencyTransitive -> 4
+              | _ -> Int32.MaxValue),
+             h.packageId))
 
     let getHits = liftHits >> sortHits >> List.ofSeq
 
@@ -187,6 +187,7 @@ type PackageCheckCommand() =
                 let renderables =
                     seq {
                         hits |> Console.hitsTable
+
                         if settings.IncludeVulnerables || settings.IncludeDeprecations then
                             errorHits |> Console.headlineTable
 
