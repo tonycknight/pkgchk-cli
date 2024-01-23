@@ -14,7 +14,7 @@ type PackageCheckCommandSettings() =
     [<DefaultValue("")>]
     member val ProjectPath = "" with get, set
 
-    [<CommandOption("--vulnerable", IsHidden = true)>]
+    [<CommandOption("--vulnerable")>]
     [<Description("Toggle vulnerable package checks. -t true to include them, -t false to exclude.")>]
     [<DefaultValue(true)>]
     member val IncludeVulnerables = true with get, set
