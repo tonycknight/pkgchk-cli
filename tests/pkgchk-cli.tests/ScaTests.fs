@@ -69,7 +69,6 @@ module ScaTests =
             | _ -> failwith "Unrecognised list returned"
         | _ -> failwith "No error raised"
 
-    // TODO:
     [<Theory>]
     [<InlineData(" ")>]
     [<InlineData("ABC")>]
