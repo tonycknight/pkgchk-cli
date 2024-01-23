@@ -104,11 +104,10 @@ module Markdown =
             | ScaHitKind.Dependency
             | ScaHitKind.DependencyTransitive ->
                 sprintf
-                    "| %s | %s | %s | %s | "
+                    "| %s |  | %s %s |  | "
                     (Rendering.formatHitKind hit.kind)
-                    "" // TODO:
-                    ""
-                    ""
+                    (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)                    
+                    hit.resolvedVersion
         }
 
     let formatHitGroup (hit: (string * seq<ScaHit>)) =
