@@ -106,7 +106,7 @@ module Markdown =
                 sprintf
                     "| %s | %s | %s | %s | "
                     (Rendering.formatHitKind hit.kind)
-                    "" // TODO: 
+                    "" // TODO:
                     ""
                     ""
         }

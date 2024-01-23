@@ -49,8 +49,8 @@ module ScaArgs =
             "%s %s %s %s"
             (sprintf "list %s package" path)
             (match (vulnerable, deprecated) with
-             | (true,_) -> "--vulnerable"
-             | (_,true) -> "--deprecated"
+             | (true, _) -> "--vulnerable"
+             | (_, true) -> "--deprecated"
              | (false, false) -> "")
             (match includeTransitive with
              | true -> "--include-transitive"
@@ -61,19 +61,12 @@ module ScaArgs =
 
     let scanDeprecations = scanArgs false true
 
-    let scanDependencies = scanArgs false false true
+    let scanDependencies = scanArgs false false
 
 module Sca =
 
     let restoreArgs projectPath =
         projectPath |> Io.toFullPath |> sprintf "restore %s"
-
-    let scanArgs (projectPath, includeTransitives, includeDeprecations) =
-        let projPath = projectPath |> Io.toFullPath
-
-        [| yield projPath |> ScaArgs.scanVulnerabilities includeTransitives
-           if includeDeprecations then
-               yield projPath |> ScaArgs.scanDeprecations includeTransitives |]
 
     let parseVulnerabilities json =
 
@@ -168,17 +161,17 @@ module Sca =
                     |> Seq.collect (fun f ->
                         f.TopLevelPackages
                         |> Seq.map (fun tp ->
-                            
-                                { ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
-                                  kind = ScaHitKind.Dependency
-                                  framework = f.Framework
-                                  packageId = tp.Id
-                                  resolvedVersion = tp.ResolvedVersion
-                                  severity = ""
-                                  reasons = [||]
-                                  suggestedReplacement = ""
-                                  alternativePackageId = ""
-                                  advisoryUri = "" })))
+
+                            { ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
+                              kind = ScaHitKind.Dependency
+                              framework = f.Framework
+                              packageId = tp.Id
+                              resolvedVersion = tp.ResolvedVersion
+                              severity = ""
+                              reasons = [||]
+                              suggestedReplacement = ""
+                              alternativePackageId = ""
+                              advisoryUri = "" })))
 
             let transitiveVuls =
                 r.Projects
@@ -186,26 +179,34 @@ module Sca =
                     p.Frameworks
                     |> Seq.collect (fun f ->
                         f.TransitivePackages
-                        |> Seq.map (fun tp ->                            
-                                { ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
-                                  kind = ScaHitKind.DependencyTransitive
-                                  framework = f.Framework
-                                  packageId = tp.Id
-                                  resolvedVersion = tp.ResolvedVersion
-                                  severity = ""
-                                  reasons = [||]
-                                  suggestedReplacement = ""
-                                  alternativePackageId = ""
-                                  advisoryUri = "" })))
+                        |> Seq.map (fun tp ->
+                            { ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
+                              kind = ScaHitKind.DependencyTransitive
+                              framework = f.Framework
+                              packageId = tp.Id
+                              resolvedVersion = tp.ResolvedVersion
+                              severity = ""
+                              reasons = [||]
+                              suggestedReplacement = ""
+                              alternativePackageId = ""
+                              advisoryUri = "" })))
 
-            let hits =
-                transitiveVuls
-                |> Seq.append topLevelVuls
-                |> List.ofSeq
+            let hits = transitiveVuls |> Seq.append topLevelVuls |> List.ofSeq
 
             Choice1Of2 hits
         with ex ->
             Choice2Of2("An error occurred parsing results." + Environment.NewLine)
+
+    let scanArgs (projectPath, includeVulnerabilities, includeTransitives, includeDeprecations, includeDependencies) =
+        let projPath = projectPath |> Io.toFullPath
+
+        [| if includeVulnerabilities then
+               yield (projPath |> ScaArgs.scanVulnerabilities includeTransitives, parseVulnerabilities)
+           if includeDeprecations then
+               yield (projPath |> ScaArgs.scanDeprecations includeTransitives, parseVulnerabilities)
+           if includeDependencies then
+               yield (projPath |> ScaArgs.scanDependencies includeTransitives, parsePackageTree) |]
+
 
     let hitsByLevels levels (hits: ScaHit list) =
         let levels = levels |> HashSet.ofSeq StringComparer.InvariantCultureIgnoreCase

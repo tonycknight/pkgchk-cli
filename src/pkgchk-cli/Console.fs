@@ -62,10 +62,9 @@ module Console =
     let hitPackage (hit: ScaHit) =
         match hit.kind with
         | ScaHitKind.VulnerabilityTransitive
-        | ScaHitKind.Vulnerability 
+        | ScaHitKind.Vulnerability
         | ScaHitKind.Dependency
-        | ScaHitKind.DependencyTransitive ->
-                                   nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan
+        | ScaHitKind.DependencyTransitive -> nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan
         | ScaHitKind.Deprecated -> nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan
         |> Seq.singleton
 

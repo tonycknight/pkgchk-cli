@@ -14,6 +14,11 @@ type PackageCheckCommandSettings() =
     [<DefaultValue("")>]
     member val ProjectPath = "" with get, set
 
+    [<CommandOption("--vulnerable", IsHidden = true)>]
+    [<Description("Toggle vulnerable package checks. -t true to include them, -t false to exclude.")>]
+    [<DefaultValue(true)>]
+    member val IncludeVulnerables = true with get, set
+
     [<CommandOption("-t|--transitive")>]
     [<Description("Toggle transitive package checks. -t true to include them, -t false to exclude.")>]
     [<DefaultValue(true)>]
@@ -23,6 +28,11 @@ type PackageCheckCommandSettings() =
     [<Description("Check deprecated packagess. -d true to include, -d false to exclude.")>]
     [<DefaultValue(false)>]
     member val IncludeDeprecations = false with get, set
+
+    [<CommandOption("--dependencies")>]
+    [<Description("List dependency packagess. -d true to include, -d false to exclude.")>]
+    [<DefaultValue(false)>]
+    member val IncludeDependencies = false with get, set
 
     [<CommandOption("-o|--output")>]
     [<Description("Output directory for reports.")>]
@@ -85,14 +95,7 @@ type PackageCheckCommand() =
             |> Sca.restoreArgs
             |> Io.createProcess
             |> runRestoreProcParse (runProc logging)
-
-    let runScaProcParse run procs =
-        procs
-        |> Array.map run
-        |> Array.map (function
-            | Choice1Of2 json -> Sca.parseVulnerabilities json
-            | Choice2Of2 x -> Choice2Of2 x)
-
+                
     let returnError error =
         error |> Console.error |> console
         ReturnCodes.sysError
@@ -143,10 +146,17 @@ type PackageCheckCommand() =
         | Choice2Of2 error -> error |> returnError
         | _ ->
             let results =
-                (settings.ProjectPath, settings.IncludeTransitives, settings.IncludeDeprecations)
+                (settings.ProjectPath,
+                 settings.IncludeVulnerables,
+                 settings.IncludeTransitives,
+                 settings.IncludeDeprecations,
+                 settings.IncludeDependencies)
                 |> Sca.scanArgs
-                |> Array.map Io.createProcess
-                |> runScaProcParse (runProc trace)
+                |> Array.map (fun (args, parser) -> (Io.createProcess args, parser))
+                |> Array.map (fun (proc, parser) ->
+                    match proc |> (runProc trace) with
+                    | Choice1Of2 json -> parser json
+                    | Choice2Of2 x -> Choice2Of2 x)
 
             let errors = getErrors results
 

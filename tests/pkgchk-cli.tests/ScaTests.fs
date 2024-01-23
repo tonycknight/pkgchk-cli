@@ -69,7 +69,7 @@ module ScaTests =
             | _ -> failwith "Unrecognised list returned"
         | _ -> failwith "No error raised"
 
-    // TODO: 
+    // TODO:
     [<Theory>]
     [<InlineData(" ")>]
     [<InlineData("ABC")>]
@@ -114,7 +114,7 @@ module ScaTests =
                 x.resolvedVersion |> should equal "8.0.100"
                 x.severity |> should equal ""
                 x.advisoryUri |> should equal ""
-                                
+
             | _ -> failwith "Unrecognised list returned"
         | _ -> failwith "No error raised"
 
