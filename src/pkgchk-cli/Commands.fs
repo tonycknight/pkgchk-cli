@@ -30,7 +30,7 @@ type PackageCheckCommandSettings() =
     member val IncludeDeprecations = false with get, set
 
     [<CommandOption("--dependencies")>]
-    [<Description("List dependency packagess. -d true to include, -d false to exclude.")>]
+    [<Description("List all dependency packagess. -d true to include, -d false to exclude.")>]
     [<DefaultValue(false)>]
     member val IncludeDependencies = false with get, set
 
