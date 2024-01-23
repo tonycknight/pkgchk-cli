@@ -173,7 +173,8 @@ type PackageCheckCommand() =
                 let renderables =
                     seq {
                         hits |> Console.hitsTable
-                        errorHits |> Console.headlineTable
+                        if settings.IncludeVulnerables || settings.IncludeDeprecations then
+                            errorHits |> Console.headlineTable
 
                         if hitCounts |> List.isEmpty |> not then
                             settings.SeverityLevels |> Console.severitySettingsTable
