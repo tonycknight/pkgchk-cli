@@ -43,8 +43,7 @@ module Console =
         let url = $"{Rendering.nugetPrefix}/{package}"
         $"[link={url}]{package} {suggestion}[/]"
 
-    let hitFramework (hit: ScaHit) =
-        hit.framework |> blue
+    let hitFramework (hit: ScaHit) = hit.framework |> blue
 
     let title hits =
         match hits with
@@ -69,7 +68,8 @@ module Console =
         | ScaHitKind.VulnerabilityTransitive
         | ScaHitKind.Vulnerability
         | ScaHitKind.Dependency
-        | ScaHitKind.DependencyTransitive -> $"{hitFramework hit} {nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan}"
+        | ScaHitKind.DependencyTransitive ->
+            $"{hitFramework hit} {nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan}"
         | ScaHitKind.Deprecated -> $"{hitFramework hit} {nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan}"
         |> Seq.singleton
 
