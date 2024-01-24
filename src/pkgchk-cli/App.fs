@@ -33,7 +33,7 @@ type TypeRegistrar(svcs: IServiceCollection) =
 module App =
     [<Literal>]
     let packageId = "Pkgchk-Cli"
-
+    
     let version () =
         Assembly
             .GetExecutingAssembly()
@@ -45,10 +45,16 @@ module App =
 
     let upgradeVersion (nuget: Tk.Nuget.INugetClient) =
         task {
-            let currVsn = version () |> Option.defaultValue ""
-            let! upgVsn = nuget.GetUpgradeVersionAsync(packageId, currVsn, false, null)
+            try
+                let currVsn = version () |> Option.defaultValue ""
+                let! upgVsn = nuget.GetUpgradeVersionAsync(packageId, currVsn, false, null)
 
-            return upgVsn |> Some
+                return match upgVsn with
+                        | null -> None
+                        | x -> Some x
+            with _ -> 
+                // Swallow the exception. No need to add noise on Nuget failures.
+                return None
         }
 
     let banner (nuget: Tk.Nuget.INugetClient) =
