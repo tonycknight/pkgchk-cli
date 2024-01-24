@@ -33,6 +33,7 @@
     <Compile Include="Rendering.fs" />
     <Compile Include="Console.fs" />
     <Compile Include="Markdown.fs" />
+    <Compile Include="App.fs" />
     <Compile Include="Commands.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
