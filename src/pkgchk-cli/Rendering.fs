@@ -5,6 +5,20 @@ module Rendering =
     [<Literal>]
     let nugetPrefix = "https://www.nuget.org/packages"
 
+    [<Literal>]
+    let white = "white"
+    [<Literal>]
+    let green = "lime"
+    [<Literal>]
+    let cyan = "cyan"
+    [<Literal>]
+    let yellow = "yellow"
+    [<Literal>]
+    let cornflowerblue = "#6495ed" 
+    [<Literal>]
+    let red = "red"
+    
+
     let formatHitKind =
         function
         | ScaHitKind.VulnerabilityTransitive -> "Vulnerable transitive"

@@ -18,6 +18,9 @@ module Markdown =
         let url = Rendering.nugetLink (package, "")
         $"[{suggestion}]({url})"
 
+    let pkgFramework (hit: ScaHit) =
+        hit.framework |> colourise Rendering.cornflowerblue
+
     let formatReasonColour value =
         value |> colourise (Rendering.reasonColour value)
 
@@ -37,7 +40,7 @@ module Markdown =
             ""
             "---"
             ""
-            "_Checked with :heart: by [pkgchk-cli](https://github.com/tonycknight/pkgchk-cli)_"
+            "_With :heart: by [pkgchk-cli](https://github.com/tonycknight/pkgchk-cli). Thank you for using my software._"
             ""
             "---"
         }
@@ -84,17 +87,19 @@ module Markdown =
             | ScaHitKind.VulnerabilityTransitive
             | ScaHitKind.Vulnerability ->
                 sprintf
-                    "| %s | %s | %s %s | [Advisory](%s) | "
+                    "| %s | %s | %s: %s %s | [Advisory](%s) | "
                     (Rendering.formatHitKind hit.kind)
                     (formatSeverity hit.severity)
+                    (pkgFramework hit)
                     (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
                     hit.resolvedVersion
                     hit.advisoryUri
             | ScaHitKind.Deprecated ->
                 sprintf
-                    "| %s | %s | %s %s | %s | "
+                    "| %s | %s | %s: %s %s | %s | "
                     (Rendering.formatHitKind hit.kind)
                     (formatReasons hit.reasons)
+                    (pkgFramework hit)
                     (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
                     hit.resolvedVersion
                     (match (hit.suggestedReplacement, hit.alternativePackageId) with
@@ -104,8 +109,9 @@ module Markdown =
             | ScaHitKind.Dependency
             | ScaHitKind.DependencyTransitive ->
                 sprintf
-                    "| %s |  | %s %s |  | "
+                    "| %s |  | %s: %s %s |  | "
                     (Rendering.formatHitKind hit.kind)
+                    (pkgFramework hit)
                     (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
                     hit.resolvedVersion
         }

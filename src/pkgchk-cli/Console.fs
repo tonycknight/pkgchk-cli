@@ -6,12 +6,12 @@ open Spectre.Console
 module Console =
     let markup (style: string) (value: string) = $"[{style}]{value}[/]"
     let italic = markup "italic"
-    let white = markup "white"
-    let green = markup "lime"
-    let cyan = markup "cyan"
-    let yellow = markup "yellow"
-    let blue = markup "blue"
-    let error = markup "red"
+    let white = markup Rendering.white
+    let green = markup Rendering.green
+    let cyan = markup Rendering.cyan
+    let yellow = markup Rendering.yellow
+    let blue = markup Rendering.cornflowerblue
+    let error = markup Rendering.red
 
     let table () =
         let table = (new Table()).LeftAligned()
@@ -32,7 +32,7 @@ module Console =
 
         value |> markup code
 
-    let colouriseProject = markup "bold yellow"
+    let colouriseProject = markup $"bold {Rendering.yellow}"
 
     let nugetLinkPkgVsn package version =
         let url = $"{Rendering.nugetPrefix}/{package}/{version}"
