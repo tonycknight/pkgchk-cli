@@ -67,7 +67,7 @@ type PackageCheckCommand() =
 
     let trace traceLogging =
         if traceLogging then
-            (Console.markup "grey" >> console)
+            (Console.markup Rendering.grey >> console)
         else
             ignore
 

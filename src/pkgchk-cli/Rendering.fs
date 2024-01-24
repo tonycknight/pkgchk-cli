@@ -17,7 +17,8 @@ module Rendering =
     let cornflowerblue = "#6495ed" 
     [<Literal>]
     let red = "red"
-    
+    [<Literal>]
+    let grey = "grey"
 
     let formatHitKind =
         function
