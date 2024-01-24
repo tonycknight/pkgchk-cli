@@ -60,7 +60,7 @@ type PackageCheckCommandSettings() =
     member val NoBanner = false with get, set
 
 [<ExcludeFromCodeCoverage>]
-type PackageCheckCommand() =
+type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
     inherit Command<PackageCheckCommandSettings>()
 
     let console = Spectre.Console.AnsiConsole.MarkupLine
