@@ -1,7 +1,9 @@
 ﻿namespace pkgchk
 
+open System.Diagnostics.CodeAnalysis
 open System.Reflection
 
+[<ExcludeFromCodeCoverage>]
 module App =
     let version () =
         Assembly
@@ -14,16 +16,13 @@ module App =
 
     let banner () =
         seq {
-                Console.cyan "Pkgchk-Cli"
+            Console.cyan "Pkgchk-Cli"
 
-                version ()
-                |> Option.defaultValue "unknown"
-                |> Console.yellow
-                |> sprintf "Version %s"
+            version ()
+            |> Option.defaultValue "unknown"
+            |> Console.yellow
+            |> sprintf "Version %s"
 
-                repo
-                |> Console.cyan
-                |> sprintf "For more information, see %s"
-                |> Console.italic
-            }
-            |> String.joinLines
+            repo |> Console.cyan |> sprintf "For more information, see %s" |> Console.italic
+        }
+        |> String.joinLines
