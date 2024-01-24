@@ -10,6 +10,7 @@ module Console =
     let green = markup "lime"
     let cyan = markup "cyan"
     let yellow = markup "yellow"
+    let blue = markup "blue"
     let error = markup "red"
 
     let table () =
@@ -41,6 +42,9 @@ module Console =
         let url = $"{Rendering.nugetPrefix}/{package}"
         $"[link={url}]{package} {suggestion}[/]"
 
+    let hitFramework (hit: ScaHit) =
+        hit.framework |> blue
+
     let title hits =
         match hits with
         | [] -> seq { green "No vulnerabilities found!" }
@@ -64,14 +68,14 @@ module Console =
         | ScaHitKind.VulnerabilityTransitive
         | ScaHitKind.Vulnerability
         | ScaHitKind.Dependency
-        | ScaHitKind.DependencyTransitive -> nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan
-        | ScaHitKind.Deprecated -> nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan
+        | ScaHitKind.DependencyTransitive -> $"{hitFramework hit} {nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan}"
+        | ScaHitKind.Deprecated -> $"{hitFramework hit} {nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan}"
         |> Seq.singleton
 
     let hitAdvisory hit =
         seq {
             if String.isNotEmpty hit.advisoryUri then
-                yield (italic hit.advisoryUri)
+                italic hit.advisoryUri
         }
 
     let hitSeverities (hit: ScaHit) =
