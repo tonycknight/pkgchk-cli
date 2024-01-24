@@ -14,6 +14,7 @@
     <Compile Include="DeprecatedPackageTests.fs" />
     <Compile Include="CleanProjectTests.fs" />
     <Compile Include="VulnerablePackageTests.fs" />
+    <Compile Include="PackageDependencyTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

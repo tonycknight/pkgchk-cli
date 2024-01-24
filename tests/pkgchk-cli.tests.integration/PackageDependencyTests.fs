@@ -4,13 +4,14 @@ open System
 open Xunit
 open Xunit.Abstractions
 
-type VulnerablePackageTests(output: ITestOutputHelper) =
+type PackageDependencyTests(output: ITestOutputHelper) =
 
     let execSuccess = execSuccess output
+    let execSuccessPkgChk = execSuccessPkgChk output
     let execFailedPkgChk = execFailedPkgChk output
 
     [<Fact>]
-    let ``Project with multiple vulnerable packages returns Error`` () =
+    let ``Project without transitives returns dependency list`` () =
 
         let outDir = getOutDir ()
 
@@ -20,24 +21,22 @@ type VulnerablePackageTests(output: ITestOutputHelper) =
 
         addBadRegexPackageArgs outDir |> execSuccess
 
-        runPkgChkArgs outDir
-        |> execFailedPkgChk
-        |> assertTitleShowsVulnerabilities
+        runPkgChkDependenciesArgs outDir false
+        |> execSuccessPkgChk
         |> assertPackagesFound [ httpPackage; regexPackage ]
+        |> assertPackagesNotFound [ sysIoPackage ]
 
     [<Fact>]
-    let ``Project with mixed vulnerable / good packages returns Error`` () =
+    let ``Project with transitives returns dependency list`` () =
 
         let outDir = getOutDir ()
 
         createProjectArgs outDir |> execSuccess
 
-        addGoodRegexPackageArgs outDir |> execSuccess
-
         addBadHttpPackageArgs outDir |> execSuccess
 
-        runPkgChkArgs outDir
-        |> execFailedPkgChk
-        |> assertTitleShowsVulnerabilities
-        |> assertPackagesFound [ httpPackage ]
-        |> assertPackagesNotFound [ regexPackage ]
+        addBadRegexPackageArgs outDir |> execSuccess
+
+        runPkgChkDependenciesArgs outDir true
+        |> execSuccessPkgChk
+        |> assertPackagesFound [ httpPackage; regexPackage; sysIoPackage ]

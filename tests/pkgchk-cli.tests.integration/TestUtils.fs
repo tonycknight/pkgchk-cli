@@ -17,6 +17,8 @@ module TestUtils =
     [<Literal>]
     let aadPackage = "Microsoft.IdentityModel.Clients.ActiveDirectory"
 
+    [<Literal>]
+    let sysIoPackage = "System.IO"
 
     let clean80Columns (value: string) =
         value.Replace(" ", "").Replace(Environment.NewLine, "")
@@ -52,6 +54,12 @@ module TestUtils =
 
     let runPkgChkArgs outDir =
         sprintf "dotnet pkgchk-cli.dll ./%s/testproj.csproj --transitive true --deprecated true --trace " outDir
+
+    let runPkgChkDependenciesArgs outDir includeTransitives =
+        sprintf
+            "dotnet pkgchk-cli.dll ./%s/testproj.csproj --transitive %b --vulnerable false --deprecated false --dependencies true --trace "
+            outDir
+            includeTransitives
 
     let runPkgChkSeverityArgs outDir (severities: seq<string>) =
         let severityArgs =
