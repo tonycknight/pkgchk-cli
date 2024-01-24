@@ -14,6 +14,11 @@ type PackageCheckCommandSettings() =
     [<DefaultValue("")>]
     member val ProjectPath = "" with get, set
 
+    [<CommandOption("--vulnerable")>]
+    [<Description("Toggle vulnerable package checks. -t true to include them, -t false to exclude.")>]
+    [<DefaultValue(true)>]
+    member val IncludeVulnerables = true with get, set
+
     [<CommandOption("-t|--transitive")>]
     [<Description("Toggle transitive package checks. -t true to include them, -t false to exclude.")>]
     [<DefaultValue(true)>]
@@ -23,6 +28,11 @@ type PackageCheckCommandSettings() =
     [<Description("Check deprecated packagess. -d true to include, -d false to exclude.")>]
     [<DefaultValue(false)>]
     member val IncludeDeprecations = false with get, set
+
+    [<CommandOption("--dependencies")>]
+    [<Description("List all dependency packagess. -d true to include, -d false to exclude.")>]
+    [<DefaultValue(false)>]
+    member val IncludeDependencies = false with get, set
 
     [<CommandOption("-o|--output")>]
     [<Description("Output directory for reports.")>]
@@ -86,13 +96,6 @@ type PackageCheckCommand() =
             |> Io.createProcess
             |> runRestoreProcParse (runProc logging)
 
-    let runScaProcParse run procs =
-        procs
-        |> Array.map run
-        |> Array.map (function
-            | Choice1Of2 json -> Sca.parse json
-            | Choice2Of2 x -> Choice2Of2 x)
-
     let returnError error =
         error |> Console.error |> console
         ReturnCodes.sysError
@@ -105,12 +108,26 @@ type PackageCheckCommand() =
         |> Seq.filter String.isNotEmpty
         |> Seq.distinct
 
-    let getHits procResults =
+    let liftHits procResults =
         procResults
         |> Seq.collect (function
             | Choice1Of2 xs -> xs
             | _ -> [])
         |> List.ofSeq
+
+    let sortHits (hits: seq<ScaHit>) =
+        hits
+        |> Seq.sortBy (fun h ->
+            ((match h.kind with
+              | ScaHitKind.Vulnerability -> 0
+              | ScaHitKind.Dependency -> 1
+              | ScaHitKind.VulnerabilityTransitive -> 2
+              | ScaHitKind.Deprecated -> 3
+              | ScaHitKind.DependencyTransitive -> 4
+              | _ -> Int32.MaxValue),
+             h.packageId))
+
+    let getHits = liftHits >> sortHits >> List.ofSeq
 
     let returnCode (hits: ScaHit list) =
         match hits with
@@ -124,29 +141,23 @@ type PackageCheckCommand() =
         let trace = trace settings.TraceLogging
 
         if settings.NoBanner |> not then
-            seq {
-                Console.cyan "Pkgchk-Cli"
-
-                App.version ()
-                |> Option.defaultValue "unknown"
-                |> Console.yellow
-                |> sprintf "Version %s"
-
-                App.repo
-                |> Console.cyan
-                |> sprintf "For more information, see %s"
-                |> Console.italic
-            }
-            |> Seq.iter console
+            App.banner () |> console
 
         match runRestore settings trace with
         | Choice2Of2 error -> error |> returnError
         | _ ->
             let results =
-                (settings.ProjectPath, settings.IncludeTransitives, settings.IncludeDeprecations)
+                (settings.ProjectPath,
+                 settings.IncludeVulnerables,
+                 settings.IncludeTransitives,
+                 settings.IncludeDeprecations,
+                 settings.IncludeDependencies)
                 |> Sca.scanArgs
-                |> Array.map Io.createProcess
-                |> runScaProcParse (runProc trace)
+                |> Array.map (fun (args, parser) -> (Io.createProcess args, parser))
+                |> Array.map (fun (proc, parser) ->
+                    match proc |> (runProc trace) with
+                    | Choice1Of2 json -> parser json
+                    | Choice2Of2 x -> Choice2Of2 x)
 
             let errors = getErrors results
 
@@ -163,7 +174,9 @@ type PackageCheckCommand() =
                 let renderables =
                     seq {
                         hits |> Console.hitsTable
-                        errorHits |> Console.headlineTable
+
+                        if settings.IncludeVulnerables || settings.IncludeDeprecations then
+                            errorHits |> Console.headlineTable
 
                         if hitCounts |> List.isEmpty |> not then
                             settings.SeverityLevels |> Console.severitySettingsTable

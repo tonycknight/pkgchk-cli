@@ -58,6 +58,27 @@ To check for top-level and transitive dependency vulnerabilities:
 
 If there's only one project or solution file in your directory, omit the `<project|solution>` argument.
 
+### Options
+
+The following options are disjunctive: they can be used independently of each other, or all together as you like.
+
+|  |  |  |   |
+| - | - | - | - |
+| `--vulnerable` | Scan for vulnerable packages | `true`/`false` | `true` by default |
+| `--deprecated` | Scan for deprecated packages | `true`/`false` | `false` by default |
+| `--dependencies` | Scan for dependency packages | `true`/`false` | `false` by default |
+| `--transitive` | Scan for transitive packages, vulnerable, deprecated or otherwise | `true`/`false` | `true` by default |
+
+Other options are:
+
+|  |  |  |   |
+| - | - | - | - |
+| `--output` | The relative or absolute directory for reports. If ommitted, no reports are generated | `string` | None by default |
+| `--severity` | Severity levels to search for, or deprecation reasons. Any number of severties can be given. | `string` | `High`, `Critical`, `Critical Bugs`, `Legacy` |
+| `--no-restore` | Don't automatically restore the project/solution. | n/a | Package restoration is automatic by default |
+
+### Examples
+
 
 To check only for top-level dependency vulnerabilities:
 
@@ -66,6 +87,22 @@ To check only for top-level dependency vulnerabilities:
 To add deprecated packages in a scan:
 
 ```pkgchk <project|solution> --deprecated```
+
+Vulnerable packages are automatically searched for. To turn off vulnerable package searches::
+
+```pkgchk <project|solution> --vulnerable false```
+
+To list top-level dependencies with transitives:
+
+```pkgchk <project|solution> --dependencies```
+
+To list top-level dependencies without transitives:
+
+```pkgchk <project|solution> --dependencies --transitive false```
+
+To list dependencies only without any vulnerability checks:
+
+```pkgchk <project|solution> --dependencies true --vulnerable false --deprecated false```
 
 To produce a markdown file, simply give an output folder:
 

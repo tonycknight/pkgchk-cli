@@ -62,7 +62,9 @@ module Console =
     let hitPackage (hit: ScaHit) =
         match hit.kind with
         | ScaHitKind.VulnerabilityTransitive
-        | ScaHitKind.Vulnerability -> nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan
+        | ScaHitKind.Vulnerability
+        | ScaHitKind.Dependency
+        | ScaHitKind.DependencyTransitive -> nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan
         | ScaHitKind.Deprecated -> nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan
         |> Seq.singleton
 
@@ -164,6 +166,8 @@ module Console =
             | ScaHitKind.VulnerabilityTransitive
             | ScaHitKind.Vulnerability -> colouriseSeverity severity
             | ScaHitKind.Deprecated -> colouriseReason severity
+            | ScaHitKind.Dependency
+            | ScaHitKind.DependencyTransitive -> severity
 
         let fmtCount value =
             match value with

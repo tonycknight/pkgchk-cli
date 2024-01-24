@@ -68,15 +68,3 @@ module HashSet =
     let ofSeq<'a> (comparer: IEqualityComparer<'a>) (values: seq<'a>) = new HashSet<'a>(values, comparer)
 
     let contains<'a> (hashSet: HashSet<'a>) = hashSet.Contains
-
-open System.Reflection
-
-module App =
-    let version () =
-        Assembly
-            .GetExecutingAssembly()
-            .GetCustomAttributes<AssemblyInformationalVersionAttribute>()
-        |> Seq.map _.InformationalVersion
-        |> Seq.tryHead
-
-    let repo = "https://github.com/tonycknight/pkgchk-cli"

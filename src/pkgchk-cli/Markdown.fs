@@ -62,6 +62,8 @@ module Markdown =
                     | ScaHitKind.VulnerabilityTransitive
                     | ScaHitKind.Vulnerability -> formatSeverity
                     | ScaHitKind.Deprecated -> formatReasonColour
+                    | ScaHitKind.Dependency
+                    | ScaHitKind.DependencyTransitive -> id
 
                 $"|{Rendering.formatHitKind hks.kind}|{fmt hks.kind hks.severity}|{hks.count}|")
 
@@ -99,6 +101,13 @@ module Markdown =
                      | "", _ -> ""
                      | x, y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> sprintf "Use %s"
                      | x, _ -> x |> sprintf "Use %s")
+            | ScaHitKind.Dependency
+            | ScaHitKind.DependencyTransitive ->
+                sprintf
+                    "| %s |  | %s %s |  | "
+                    (Rendering.formatHitKind hit.kind)
+                    (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
+                    hit.resolvedVersion
         }
 
     let formatHitGroup (hit: (string * seq<ScaHit>)) =
@@ -114,15 +123,7 @@ module Markdown =
             projectPath |> formatProject
             ""
             yield! grpHdr
-
-            yield!
-                hits
-                |> Seq.sortBy (fun h ->
-                    ((match h.kind with
-                      | ScaHitKind.Vulnerability -> 0
-                      | _ -> 1),
-                     h.packageId))
-                |> Seq.collect formatHit
+            yield! hits |> Seq.collect formatHit
         }
 
     let formatHits (hits: seq<ScaHit>) =
