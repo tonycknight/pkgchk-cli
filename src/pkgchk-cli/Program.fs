@@ -11,8 +11,9 @@ module Program =
 
     [<EntryPoint>]
     let main argv =
-        
+
         let svcs = App.spectreServices ()
+
         let app =
             CommandApp<PackageCheckCommand>(svcs)
                 .WithDescription("Check project dependency packages for vulnerabilities and deprecations.")

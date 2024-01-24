@@ -140,7 +140,7 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
         let trace = trace settings.TraceLogging
 
         if settings.NoBanner |> not then
-            App.banner () |> console
+            nuget |> App.banner |> console
 
         match runRestore settings trace with
         | Choice2Of2 error -> error |> returnError

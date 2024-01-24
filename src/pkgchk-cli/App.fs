@@ -7,25 +7,33 @@ open Microsoft.Extensions.DependencyInjection
 open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]
-type TypeResolver (sp: IServiceProvider) =
+type TypeResolver(sp: IServiceProvider) =
     interface ITypeResolver with
         member _.Resolve t = sp.GetService(t)
+
     interface IDisposable with
-        member _.Dispose() = 
+        member _.Dispose() =
             match sp with
             | :? IDisposable as d -> d.Dispose()
             | _ -> ignore 0
 
 [<ExcludeFromCodeCoverage>]
-type TypeRegistrar (svcs: IServiceCollection) =
+type TypeRegistrar(svcs: IServiceCollection) =
     interface ITypeRegistrar with
-        member _.Build() = new TypeResolver(svcs.BuildServiceProvider()) :> ITypeResolver
+        member _.Build() =
+            new TypeResolver(svcs.BuildServiceProvider()) :> ITypeResolver
+
         member _.Register(t: Type, i: Type) = svcs.AddSingleton(t, i) |> ignore
-        member _.RegisterInstance(t: Type, v: obj) = svcs.AddSingleton(t,v) |> ignore
-        member _.RegisterLazy(t: Type, f: Func<obj>) = svcs.AddSingleton(t, (fun p -> f.Invoke())) |> ignore
+        member _.RegisterInstance(t: Type, v: obj) = svcs.AddSingleton(t, v) |> ignore
+
+        member _.RegisterLazy(t: Type, f: Func<obj>) =
+            svcs.AddSingleton(t, (fun p -> f.Invoke())) |> ignore
 
 [<ExcludeFromCodeCoverage>]
 module App =
+    [<Literal>]
+    let packageId = "Pkgchk-Cli"
+
     let version () =
         Assembly
             .GetExecutingAssembly()
@@ -35,24 +43,42 @@ module App =
 
     let repo = "https://github.com/tonycknight/pkgchk-cli"
 
-    let banner () =
+    let upgradeVersion (nuget: Tk.Nuget.INugetClient) =
+        task {
+            let currVsn = version () |> Option.defaultValue ""
+            let! upgVsn = nuget.GetUpgradeVersionAsync(packageId, currVsn, false, null)
+
+            return upgVsn |> Some
+        }
+
+    let banner (nuget: Tk.Nuget.INugetClient) =
+        let upgVsn = (upgradeVersion nuget).Result // TODO: temporary!!
+
         seq {
-            Console.cyan "Pkgchk-Cli"
+            Console.cyan packageId
 
             version ()
             |> Option.defaultValue "unknown"
+            |> sprintf "%s beta"
             |> Console.yellow
             |> sprintf "Version %s"
 
             repo |> Console.cyan |> sprintf "For more information, see %s" |> Console.italic
 
-            "Thank you for using my software" |> Console.grey |> Console.italic
+            "Thank you for using my software." |> Console.grey |> Console.italic
+
+            if Option.isSome upgVsn then
+                sprintf
+                    "%s%s %s"
+                    Environment.NewLine
+                    (Console.green "A new version is available:")
+                    (Console.cyan upgVsn.Value)
+
+            ""
         }
         |> String.joinLines
-                    
+
     let svcs () =
-        new ServiceCollection() 
-        |> Tk.Nuget.ServiceExtensions.AddNugetClient 
-        
-    let spectreServices () =
-        new TypeRegistrar(svcs ())
+        new ServiceCollection() |> Tk.Nuget.ServiceExtensions.AddNugetClient
+
+    let spectreServices () = new TypeRegistrar(svcs ())
