@@ -53,7 +53,9 @@ module TestUtils =
         sprintf "dotnet add ./%s/testproj.csproj package %s -v 5.3.0" outDir aadPackage
 
     let runPkgChkArgs outDir =
-        sprintf "dotnet pkgchk-cli.dll ./%s/testproj.csproj --transitive true --deprecated true --trace --no-banner " outDir
+        sprintf
+            "dotnet pkgchk-cli.dll ./%s/testproj.csproj --transitive true --deprecated true --trace --no-banner "
+            outDir
 
     let runPkgChkDependenciesArgs outDir includeTransitives =
         sprintf
