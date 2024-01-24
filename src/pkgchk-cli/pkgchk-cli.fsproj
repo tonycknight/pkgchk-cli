@@ -16,11 +16,11 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <WarningsAsErrors>3239;$(WarningsAsErrors);FS0025</WarningsAsErrors>
+    <WarningsAsErrors>3239;$(WarningsAsErrors);FS0025;FS0026</WarningsAsErrors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <WarningsAsErrors>3239;$(WarningsAsErrors);FS0025</WarningsAsErrors>
+    <WarningsAsErrors>3239;$(WarningsAsErrors);FS0025;FS0026</WarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>

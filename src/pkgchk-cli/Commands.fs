@@ -67,7 +67,7 @@ type PackageCheckCommand() =
 
     let trace traceLogging =
         if traceLogging then
-            (Console.markup "grey" >> console)
+            (Console.markup Rendering.grey >> console)
         else
             ignore
 
@@ -123,8 +123,7 @@ type PackageCheckCommand() =
               | ScaHitKind.Dependency -> 1
               | ScaHitKind.VulnerabilityTransitive -> 2
               | ScaHitKind.Deprecated -> 3
-              | ScaHitKind.DependencyTransitive -> 4
-              | _ -> Int32.MaxValue),
+              | ScaHitKind.DependencyTransitive -> 4),
              h.packageId))
 
     let getHits = liftHits >> sortHits >> List.ofSeq

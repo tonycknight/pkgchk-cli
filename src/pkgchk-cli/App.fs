@@ -24,5 +24,7 @@ module App =
             |> sprintf "Version %s"
 
             repo |> Console.cyan |> sprintf "For more information, see %s" |> Console.italic
+
+            "Thank you for using my software" |> Console.grey |> Console.italic
         }
         |> String.joinLines
