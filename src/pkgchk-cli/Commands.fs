@@ -60,7 +60,7 @@ type PackageCheckCommandSettings() =
     member val NoBanner = false with get, set
 
 [<ExcludeFromCodeCoverage>]
-type PackageCheckCommand() =
+type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
     inherit Command<PackageCheckCommandSettings>()
 
     let console = Spectre.Console.AnsiConsole.MarkupLine
@@ -140,7 +140,7 @@ type PackageCheckCommand() =
         let trace = trace settings.TraceLogging
 
         if settings.NoBanner |> not then
-            App.banner () |> console
+            nuget |> App.banner |> console
 
         match runRestore settings trace with
         | Choice2Of2 error -> error |> returnError

@@ -1,8 +1,8 @@
 ﻿namespace pkgchk
 
 open System.Diagnostics.CodeAnalysis
-open Spectre.Console
 open Spectre.Console.Cli
+
 
 [<ExcludeFromCodeCoverage>]
 module Program =
@@ -11,8 +11,11 @@ module Program =
 
     [<EntryPoint>]
     let main argv =
+
+        let svcs = App.spectreServices ()
+
         let app =
-            CommandApp<PackageCheckCommand>()
+            CommandApp<PackageCheckCommand>(svcs)
                 .WithDescription("Check project dependency packages for vulnerabilities and deprecations.")
 
         app.Configure(fun c -> c.PropagateExceptions().ValidateExamples().TrimTrailingPeriods(false) |> ignore)
