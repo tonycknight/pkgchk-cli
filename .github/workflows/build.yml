@@ -116,9 +116,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # TODO: Temporary
-        # os: [ubuntu-latest, windows-latest]
-        os: [ubuntu-latest ]
+        os: [ubuntu-latest, windows-latest]        
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -207,8 +205,8 @@ jobs:
   build-release-docker-image:
     name: Build & Release Docker image
     runs-on: ubuntu-latest
-    needs:   [ nuget-release ]
-    if: github.event_name == 'push' 
+    needs:   [ sca, style-rules, unit-tests, integration-tests, nuget-package ]
+    if: github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'Update tools')
 
     steps:
       - uses: actions/checkout@v3
@@ -236,8 +234,6 @@ jobs:
       - name: Push docker image
         if: ${{ github.event_name != 'pull_request' }}
         run: docker push ${{ env.docker-image-name }}
-            
-      
 
   gh-release:
     name: Github release
@@ -251,7 +247,6 @@ jobs:
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
-          #token: ${{ secrets.GITHUB_TOKEN }}
           tag: v${{ env.build-version-number }}
           prerelease: true
           generateReleaseNotes: true
