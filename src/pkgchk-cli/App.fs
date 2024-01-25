@@ -58,7 +58,7 @@ module App =
         }
 
     let banner (nuget: Tk.Nuget.INugetClient) =
-        let upgVsn = (upgradeVersion nuget).Result // TODO: temporary!!
+        let upgVsn = (upgradeVersion nuget).Result
 
         seq {
             Console.cyan packageId
