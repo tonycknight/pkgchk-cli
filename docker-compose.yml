@@ -1,0 +1,9 @@
+
+version: '3.4'
+
+services:
+  tubescan:
+    image: pkgchk-cli
+    build:
+      context: .
+      dockerfile: Dockerfile
