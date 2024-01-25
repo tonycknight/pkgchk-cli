@@ -1,6 +1,6 @@
 ARG BuildVersion
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0-jammy AS base
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS base
 WORKDIR /app
 
 
@@ -9,7 +9,7 @@ WORKDIR /app
 RUN adduser -u 5678 --disabled-password --gecos "" pkgchkuser && chown -R pkgchkuser /app
 USER pkgchkuser
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0-jammy AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BuildVersion
 WORKDIR /src
 
@@ -30,4 +30,4 @@ LABEL org.opencontainers.image.source https://github.com/tonycknight/pkgchk-cli
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "/pkgchk-cli.dll"]
+ENTRYPOINT ["dotnet", "pkgchk-cli.dll"]
