@@ -39,7 +39,7 @@ module Rendering =
         [ ScaHitKind.VulnerabilityTransitive
           ScaHitKind.Vulnerability
           ScaHitKind.Deprecated ]
-        |> Seq.map (formatHitKind >> _.Length)
+        |> Seq.map (formatHitKind >> (fun s -> s.Length) )
         |> Seq.max
 
     let reasonColour =

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <Copyright>Copyright 2023 Tony Knight</Copyright>
     <Authors>Tony Knight</Authors>
     <RootNamespace>pkgchk</RootNamespace>

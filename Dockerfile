@@ -1,6 +1,6 @@
 ARG BuildVersion
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS base
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS base
 ARG BuildVersion
 WORKDIR /app
 
@@ -10,7 +10,7 @@ WORKDIR /app
 #RUN adduser -u 5678 --disabled-password --gecos "" pkgchkuser && chown -R pkgchkuser /app
 #USER pkgchkuser
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 ARG BuildVersion
 WORKDIR /src
 

@@ -38,7 +38,7 @@ module App =
         Assembly
             .GetExecutingAssembly()
             .GetCustomAttributes<AssemblyInformationalVersionAttribute>()
-        |> Seq.map _.InformationalVersion
+        |> Seq.map (fun a -> a.InformationalVersion)
         |> Seq.tryHead
 
     let repo = "https://github.com/tonycknight/pkgchk-cli"
