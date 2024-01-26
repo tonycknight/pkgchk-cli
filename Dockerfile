@@ -1,6 +1,6 @@
 ARG BuildVersion
 
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS base
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS base
 ARG BuildVersion
 WORKDIR /app
 

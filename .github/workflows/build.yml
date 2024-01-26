@@ -10,7 +10,7 @@ on:
 
 env:
   build-version-number: 0.1.${{ github.run_number }}  
-  dotnet_version: 7.x
+  dotnet_version: 8.x
   nuget-package-name: pkgchk-cli.nupkg
   docker-image-name: ghcr.io/${{ github.repository_owner }}/pkgchk-cli
 
