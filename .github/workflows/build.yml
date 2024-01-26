@@ -9,9 +9,9 @@ on:
   workflow_dispatch:
 
 env:
-  build-version-number: 0.1.${{ github.run_number }}  
-  dotnet_version: 7.x
+  build-version-number: 0.2.${{ github.run_number }}  
   nuget-package-name: pkgchk-cli.nupkg
+  docker-image-name: ghcr.io/${{ github.repository_owner }}/pkgchk-cli
 
 jobs:
   sca:
@@ -21,11 +21,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup .NET Core SDK
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4.0.0
-        with:
-          dotnet-version: "${{ env.dotnet_version }}"
-        
+                
       - name: Check SCA
         run: |
           dotnet tool restore
@@ -39,14 +37,12 @@ jobs:
   style-rules:
     name: Check style rules
     runs-on: ubuntu-latest
-
+    
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup NET SDK
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4.0.0
-        with:
-          dotnet-version: "${{ env.dotnet_version }}"
         
       - name: Tool restore
         run: dotnet tool restore
@@ -55,6 +51,7 @@ jobs:
         run: dotnet restore
 
       - name: Check style
+        if: ${{ github.event_name == 'pull_request' }}
         run: dotnet fantomas  ./ --check 
           
   unit-tests:
@@ -64,10 +61,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup .NET Core SDK
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4.0.0
-        with:
-          dotnet-version: "${{ env.dotnet_version }}"
         
       - name: Tool restore
         run: dotnet tool restore
@@ -121,10 +116,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup .NET Core SDK
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4.0.0
-        with:
-          dotnet-version: "${{ env.dotnet_version }}"
         
       - name: Tool restore
         run: dotnet tool restore
@@ -152,10 +145,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup .NET Core SDK
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4.0.0
-        with:
-          dotnet-version: "${{ env.dotnet_version }}"
           
       - name: Tool restore
         run: dotnet tool restore
@@ -187,11 +178,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup .NET Core SDK
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4.0.0
-        with:
-          dotnet-version: "${{ env.dotnet_version }}"
-          
+                  
       - name: Download package
         uses: actions/download-artifact@v3
         with:
@@ -201,10 +190,43 @@ jobs:
       - name: Push nuget package
         run: dotnet nuget push "artifacts/*.nupkg"  --api-key ${{ secrets.NUGET_PAT }} --source "nuget.org"
 
+  build-release-docker-image:
+    name: Build & Release Docker image
+    runs-on: ubuntu-latest
+    needs:   [ sca, style-rules, unit-tests, integration-tests, nuget-package ]
+    if: github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'Update tools')
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set Docker image name
+        run: |
+          echo "docker-image-name=${{ env.docker-image-name }}:v${{ env.build-version-number }}" >> $GITHUB_ENV
+          
+      - name: Set Preview Docker image name
+        if: ${{ github.ref != 'refs/heads/main' }}
+        run: |
+          echo "docker-image-name=${{ env.docker-image-name }}-preview" >> $GITHUB_ENV
+
+      - name: Build docker image
+        run: docker build -t ${{ env.docker-image-name }} --build-arg BuildVersion=${{ env.build-version-number }} .
+        
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        if: ${{ github.event_name != 'pull_request' }}
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR }}
+
+      - name: Push docker image
+        if: ${{ github.event_name != 'pull_request' }}
+        run: docker push ${{ env.docker-image-name }}
+
   gh-release:
     name: Github release
     runs-on: ubuntu-latest
-    needs: [ nuget-release ]    
+    needs: [ nuget-release, build-release-docker-image ]    
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' 
 
     steps:    
@@ -213,7 +235,6 @@ jobs:
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
-          #token: ${{ secrets.GITHUB_TOKEN }}
           tag: v${{ env.build-version-number }}
           prerelease: true
           generateReleaseNotes: true

@@ -137,7 +137,7 @@ module Console =
 
         let innerTables =
             hits
-            |> Seq.groupBy _.projectPath
+            |> Seq.groupBy (fun x -> x.projectPath)
             |> Seq.sortBy fst
             |> Seq.collect (fun (project, hits) ->
                 seq {

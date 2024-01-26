@@ -45,6 +45,7 @@ module Io =
     let run log (proc: Process) =
         try
             let sw = System.Diagnostics.Stopwatch.StartNew()
+            let fmtOut = String.leading Int32.MaxValue >> String.escapeMarkup
 
             log $"Running command:{Environment.NewLine}{proc.StartInfo.FileName} {proc.StartInfo.Arguments}"
 
@@ -56,6 +57,12 @@ module Io =
 
                 sw.Stop()
                 log $"Duration: {sw.ElapsedMilliseconds:N2}ms"
+
+                log "stdout:"
+                out |> fmtOut |> log
+
+                log "stderr:"
+                err |> fmtOut |> log
 
                 if (String.IsNullOrWhiteSpace(err)) then
                     log "Successfully fetched response."
