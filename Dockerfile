@@ -24,7 +24,7 @@ RUN dotnet build "pkgchk-cli.fsproj" -c Release -o /app/build /p:AssemblyInforma
 
 FROM build AS publish
 ARG BuildVersion
-RUN dotnet publish "pkgchk-cli.fsproj" -c Release -o /app/publish /p:AssemblyInformationalVersion=${BuildVersion} /p:Version=${BuildVersion} 
+RUN dotnet publish "pkgchk-cli.fsproj" -c Release -o /app/publish /p:AssemblyInformationalVersion=${BuildVersion} /p:Version=${BuildVersion} --os linux --arch x64 --self-contained
 
 LABEL org.opencontainers.image.source https://github.com/tonycknight/pkgchk-cli
 
