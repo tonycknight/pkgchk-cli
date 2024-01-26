@@ -10,7 +10,6 @@ on:
 
 env:
   build-version-number: 0.1.${{ github.run_number }}  
-  dotnet_version: 8.x
   nuget-package-name: pkgchk-cli.nupkg
   docker-image-name: ghcr.io/${{ github.repository_owner }}/pkgchk-cli
 
@@ -22,11 +21,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup .NET Core SDK
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4.0.0
-        with:
-          dotnet-version: "${{ env.dotnet_version }}"
-        
+                
       - name: Check SCA
         run: |
           dotnet tool restore
@@ -44,10 +41,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup NET SDK
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4.0.0
-        with:
-          dotnet-version: "${{ env.dotnet_version }}"
         
       - name: Tool restore
         run: dotnet tool restore
@@ -66,10 +61,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup .NET Core SDK
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4.0.0
-        with:
-          dotnet-version: "${{ env.dotnet_version }}"
         
       - name: Tool restore
         run: dotnet tool restore
@@ -125,10 +118,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup .NET Core SDK
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4.0.0
-        with:
-          dotnet-version: "${{ env.dotnet_version }}"
         
       - name: Tool restore
         run: dotnet tool restore
@@ -156,10 +147,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup .NET Core SDK
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4.0.0
-        with:
-          dotnet-version: "${{ env.dotnet_version }}"
           
       - name: Tool restore
         run: dotnet tool restore
@@ -191,11 +180,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup .NET Core SDK
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4.0.0
-        with:
-          dotnet-version: "${{ env.dotnet_version }}"
-          
+                  
       - name: Download package
         uses: actions/download-artifact@v3
         with:
