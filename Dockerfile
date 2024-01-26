@@ -31,4 +31,4 @@ LABEL org.opencontainers.image.source https://github.com/tonycknight/pkgchk-cli
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "pkgchk-cli.dll"]
+ENTRYPOINT ["dotnet", "/pkgchk-cli.dll"]
