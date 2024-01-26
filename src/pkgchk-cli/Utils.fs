@@ -61,7 +61,8 @@ module String =
             (value.Substring(0, len2) + "...")
 
     [<DebuggerStepThrough>]
-    let escapeMarkup (value: string) = Spectre.Console.Markup.Escape(value)
+    let escapeMarkup (value: string) =
+        value.Replace("[", "[[").Replace("]", "]]")
 
 module ReturnCodes =
 
