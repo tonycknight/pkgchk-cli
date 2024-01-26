@@ -63,7 +63,7 @@ module Io =
                 log "stderr:"
                 err |> String.leading 80 |> String.escapeMarkup |> log
 
-                if (String.IsNullOrWhiteSpace(err)) then                    
+                if (String.IsNullOrWhiteSpace(err)) then
                     log "Successfully fetched response."
                     Choice1Of2(out)
                 else
