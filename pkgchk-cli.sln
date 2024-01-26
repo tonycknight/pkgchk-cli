@@ -10,6 +10,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{CC70A61A-416F-48AD-9BCA-902150B48636}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\build.yml = .github\workflows\build.yml
+		Dockerfile = Dockerfile
 		.github\workflows\pr-checks.yml = .github\workflows\pr-checks.yml
 		.github\workflows\sca.yml = .github\workflows\sca.yml
 	EndProjectSection
@@ -23,7 +24,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{AC04A561
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "pkgchk-cli.tests", "tests\pkgchk-cli.tests\pkgchk-cli.tests.fsproj", "{A1CB0936-B4A3-4A24-9AE1-A3B2D2B66488}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "pkgchk-cli.tests.integration", "tests\pkgchk-cli.tests.integration\pkgchk-cli.tests.integration.fsproj", "{29B17E12-FF6A-4262-9BDC-CF8753C9B2A8}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "pkgchk-cli.tests.integration", "tests\pkgchk-cli.tests.integration\pkgchk-cli.tests.integration.fsproj", "{29B17E12-FF6A-4262-9BDC-CF8753C9B2A8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
