@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 env:
-  build-version-number: 0.1.${{ github.run_number }}  
+  build-version-number: 0.2.${{ github.run_number }}  
   nuget-package-name: pkgchk-cli.nupkg
   docker-image-name: ghcr.io/${{ github.repository_owner }}/pkgchk-cli
 
