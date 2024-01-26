@@ -57,7 +57,13 @@ module Io =
                 sw.Stop()
                 log $"Duration: {sw.ElapsedMilliseconds:N2}ms"
 
-                if (String.IsNullOrWhiteSpace(err)) then
+                log "stdout:"
+                out |> String.leading 80 |> String.escapeMarkup |> log
+
+                log "stderr:"
+                err |> String.leading 80 |> String.escapeMarkup |> log
+
+                if (String.IsNullOrWhiteSpace(err)) then                    
                     log "Successfully fetched response."
                     Choice1Of2(out)
                 else
