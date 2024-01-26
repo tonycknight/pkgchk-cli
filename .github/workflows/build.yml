@@ -110,9 +110,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
-        # TODO: speed up
-        # os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest]
+        isPr: ${{ github.event_name == 'pull_request' }}
+        exclude:
+          - isPr: false
+            os: windows-latest
     runs-on: ${{ matrix.os }}
 
     steps:
