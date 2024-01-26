@@ -109,10 +109,13 @@ jobs:
     name: Integration Tests
     strategy:
       fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        # TODO: speed up
-        # os: [ubuntu-latest, windows-latest]
+      matrix:        
+        os: [ubuntu-latest, windows-latest]
+        shouldTest: ${{ github.event_name == 'pull_request' }}
+        exclude:
+          # do not test on non-PR events
+          - shouldTest: false
+            os: windows-latest
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -128,11 +131,12 @@ jobs:
         run: dotnet restore
 
       - name: Run Tests
+        if: ${{ matrix.shouldTest == 'true' }}
         run: dotnet test -c Release --filter FullyQualifiedName~integration --logger "trx;LogFileName=test_results.trx" -v n
 
       - name: Integration test results
         uses: dorny/test-reporter@v1
-        if: always()
+        if: always() && ${{ matrix.shouldTest == 'true' }}        
         with:
           name: integration test results - ${{ matrix.os }}
           path: ${{ github.workspace }}/tests/pkgchk-cli.tests.integration/TestResults/test_results.trx
