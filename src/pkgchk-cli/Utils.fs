@@ -68,6 +68,16 @@ module String =
     let escapeMarkup (value: string) =
         value.Replace("[", "[[").Replace("]", "]]")
 
+    [<DebuggerStepThrough>]
+    let isInt (value: string) = Int32.TryParse value |> fst
+
+    [<DebuggerStepThrough>]
+    let toInt (value: string) =
+        match Int32.TryParse value with
+        | (true, x) -> x
+        | _ -> 0
+
+
 module ReturnCodes =
 
     [<Literal>]

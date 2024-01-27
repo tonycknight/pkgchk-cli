@@ -59,30 +59,30 @@ type PackageCheckCommandSettings() =
     [<DefaultValue(false)>]
     member val NoBanner = false with get, set
 
-    [<CommandOption("--github-token", IsHidden=true)>]
+    [<CommandOption("--github-token", IsHidden = true)>]
     [<Description("A Github token.")>]
     [<DefaultValue("")>]
     member val GithubToken = "" with get, set
 
-    [<CommandOption("--repo-owner", IsHidden=true)>]
+    [<CommandOption("--repo-owner", IsHidden = true)>]
     [<Description("The name of the Github repository owner.")>]
     [<DefaultValue("")>]
     member val GithubRepoOwner = "" with get, set
 
-    [<CommandOption("--repo", IsHidden=true)>]
+    [<CommandOption("--repo", IsHidden = true)>]
     [<Description("The name of the Github repository.")>]
     [<DefaultValue("")>]
     member val GithubRepo = "" with get, set
 
-    [<CommandOption("--github-title", IsHidden=true)>]
+    [<CommandOption("--github-title", IsHidden = true)>]
     [<Description("The Github report title.")>]
     [<DefaultValue("")>]
     member val GithubSummaryTitle = "" with get, set
 
-    [<CommandOption("--github-pr", IsHidden=true)>]
+    [<CommandOption("--github-pr", IsHidden = true)>]
     [<Description("Pull request ID.")>]
-    [<DefaultValue(0)>]
-    member val GithubPrId = 0 with get, set
+    [<DefaultValue("")>]
+    member val GithubPrId = "" with get, set
 
 [<ExcludeFromCodeCoverage>]
 type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
@@ -167,15 +167,18 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
         if settings.NoBanner |> not then
             nuget |> App.banner |> console
 
-        if settings.GithubPrId <> 0 then
+        if String.isNotEmpty settings.GithubPrId then
             if String.isEmpty settings.GithubToken then
-                failwith "Missing Github token"
+                failwith "Missing Github token."
 
             if String.isEmpty settings.GithubRepoOwner then
-                failwith "Missing Github owner"
+                failwith "Missing Github repo owner."
 
             if String.isEmpty settings.GithubRepo then
-                failwith "Missing Github repo"
+                failwith "Missing Github repo."
+
+            if String.isInt settings.GithubPrId |> not then
+                failwith "The PR ID must be an integer."
 
         match runRestore settings trace with
         | Choice2Of2 error -> error |> returnError
@@ -235,8 +238,10 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
                     String.isNotEmpty settings.GithubToken
                     && String.isNotEmpty settings.GithubRepoOwner
                     && String.isNotEmpty settings.GithubRepo
-                    && settings.GithubPrId <> 0
+                    && String.isNotEmpty settings.GithubPrId
                 then
+                    let prId = String.toInt settings.GithubPrId
+
                     let markdown =
                         (hits, errorHits, hitCounts, settings.SeverityLevels)
                         |> Markdown.generate
@@ -248,7 +253,7 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
 
                     let client = Github.client settings.GithubToken
                     let repo = (settings.GithubRepoOwner, settings.GithubRepo)
-                    let _ = (comment |> Github.setPrComment client repo settings.GithubPrId).Result
+                    let _ = (comment |> Github.setPrComment client repo prId).Result
 
                     $"{Environment.NewLine}{comment.title} report sent to Github."
                     |> Console.italic
