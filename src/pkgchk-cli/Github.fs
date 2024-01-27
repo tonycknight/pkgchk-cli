@@ -3,7 +3,15 @@
 open System
 open Octokit
 
-type GithubComment = { title: string; body: string }
+type GithubComment =
+    { title: string
+      body: string }
+
+    static member create title body =
+        let title = sprintf "# %s" (String.defaultValue "pkgchk summary" title)
+
+        { GithubComment.title = title
+          body = body }
 
 module Github =
 

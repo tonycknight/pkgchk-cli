@@ -235,35 +235,24 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
                     String.isNotEmpty settings.GithubToken
                     && String.isNotEmpty settings.GithubRepoOwner
                     && String.isNotEmpty settings.GithubRepo
+                    && settings.PrId <> 0
                 then
-                    // if PR ID is present, build ...
+                    let markdown =
+                        (hits, errorHits, hitCounts, settings.SeverityLevels)
+                        |> Markdown.generate
+                        |> String.joinLines
+
+                    let comment = GithubComment.create settings.SummaryTitle markdown
+
+                    trace $"Posting {comment.title} report to Github..."
+
                     let client = Github.client settings.GithubToken
                     let repo = (settings.GithubRepoOwner, settings.GithubRepo)
+                    let _ = (comment |> Github.setPrComment client repo settings.PrId).Result
 
-                    let title =
-                        if String.isEmpty settings.SummaryTitle then
-                            "pkgchk summary"
-                        else
-                            settings.SummaryTitle
-
-                    if settings.PrId <> 0 then
-                        trace "Building Github summary..."
-
-                        let markdown =
-                            (hits, errorHits, hitCounts, settings.SeverityLevels)
-                            |> Markdown.generate
-                            |> String.joinLines
-
-                        trace $"Posting {title} report to Github..."
-
-                        let comment =
-                            { GithubComment.title = $"# {title}"
-                              body = markdown }
-
-                        let _ = (comment |> Github.setPrComment client repo settings.PrId).Result
-                        $"{Environment.NewLine}{title} report sent to Github."
-                        |> Console.italic
-                        |> console
+                    $"{Environment.NewLine}{comment.title} report sent to Github."
+                    |> Console.italic
+                    |> console
 
 
 
