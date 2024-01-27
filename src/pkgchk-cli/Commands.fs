@@ -264,7 +264,6 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
                         trace $"Sent {title} report to Github."
 
 
-                    // TODO: build???
-                    ignore 0
+                    
 
                 errorHits |> returnCode
