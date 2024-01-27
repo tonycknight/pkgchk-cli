@@ -59,30 +59,30 @@ type PackageCheckCommandSettings() =
     [<DefaultValue(false)>]
     member val NoBanner = false with get, set
 
-    [<CommandOption("--githubtoken")>]
+    [<CommandOption("--github-token", IsHidden=true)>]
     [<Description("A Github token.")>]
     [<DefaultValue("")>]
     member val GithubToken = "" with get, set
 
-    [<CommandOption("--repoowner")>]
+    [<CommandOption("--repo-owner", IsHidden=true)>]
     [<Description("The name of the Github repository owner.")>]
     [<DefaultValue("")>]
     member val GithubRepoOwner = "" with get, set
 
-    [<CommandOption("--repo")>]
+    [<CommandOption("--repo", IsHidden=true)>]
     [<Description("The name of the Github repository.")>]
     [<DefaultValue("")>]
     member val GithubRepo = "" with get, set
 
-    [<CommandOption("--title")>]
-    [<Description("The Github PR report title.")>]
+    [<CommandOption("--github-title", IsHidden=true)>]
+    [<Description("The Github report title.")>]
     [<DefaultValue("")>]
-    member val SummaryTitle = "" with get, set
+    member val GithubSummaryTitle = "" with get, set
 
-    [<CommandOption("--pr")>]
+    [<CommandOption("--github-pr", IsHidden=true)>]
     [<Description("Pull request ID.")>]
     [<DefaultValue(0)>]
-    member val PrId = 0 with get, set
+    member val GithubPrId = 0 with get, set
 
 [<ExcludeFromCodeCoverage>]
 type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
@@ -167,7 +167,7 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
         if settings.NoBanner |> not then
             nuget |> App.banner |> console
 
-        if settings.PrId <> 0 then
+        if settings.GithubPrId <> 0 then
             if String.isEmpty settings.GithubToken then
                 failwith "Missing Github token"
 
@@ -235,20 +235,20 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
                     String.isNotEmpty settings.GithubToken
                     && String.isNotEmpty settings.GithubRepoOwner
                     && String.isNotEmpty settings.GithubRepo
-                    && settings.PrId <> 0
+                    && settings.GithubPrId <> 0
                 then
                     let markdown =
                         (hits, errorHits, hitCounts, settings.SeverityLevels)
                         |> Markdown.generate
                         |> String.joinLines
 
-                    let comment = GithubComment.create settings.SummaryTitle markdown
+                    let comment = GithubComment.create settings.GithubSummaryTitle markdown
 
                     trace $"Posting {comment.title} report to Github..."
 
                     let client = Github.client settings.GithubToken
                     let repo = (settings.GithubRepoOwner, settings.GithubRepo)
-                    let _ = (comment |> Github.setPrComment client repo settings.PrId).Result
+                    let _ = (comment |> Github.setPrComment client repo settings.GithubPrId).Result
 
                     $"{Environment.NewLine}{comment.title} report sent to Github."
                     |> Console.italic
