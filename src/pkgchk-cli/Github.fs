@@ -52,8 +52,7 @@ module Github =
             let commentTitle = $"# {comment.title}"
             let commentBody = $"{commentTitle}{Environment.NewLine}{comment.body}"
 
-            // find those comments whose body starts with comment.Title
-            // edit if found; create if not
+            // As there's no concret mechanism in Octokit to affinitise comments, we must use titles as the discriminator.
             let! comments = getIssueComments client (owner, repo) prId
 
             let previousComment =
