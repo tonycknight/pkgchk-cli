@@ -40,7 +40,7 @@ module Markdown =
             ""
             "---"
             ""
-            "_With :heart: by [pkgchk-cli](https://github.com/tonycknight/pkgchk-cli) Thank you for using my software"
+            "_With :heart: from [pkgchk-cli](https://github.com/tonycknight/pkgchk-cli) Thank you for using my software_"
             ""
             "---"
         }
@@ -119,7 +119,7 @@ module Markdown =
     let formatHitGroup (hit: (string * seq<ScaHit>)) =
         let grpHdr =
             seq {
-                "| | | | |"
+                "| Kind | Severity | Package | Info |"
                 "|-|-|-|-|"
             }
 
