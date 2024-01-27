@@ -59,6 +59,21 @@ type PackageCheckCommandSettings() =
     [<DefaultValue(false)>]
     member val NoBanner = false with get, set
 
+    [<CommandOption("--github")>]
+    [<Description("A Github token.")>]
+    [<DefaultValue("")>]
+    member val GithubToken = "" with get, set
+
+    [<CommandOption("--pr")>]
+    [<Description("Pull request ID.")>]
+    [<DefaultValue("")>]
+    member val PrId = "" with get, set
+
+    [<CommandOption("--build")>]
+    [<Description("Build ID.")>]
+    [<DefaultValue("")>]
+    member val BuildID = "" with get, set
+
 [<ExcludeFromCodeCoverage>]
 type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
     inherit Command<PackageCheckCommandSettings>()
@@ -141,6 +156,12 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
 
         if settings.NoBanner |> not then
             nuget |> App.banner |> console
+
+        if
+            (String.isNotEmpty settings.PrId || String.isNotEmpty settings.BuildID)
+            && String.isEmpty settings.GithubToken
+        then
+            failwith "Missing Github token"
 
         match runRestore settings trace with
         | Choice2Of2 error -> error |> returnError
