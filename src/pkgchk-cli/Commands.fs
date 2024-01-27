@@ -78,7 +78,7 @@ type PackageCheckCommandSettings() =
     [<Description("The Github PR report title.")>]
     [<DefaultValue("")>]
     member val SummaryTitle = "" with get, set
-        
+
     [<CommandOption("--pr")>]
     [<Description("Pull request ID.")>]
     [<DefaultValue(0)>]
@@ -166,12 +166,14 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
 
         if settings.NoBanner |> not then
             nuget |> App.banner |> console
-        
+
         if settings.PrId <> 0 then
             if String.isEmpty settings.GithubToken then
                 failwith "Missing Github token"
+
             if String.isEmpty settings.GithubRepoOwner then
                 failwith "Missing Github owner"
+
             if String.isEmpty settings.GithubRepo then
                 failwith "Missing Github repo"
 
@@ -229,27 +231,38 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
                     |> Console.italic
                     |> console
 
-                if String.isNotEmpty settings.GithubToken then
-                    // if PR ID is present, build ... 
+                if
+                    String.isNotEmpty settings.GithubToken
+                    && String.isNotEmpty settings.GithubRepoOwner
+                    && String.isNotEmpty settings.GithubRepo
+                then
+                    // if PR ID is present, build ...
                     let client = Github.client settings.GithubToken
                     let repo = (settings.GithubRepoOwner, settings.GithubRepo)
-                    let title = 
-                        if String.isEmpty settings.SummaryTitle then "pkgchk summary"
-                        else settings.SummaryTitle
+
+                    let title =
+                        if String.isEmpty settings.SummaryTitle then
+                            "pkgchk summary"
+                        else
+                            settings.SummaryTitle
 
                     if settings.PrId <> 0 then
                         trace "Building Github summary..."
+
                         let markdown =
                             (hits, errorHits, hitCounts, settings.SeverityLevels)
                             |> Markdown.generate
                             |> String.joinLines
 
                         trace $"Posting {title} report to Github..."
-                        let comment = { GithubComment.title = $"# {title}"; body = markdown }
-                        
+
+                        let comment =
+                            { GithubComment.title = $"# {title}"
+                              body = markdown }
+
                         let x = (comment |> Github.setPrComment client repo settings.PrId).Result
                         trace $"Sent {title} report to Github."
-                        
+
 
                     // TODO: build???
                     ignore 0
