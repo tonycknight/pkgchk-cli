@@ -40,7 +40,7 @@ module Markdown =
             ""
             "---"
             ""
-            "_With :heart: by [pkgchk-cli](https://github.com/tonycknight/pkgchk-cli). Thank you for using my software._"
+            "_With :heart: by [pkgchk-cli](https://github.com/tonycknight/pkgchk-cli) Thank you for using my software."
             ""
             "---"
         }
