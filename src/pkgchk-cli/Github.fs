@@ -9,11 +9,11 @@ module Github =
 
     let client token =
         let header = new ProductHeaderValue(App.packageId)
-        let client = new GitHubClient(header)
+        let client = new GitHubClient(header) 
         client.Credentials <- new Credentials(token)
-        client
+        client :> IGitHubClient
 
-    let getIssue (client: GitHubClient) (owner: string, repo) id =
+    let getIssue (client: IGitHubClient) (owner: string, repo) id =
         task {
             try
                 let! issue = client.Issue.Get(owner, repo, id)
@@ -22,7 +22,7 @@ module Github =
                 return None
         }
 
-    let getIssueComments (client: GitHubClient) (owner: string, repo) id =
+    let getIssueComments (client: IGitHubClient) (owner: string, repo) id =
         task {
             try
                 let! issue = getIssue client (owner, repo) id
@@ -41,7 +41,7 @@ module Github =
                 return []
         }
 
-    let setPrComment (client: GitHubClient) (owner, repo) prId (comment: GithubComment) =
+    let setPrComment (client: IGitHubClient) (owner, repo) prId (comment: GithubComment) =
         task {
             let commentBody = $"{comment.title}{Environment.NewLine}{comment.body}"
 
