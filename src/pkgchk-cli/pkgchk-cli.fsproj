@@ -35,6 +35,7 @@
     <Compile Include="Console.fs" />
     <Compile Include="Markdown.fs" />
     <Compile Include="App.fs" />
+    <Compile Include="Github.fs" />
     <Compile Include="Commands.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

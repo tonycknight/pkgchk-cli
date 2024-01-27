@@ -59,20 +59,30 @@ type PackageCheckCommandSettings() =
     [<DefaultValue(false)>]
     member val NoBanner = false with get, set
 
-    [<CommandOption("--github")>]
+    [<CommandOption("--githubtoken")>]
     [<Description("A Github token.")>]
     [<DefaultValue("")>]
     member val GithubToken = "" with get, set
 
+    [<CommandOption("--repoowner")>]
+    [<Description("The name of the Github repository owner.")>]
+    [<DefaultValue("")>]
+    member val GithubRepoOwner = "" with get, set
+
+    [<CommandOption("--repo")>]
+    [<Description("The name of the Github repository.")>]
+    [<DefaultValue("")>]
+    member val GithubRepo = "" with get, set
+
+    [<CommandOption("--title")>]
+    [<Description("The Github PR report title.")>]
+    [<DefaultValue("")>]
+    member val SummaryTitle = "" with get, set
+        
     [<CommandOption("--pr")>]
     [<Description("Pull request ID.")>]
-    [<DefaultValue("")>]
-    member val PrId = "" with get, set
-
-    [<CommandOption("--build")>]
-    [<Description("Build ID.")>]
-    [<DefaultValue("")>]
-    member val BuildID = "" with get, set
+    [<DefaultValue(0)>]
+    member val PrId = 0 with get, set
 
 [<ExcludeFromCodeCoverage>]
 type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
@@ -156,12 +166,14 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
 
         if settings.NoBanner |> not then
             nuget |> App.banner |> console
-
-        if
-            (String.isNotEmpty settings.PrId || String.isNotEmpty settings.BuildID)
-            && String.isEmpty settings.GithubToken
-        then
-            failwith "Missing Github token"
+        
+        if settings.PrId <> 0 then
+            if String.isEmpty settings.GithubToken then
+                failwith "Missing Github token"
+            if String.isEmpty settings.GithubRepoOwner then
+                failwith "Missing Github owner"
+            if String.isEmpty settings.GithubRepo then
+                failwith "Missing Github repo"
 
         match runRestore settings trace with
         | Choice2Of2 error -> error |> returnError
@@ -216,5 +228,30 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
                     $"{Environment.NewLine}Report file [link={reportFile}]{reportFile}[/] built."
                     |> Console.italic
                     |> console
+
+                if String.isNotEmpty settings.GithubToken then
+                    // if PR ID is present, build ... 
+                    let client = Github.client settings.GithubToken
+                    let repo = (settings.GithubRepoOwner, settings.GithubRepo)
+                    let title = 
+                        if String.isEmpty settings.SummaryTitle then "pkgchk summary"
+                        else settings.SummaryTitle
+
+                    if settings.PrId <> 0 then
+                        trace "Building Github summary..."
+                        let markdown =
+                            (hits, errorHits, hitCounts, settings.SeverityLevels)
+                            |> Markdown.generate
+                            |> String.joinLines
+
+                        trace $"Posting {title} report to Github..."
+                        let comment = { GithubComment.title = $"# {title}"; body = markdown }
+                        
+                        let x = (comment |> Github.setPrComment client repo settings.PrId).Result
+                        trace $"Sent {title} report to Github."
+                        
+
+                    // TODO: build???
+                    ignore 0
 
                 errorHits |> returnCode
