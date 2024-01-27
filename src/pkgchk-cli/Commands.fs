@@ -260,9 +260,10 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
                             { GithubComment.title = $"# {title}"
                               body = markdown }
 
-                        let x = (comment |> Github.setPrComment client repo settings.PrId).Result
-                        trace $"Sent {title} report to Github."
-
+                        let _ = (comment |> Github.setPrComment client repo settings.PrId).Result
+                        $"{Environment.NewLine}{title} report sent to Github."
+                        |> Console.italic
+                        |> console
 
 
 
