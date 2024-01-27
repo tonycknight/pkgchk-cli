@@ -7,10 +7,8 @@ type GithubComment =
     { title: string
       body: string }
 
-    static member create title body =
-        let title = sprintf "# %s" (String.defaultValue "pkgchk summary" title)
-
-        { GithubComment.title = title
+    static member create title body =        
+        { GithubComment.title = (String.defaultValue "pkgchk summary" title)
           body = body }
 
 module Github =
@@ -51,7 +49,8 @@ module Github =
 
     let setPrComment (client: IGitHubClient) (owner, repo) prId (comment: GithubComment) =
         task {
-            let commentBody = $"{comment.title}{Environment.NewLine}{comment.body}"
+            let commentTitle = $"# {comment.title}"
+            let commentBody = $"{commentTitle}{Environment.NewLine}{comment.body}"
 
             // find those comments whose body starts with comment.Title
             // edit if found; create if not
@@ -59,7 +58,7 @@ module Github =
 
             let previousComment =
                 comments
-                |> Seq.filter (fun c -> c.Body.StartsWith(comment.title, StringComparison.InvariantCulture))
+                |> Seq.filter (fun c -> c.Body.StartsWith(commentTitle, StringComparison.InvariantCulture))
                 |> Seq.tryHead
 
             let! newComment =
