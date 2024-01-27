@@ -9,7 +9,7 @@ module Github =
 
     let client token =
         let header = new ProductHeaderValue(App.packageId)
-        let client = new GitHubClient(header) 
+        let client = new GitHubClient(header)
         client.Credentials <- new Credentials(token)
         client :> IGitHubClient
 
