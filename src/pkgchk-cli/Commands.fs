@@ -158,6 +158,8 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
 
     override _.Execute(context, settings) =
         let trace = trace settings.TraceLogging
+        
+        settings.SeverityLevels <- settings.SeverityLevels |> Array.filter String.isNotEmpty
 
         if settings.NoBanner |> not then
             nuget |> App.banner |> console
