@@ -64,7 +64,7 @@ type PackageCheckCommandSettings() =
     [<DefaultValue("")>]
     member val GithubToken = "" with get, set
 
-    [<CommandOption("--repo", IsHidden = true)>]
+    [<CommandOption("--github-repo", IsHidden = true)>]
     [<Description("The name of the Github repository in the form <owner>/<repo>, e.g. github/octokit.")>]
     [<DefaultValue("")>]
     member val GithubRepo = "" with get, set
