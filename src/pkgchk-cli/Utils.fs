@@ -52,6 +52,10 @@ module String =
         if obj.ReferenceEquals(value, null) then "" else value
 
     [<DebuggerStepThrough>]
+    let defaultValue (defaultValue: string) (value: string) =
+        if isNotEmpty value then value else defaultValue
+
+    [<DebuggerStepThrough>]
     let leading (len: int) (value: string) =
         let len2 = System.Math.Min(value.Length, len)
 
@@ -63,6 +67,16 @@ module String =
     [<DebuggerStepThrough>]
     let escapeMarkup (value: string) =
         value.Replace("[", "[[").Replace("]", "]]")
+
+    [<DebuggerStepThrough>]
+    let isInt (value: string) = Int32.TryParse value |> fst
+
+    [<DebuggerStepThrough>]
+    let toInt (value: string) =
+        match Int32.TryParse value with
+        | (true, x) -> x
+        | _ -> 0
+
 
 module ReturnCodes =
 

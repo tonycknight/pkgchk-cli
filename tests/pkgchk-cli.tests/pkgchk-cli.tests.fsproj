@@ -20,10 +20,11 @@
     <Compile Include="ScaTests.fs" />
     <Compile Include="ConsoleTests.fs" />
     <Compile Include="MarkdownTests.fs" />
+    <Compile Include="GithubCommentTests.fs" />
+    <Compile Include="GithubRepoTests.fs" />
+    <Compile Include="GithubTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
-
-  <ItemGroup />
 
   <ItemGroup>
     <PackageReference Include="coverlet.msbuild" Version="6.0.0">

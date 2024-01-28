@@ -59,6 +59,26 @@ type PackageCheckCommandSettings() =
     [<DefaultValue(false)>]
     member val NoBanner = false with get, set
 
+    [<CommandOption("--github-token", IsHidden = true)>]
+    [<Description("A Github token.")>]
+    [<DefaultValue("")>]
+    member val GithubToken = "" with get, set
+
+    [<CommandOption("--github-repo", IsHidden = true)>]
+    [<Description("The name of the Github repository in the form <owner>/<repo>, e.g. github/octokit.")>]
+    [<DefaultValue("")>]
+    member val GithubRepo = "" with get, set
+
+    [<CommandOption("--github-title", IsHidden = true)>]
+    [<Description("The Github report title.")>]
+    [<DefaultValue("")>]
+    member val GithubSummaryTitle = "" with get, set
+
+    [<CommandOption("--github-pr", IsHidden = true)>]
+    [<Description("Pull request ID.")>]
+    [<DefaultValue("")>]
+    member val GithubPrId = "" with get, set
+
 [<ExcludeFromCodeCoverage>]
 type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
     inherit Command<PackageCheckCommandSettings>()
@@ -139,8 +159,28 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
     override _.Execute(context, settings) =
         let trace = trace settings.TraceLogging
 
+        settings.SeverityLevels <- settings.SeverityLevels |> Array.filter String.isNotEmpty
+
         if settings.NoBanner |> not then
             nuget |> App.banner |> console
+
+        if String.isNotEmpty settings.GithubPrId then
+            if String.isEmpty settings.GithubToken then
+                failwith "Missing Github token."
+
+            if String.isEmpty settings.GithubRepo then
+                failwith "Missing Github repository. Use the form <owner>/<name>."
+
+            let repo = GithubRepo.repo settings.GithubRepo
+
+            if repo |> fst |> String.isEmpty then
+                failwith "The repository owner is missing. Use the form <owner>/<name>."
+
+            if repo |> snd |> String.isEmpty then
+                failwith "The repository name is missing. Use the form <owner>/<name>."
+
+            if String.isInt settings.GithubPrId |> not then
+                failwith "The PR ID must be an integer."
 
         match runRestore settings trace with
         | Choice2Of2 error -> error |> returnError
@@ -195,5 +235,30 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
                     $"{Environment.NewLine}Report file [link={reportFile}]{reportFile}[/] built."
                     |> Console.italic
                     |> console
+
+                if
+                    String.isNotEmpty settings.GithubToken
+                    && String.isNotEmpty settings.GithubRepo
+                    && String.isNotEmpty settings.GithubPrId
+                then
+                    let prId = String.toInt settings.GithubPrId
+                    let repo = GithubRepo.repo settings.GithubRepo
+
+                    let markdown =
+                        (hits, errorHits, hitCounts, settings.SeverityLevels)
+                        |> Markdown.generate
+                        |> String.joinLines
+
+                    let comment = GithubComment.create settings.GithubSummaryTitle markdown
+
+                    trace $"Posting {comment.title} report to Github repo {repo}..."
+
+                    let client = Github.client settings.GithubToken
+
+                    let _ = (comment |> Github.setPrComment client repo prId).Result
+
+                    $"{comment.title} report sent to Github." |> Console.italic |> console
+
+
 
                 errorHits |> returnCode
