@@ -254,7 +254,7 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
                     
                     let _ = (comment |> Github.setPrComment client repo prId).Result
 
-                    $"{Environment.NewLine}{comment.title} report sent to Github."
+                    $"{comment.title} report sent to Github."
                     |> Console.italic
                     |> console
 
