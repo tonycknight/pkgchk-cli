@@ -1,18 +1,20 @@
 ﻿namespace pkgchk
 
 open System
+open System.Diagnostics.CodeAnalysis
 open Octokit
 
 type GithubComment =
     { title: string
       body: string }
 
-    static member create title body =        
+    static member create title body =
         { GithubComment.title = (String.defaultValue "pkgchk summary" title)
           body = body }
 
 module Github =
 
+    [<ExcludeFromCodeCoverage>]
     let client token =
         let header = new ProductHeaderValue(App.packageId)
         let client = new GitHubClient(header)
