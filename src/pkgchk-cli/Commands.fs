@@ -158,7 +158,7 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
 
     override _.Execute(context, settings) =
         let trace = trace settings.TraceLogging
-        
+
         settings.SeverityLevels <- settings.SeverityLevels |> Array.filter String.isNotEmpty
 
         if settings.NoBanner |> not then
@@ -170,8 +170,9 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
 
             if String.isEmpty settings.GithubRepo then
                 failwith "Missing Github repository. Use the form <owner>/<name>."
-                            
+
             let repo = GithubRepo.repo settings.GithubRepo
+
             if repo |> fst |> String.isEmpty then
                 failwith "The repository owner is missing. Use the form <owner>/<name>."
 
@@ -249,16 +250,14 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
                         |> String.joinLines
 
                     let comment = GithubComment.create settings.GithubSummaryTitle markdown
-                    
+
                     trace $"Posting {comment.title} report to Github repo {repo}..."
 
                     let client = Github.client settings.GithubToken
-                    
+
                     let _ = (comment |> Github.setPrComment client repo prId).Result
 
-                    $"{comment.title} report sent to Github."
-                    |> Console.italic
-                    |> console
+                    $"{comment.title} report sent to Github." |> Console.italic |> console
 
 
 

@@ -13,14 +13,14 @@ type GithubComment =
           body = body }
 
 module GithubRepo =
-                
+
     let repo (value: string) =
         match value.Split('/', StringSplitOptions.None) with
         | [| owner; repo |] -> (owner, repo)
         | _ -> ("", value)
 
 module Github =
-    
+
     [<ExcludeFromCodeCoverage>]
     let client token =
         let header = new ProductHeaderValue(App.packageId)
