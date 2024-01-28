@@ -64,13 +64,8 @@ type PackageCheckCommandSettings() =
     [<DefaultValue("")>]
     member val GithubToken = "" with get, set
 
-    [<CommandOption("--repo-owner", IsHidden = true)>]
-    [<Description("The name of the Github repository owner.")>]
-    [<DefaultValue("")>]
-    member val GithubRepoOwner = "" with get, set
-
     [<CommandOption("--repo", IsHidden = true)>]
-    [<Description("The name of the Github repository.")>]
+    [<Description("The name of the Github repository in the form <owner>/<repo>, e.g. github/octokit.")>]
     [<DefaultValue("")>]
     member val GithubRepo = "" with get, set
 
@@ -171,11 +166,15 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
             if String.isEmpty settings.GithubToken then
                 failwith "Missing Github token."
 
-            if String.isEmpty settings.GithubRepoOwner then
-                failwith "Missing Github repo owner."
-
             if String.isEmpty settings.GithubRepo then
-                failwith "Missing Github repo."
+                failwith "Missing Github repository. Use the form <owner>/<name>."
+                            
+            let repo = GithubRepo.repo settings.GithubRepo
+            if repo |> fst |> String.isEmpty then
+                failwith "The repository owner is missing. Use the form <owner>/<name>."
+
+            if repo |> snd |> String.isEmpty then
+                failwith "The repository name is missing. Use the form <owner>/<name>."
 
             if String.isInt settings.GithubPrId |> not then
                 failwith "The PR ID must be an integer."
@@ -236,11 +235,11 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
 
                 if
                     String.isNotEmpty settings.GithubToken
-                    && String.isNotEmpty settings.GithubRepoOwner
                     && String.isNotEmpty settings.GithubRepo
                     && String.isNotEmpty settings.GithubPrId
                 then
                     let prId = String.toInt settings.GithubPrId
+                    let repo = GithubRepo.repo settings.GithubRepo
 
                     let markdown =
                         (hits, errorHits, hitCounts, settings.SeverityLevels)
@@ -248,11 +247,11 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
                         |> String.joinLines
 
                     let comment = GithubComment.create settings.GithubSummaryTitle markdown
-
-                    trace $"Posting {comment.title} report to Github..."
+                    
+                    trace $"Posting {comment.title} report to Github repo {repo}..."
 
                     let client = Github.client settings.GithubToken
-                    let repo = (settings.GithubRepoOwner, settings.GithubRepo)
+                    
                     let _ = (comment |> Github.setPrComment client repo prId).Result
 
                     $"{Environment.NewLine}{comment.title} report sent to Github."
