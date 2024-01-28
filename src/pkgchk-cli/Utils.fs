@@ -95,3 +95,9 @@ module HashSet =
     let ofSeq<'a> (comparer: IEqualityComparer<'a>) (values: seq<'a>) = new HashSet<'a>(values, comparer)
 
     let contains<'a> (hashSet: HashSet<'a>) = hashSet.Contains
+
+module Environment =
+
+    [<ExcludeFromCodeCoverage>]
+    let isRunningGithub =
+        System.Environment.GetEnvironmentVariable("GITHUB_ACTIONS") <> null

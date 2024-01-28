@@ -9,6 +9,9 @@ module Rendering =
     let white = "white"
 
     [<Literal>]
+    let silver = "silver"
+
+    [<Literal>]
     let green = "lime"
 
     [<Literal>]

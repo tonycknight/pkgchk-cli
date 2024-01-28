@@ -86,10 +86,7 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
     let console = Spectre.Console.AnsiConsole.MarkupLine
 
     let trace traceLogging =
-        if traceLogging then
-            (Console.markup Rendering.grey >> console)
-        else
-            ignore
+        if traceLogging then Console.grey >> console else ignore
 
     let renderTables (values: seq<Spectre.Console.Table>) =
         values |> Seq.iter Spectre.Console.AnsiConsole.Write
