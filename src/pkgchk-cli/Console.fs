@@ -12,7 +12,12 @@ module Console =
     let yellow = markup Rendering.yellow
     let blue = markup Rendering.cornflowerblue
     let error = markup Rendering.red
-    let grey = markup Rendering.grey
+
+    let grey =
+        match Environment.isRunningGithub with
+        | true -> Rendering.lightgrey
+        | _ -> Rendering.grey
+        |> markup
 
     let table () =
         let table = (new Table()).LeftAligned()
