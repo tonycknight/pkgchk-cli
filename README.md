@@ -19,6 +19,10 @@ So until those issues are resolved, `dotnet list package` needs some workarounds
 
 This tool tries to do just that. It wraps `dotnet list package` and interprets the output for vulnerabilities. Anything found will return in a non-zero return code, and you get some nice markdown to make your PRs obvious. And because it's a `dotnet tool`, using it in a CI pipeline is as easy as using it on your dev machine.
 
+## If you want to use this as a Github Action
+
+A Github Action is available - see [pkgchk-action](https://github.com/tonycknight/pkgchk-action).
+
 ## What you need to install it
 
 :warning: This tool only works with .Net SDK 7.0.200 or higher. 
