@@ -9,7 +9,7 @@ module Rendering =
     let white = "white"
 
     [<Literal>]
-    let silver = "silver"
+    let lightgrey = "#a0a0a0"
 
     [<Literal>]
     let green = "lime"

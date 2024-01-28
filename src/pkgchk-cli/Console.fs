@@ -15,7 +15,7 @@ module Console =
 
     let grey =
         match Environment.isRunningGithub with
-        | true -> Rendering.silver
+        | true -> Rendering.lightgrey
         | _ -> Rendering.grey
         |> markup
 
