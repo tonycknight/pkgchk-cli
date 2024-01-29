@@ -12,14 +12,12 @@ type GithubComment =
         { GithubComment.title = (String.defaultValue "pkgchk summary" title)
           body = body }
 
-module GithubRepo =
+module Github =
 
     let repo (value: string) =
         match value.Split('/', StringSplitOptions.None) with
         | [| owner; repo |] -> (owner, repo)
         | _ -> ("", value)
-
-module Github =
 
     [<ExcludeFromCodeCoverage>]
     let client token =

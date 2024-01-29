@@ -168,7 +168,7 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
             if String.isEmpty settings.GithubRepo then
                 failwith "Missing Github repository. Use the form <owner>/<name>."
 
-            let repo = GithubRepo.repo settings.GithubRepo
+            let repo = Github.repo settings.GithubRepo
 
             if repo |> fst |> String.isEmpty then
                 failwith "The repository owner is missing. Use the form <owner>/<name>."
@@ -239,7 +239,7 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
                     && String.isNotEmpty settings.GithubPrId
                 then
                     let prId = String.toInt settings.GithubPrId
-                    let repo = GithubRepo.repo settings.GithubRepo
+                    let repo = Github.repo settings.GithubRepo
 
                     let markdown =
                         (hits, errorHits, hitCounts, settings.SeverityLevels)
