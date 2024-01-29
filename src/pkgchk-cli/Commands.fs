@@ -41,7 +41,7 @@ type PackageCheckCommandSettings() =
 
     [<CommandOption("-s|--severity")>]
     [<Description("Severity levels to scan for. Matches will return non-zero exit codes. Multiple levels can be specified.")>]
-    [<DefaultValue([| "High"; "Critical"; "Critical Bugs"; "Legacy" |])>]
+    [<DefaultValue([| "High"; "Critical"; "Critical Bugs" |])>]
     member val SeverityLevels: string array = [||] with get, set
 
     [<CommandOption("--trace")>]
