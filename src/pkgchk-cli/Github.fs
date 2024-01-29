@@ -14,6 +14,9 @@ type GithubComment =
 
 module Github =
 
+    [<Literal>]
+    let maxCommentSize = 65536 
+
     let repo (value: string) =
         match value.Split('/', StringSplitOptions.None) with
         | [| owner; repo |] -> (owner, repo)
@@ -25,6 +28,12 @@ module Github =
         let client = new GitHubClient(header)
         client.Credentials <- new Credentials(token)
         client :> IGitHubClient
+
+    let constructComment (comment: GithubComment) =
+        let commentTitle = $"# {comment.title}"
+        let commentBody = $"{commentTitle}{Environment.NewLine}{comment.body}"
+
+        (commentTitle, commentBody)
 
     let getIssue (client: IGitHubClient) (owner: string, repo) id =
         task {
@@ -56,8 +65,8 @@ module Github =
 
     let setPrComment (client: IGitHubClient) (owner, repo) prId (comment: GithubComment) =
         task {
-            let commentTitle = $"# {comment.title}"
-            let commentBody = $"{commentTitle}{Environment.NewLine}{comment.body}"
+            
+            let (commentTitle, commentBody) = constructComment comment
 
             // As there's no concret mechanism in Octokit to affinitise comments, we must use titles as the discriminator.
             let! comments = getIssueComments client (owner, repo) prId
