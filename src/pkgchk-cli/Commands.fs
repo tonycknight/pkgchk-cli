@@ -238,15 +238,26 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
                     && String.isNotEmpty settings.GithubRepo
                     && String.isNotEmpty settings.GithubPrId
                 then
+                    trace "Building Github reports..."
                     let prId = String.toInt settings.GithubPrId
                     let repo = Github.repo settings.GithubRepo
 
-                    let markdown =
-                        (hits, errorHits, hitCounts, settings.SeverityLevels)
-                        |> Markdown.generate
-                        |> String.joinLines
-
-                    let comment = GithubComment.create settings.GithubSummaryTitle markdown
+                    let rec genMarkdown (hits, errorHits, hitCounts) attempt =
+                        let markdown =
+                            (hits, errorHits, hitCounts, settings.SeverityLevels)
+                            |> Markdown.generate
+                            |> String.joinLines
+                        
+                        if markdown.Length < Github.maxCommentSize then
+                            GithubComment.create settings.GithubSummaryTitle markdown
+                        else 
+                            trace $"Shrinking Github output as too large (attempt #{attempt + 1})..."
+                            if attempt >= 1 then
+                                GithubComment.create settings.GithubSummaryTitle "_The report's too big for Github - Please check logs_"
+                            else
+                                genMarkdown ([], errorHits, hitCounts) (attempt + 1)                        
+                    
+                    let comment = genMarkdown (hits, errorHits, hitCounts) 0
 
                     trace $"Posting {comment.title} report to Github repo {repo}..."
 
