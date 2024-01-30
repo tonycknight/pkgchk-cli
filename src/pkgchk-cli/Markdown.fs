@@ -138,15 +138,10 @@ module Markdown =
 
         (grps |> Seq.collect formatHitGroup)
 
-    let generate (hits, errorHits, countSummary, severities) =
-        let title = title errorHits
-
-        match hits with
-        | [] -> Seq.append title footer
-        | hits ->
-            seq {
-                yield! title
-                yield! formatHitCounts (severities, countSummary)
-                yield! formatHits hits
-                yield! footer
-            }
+    let generate (hits, errorHits, countSummary, severities) =        
+        seq {
+            yield! title errorHits
+            yield! formatHitCounts (severities, countSummary)
+            yield! formatHits hits
+            yield! footer
+        }
