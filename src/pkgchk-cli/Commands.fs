@@ -88,8 +88,9 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
     let trace traceLogging =
         if traceLogging then Console.grey >> console else ignore
 
-    let renderTables (values: seq<Spectre.Console.Table>) =
-        values |> Seq.iter Spectre.Console.AnsiConsole.Write
+    let returnError error =
+        error |> Console.error |> console
+        ReturnCodes.sysError
 
     let runProc logging proc =
         try
@@ -113,10 +114,6 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
             |> Io.createProcess
             |> runRestoreProcParse (runProc logging)
 
-    let returnError error =
-        error |> Console.error |> console
-        ReturnCodes.sysError
-
     let getErrors procResults =
         procResults
         |> Seq.map (function
@@ -124,6 +121,9 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
             | _ -> "")
         |> Seq.filter String.isNotEmpty
         |> Seq.distinct
+
+    let renderTables (values: seq<Spectre.Console.Table>) =
+        values |> Seq.iter Spectre.Console.AnsiConsole.Write
 
     let liftHits procResults =
         procResults
@@ -145,6 +145,22 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
 
     let getHits = liftHits >> sortHits >> List.ofSeq
 
+    let rec genComment trace (settings: PackageCheckCommandSettings, hits, errorHits, hitCounts) attempt =
+        let markdown =
+            (hits, errorHits, hitCounts, settings.SeverityLevels)
+            |> Markdown.generate
+            |> String.joinLines
+
+        if markdown.Length < Github.maxCommentSize then
+            GithubComment.create settings.GithubSummaryTitle markdown
+        else
+            trace $"Shrinking Github output as too large (attempt #{attempt + 1})..."
+
+            if attempt >= 1 then
+                GithubComment.create settings.GithubSummaryTitle "_The report's too big for Github - Please check logs_"
+            else
+                genComment trace (settings, [], errorHits, hitCounts) (attempt + 1)
+
     let returnCode (hits: ScaHit list) =
         match hits with
         | [] -> ReturnCodes.validationOk
@@ -153,14 +169,7 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
     let reportFile outDir =
         outDir |> Io.toFullPath |> Io.combine "pkgchk.md" |> Io.normalise
 
-    override _.Execute(context, settings) =
-        let trace = trace settings.TraceLogging
-
-        settings.SeverityLevels <- settings.SeverityLevels |> Array.filter String.isNotEmpty
-
-        if settings.NoBanner |> not then
-            nuget |> App.banner |> console
-
+    let validateSettings (settings: PackageCheckCommandSettings) =
         if String.isNotEmpty settings.GithubPrId then
             if String.isEmpty settings.GithubToken then
                 failwith "Missing Github token."
@@ -168,7 +177,7 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
             if String.isEmpty settings.GithubRepo then
                 failwith "Missing Github repository. Use the form <owner>/<name>."
 
-            let repo = GithubRepo.repo settings.GithubRepo
+            let repo = Github.repo settings.GithubRepo
 
             if repo |> fst |> String.isEmpty then
                 failwith "The repository owner is missing. Use the form <owner>/<name>."
@@ -178,6 +187,16 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
 
             if String.isInt settings.GithubPrId |> not then
                 failwith "The PR ID must be an integer."
+
+    override _.Execute(context, settings) =
+        let trace = trace settings.TraceLogging
+
+        settings.SeverityLevels <- settings.SeverityLevels |> Array.filter String.isNotEmpty
+
+        if settings.NoBanner |> not then
+            nuget |> App.banner |> console
+
+        validateSettings settings
 
         match runRestore settings trace with
         | Choice2Of2 error -> error |> returnError
@@ -238,24 +257,15 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
                     && String.isNotEmpty settings.GithubRepo
                     && String.isNotEmpty settings.GithubPrId
                 then
+                    trace "Building Github reports..."
                     let prId = String.toInt settings.GithubPrId
-                    let repo = GithubRepo.repo settings.GithubRepo
-
-                    let markdown =
-                        (hits, errorHits, hitCounts, settings.SeverityLevels)
-                        |> Markdown.generate
-                        |> String.joinLines
-
-                    let comment = GithubComment.create settings.GithubSummaryTitle markdown
-
-                    trace $"Posting {comment.title} report to Github repo {repo}..."
-
+                    let repo = Github.repo settings.GithubRepo
                     let client = Github.client settings.GithubToken
 
+                    let comment = genComment trace (settings, hits, errorHits, hitCounts) 0
+
+                    trace $"Posting {comment.title} report to Github repo {repo}..."
                     let _ = (comment |> Github.setPrComment client repo prId).Result
-
                     $"{comment.title} report sent to Github." |> Console.italic |> console
-
-
 
                 errorHits |> returnCode
