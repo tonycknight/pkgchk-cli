@@ -88,8 +88,9 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
     let trace traceLogging =
         if traceLogging then Console.grey >> console else ignore
 
-    let renderTables (values: seq<Spectre.Console.Table>) =
-        values |> Seq.iter Spectre.Console.AnsiConsole.Write
+    let returnError error =
+        error |> Console.error |> console
+        ReturnCodes.sysError
 
     let runProc logging proc =
         try
@@ -113,10 +114,6 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
             |> Io.createProcess
             |> runRestoreProcParse (runProc logging)
 
-    let returnError error =
-        error |> Console.error |> console
-        ReturnCodes.sysError
-
     let getErrors procResults =
         procResults
         |> Seq.map (function
@@ -124,6 +121,9 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
             | _ -> "")
         |> Seq.filter String.isNotEmpty
         |> Seq.distinct
+
+    let renderTables (values: seq<Spectre.Console.Table>) =
+        values |> Seq.iter Spectre.Console.AnsiConsole.Write
 
     let liftHits procResults =
         procResults
@@ -169,14 +169,7 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
     let reportFile outDir =
         outDir |> Io.toFullPath |> Io.combine "pkgchk.md" |> Io.normalise
 
-    override _.Execute(context, settings) =
-        let trace = trace settings.TraceLogging
-
-        settings.SeverityLevels <- settings.SeverityLevels |> Array.filter String.isNotEmpty
-
-        if settings.NoBanner |> not then
-            nuget |> App.banner |> console
-
+    let validateSettings (settings: PackageCheckCommandSettings) =
         if String.isNotEmpty settings.GithubPrId then
             if String.isEmpty settings.GithubToken then
                 failwith "Missing Github token."
@@ -194,6 +187,16 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
 
             if String.isInt settings.GithubPrId |> not then
                 failwith "The PR ID must be an integer."
+
+    override _.Execute(context, settings) =
+        let trace = trace settings.TraceLogging
+
+        settings.SeverityLevels <- settings.SeverityLevels |> Array.filter String.isNotEmpty
+
+        if settings.NoBanner |> not then
+            nuget |> App.banner |> console
+
+        validateSettings settings
 
         match runRestore settings trace with
         | Choice2Of2 error -> error |> returnError
