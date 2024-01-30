@@ -15,7 +15,7 @@ type GithubComment =
 module Github =
 
     [<Literal>]
-    let maxCommentSize = 65536 
+    let maxCommentSize = 65536
 
     let repo (value: string) =
         match value.Split('/', StringSplitOptions.None) with
@@ -65,7 +65,7 @@ module Github =
 
     let setPrComment (client: IGitHubClient) (owner, repo) prId (comment: GithubComment) =
         task {
-            
+
             let (commentTitle, commentBody) = constructComment comment
 
             // As there's no concret mechanism in Octokit to affinitise comments, we must use titles as the discriminator.

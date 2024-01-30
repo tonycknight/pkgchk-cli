@@ -133,12 +133,12 @@ module Markdown =
         }
 
     let formatHits (hits: seq<ScaHit>) =
-        let grps = hits |> Seq.groupBy (fun h -> h.projectPath) |> Seq.sortBy fst
+        hits
+        |> Seq.groupBy (fun h -> h.projectPath)
+        |> Seq.sortBy fst
+        |> Seq.collect formatHitGroup
 
-
-        (grps |> Seq.collect formatHitGroup)
-
-    let generate (hits, errorHits, countSummary, severities) =        
+    let generate (hits, errorHits, countSummary, severities) =
         seq {
             yield! title errorHits
             yield! formatHitCounts (severities, countSummary)
