@@ -79,6 +79,16 @@ type PackageCheckCommandSettings() =
     [<DefaultValue("")>]
     member val GithubPrId = "" with get, set
 
+    [<CommandOption("--good-img", IsHidden = true)>]
+    [<Description("URI of an image for successful scans.")>]
+    [<DefaultValue("")>]
+    member val GoodImageUri = "" with get, set
+
+    [<CommandOption("--bad-img", IsHidden = true)>]
+    [<Description("URI of an image for failed scans.")>]
+    [<DefaultValue("")>]
+    member val BadImageUri = "" with get, set
+
 [<ExcludeFromCodeCoverage>]
 type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
     inherit Command<PackageCheckCommandSettings>()
@@ -145,9 +155,9 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
 
     let getHits = liftHits >> sortHits >> List.ofSeq
 
-    let rec genComment trace (settings: PackageCheckCommandSettings, hits, errorHits, hitCounts) attempt =
+    let rec genComment trace (settings: PackageCheckCommandSettings, hits, errorHits, hitCounts, imageUri) attempt =
         let markdown =
-            (hits, errorHits, hitCounts, settings.SeverityLevels)
+            (hits, errorHits, hitCounts, settings.SeverityLevels, imageUri)
             |> Markdown.generate
             |> String.joinLines
 
@@ -159,15 +169,24 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
             if attempt >= 1 then
                 GithubComment.create settings.GithubSummaryTitle "_The report's too big for Github - Please check logs_"
             else
-                genComment trace (settings, [], errorHits, hitCounts) (attempt + 1)
+                genComment trace (settings, [], errorHits, hitCounts, imageUri) (attempt + 1)
+
+    let isSuccessScan (hits: ScaHit list) =
+        match hits with
+        | [] -> true
+        | _ -> false
 
     let returnCode (hits: ScaHit list) =
-        match hits with
-        | [] -> ReturnCodes.validationOk
+        match isSuccessScan hits with
+        | true -> ReturnCodes.validationOk
         | _ -> ReturnCodes.validationFailed
 
     let reportFile outDir =
         outDir |> Io.toFullPath |> Io.combine "pkgchk.md" |> Io.normalise
+
+    let cleanSettings (settings: PackageCheckCommandSettings) =
+        settings.SeverityLevels <- settings.SeverityLevels |> Array.filter String.isNotEmpty
+        settings
 
     let validateSettings (settings: PackageCheckCommandSettings) =
         if String.isNotEmpty settings.GithubPrId then
@@ -191,8 +210,8 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
     override _.Execute(context, settings) =
         let trace = trace settings.TraceLogging
 
-        settings.SeverityLevels <- settings.SeverityLevels |> Array.filter String.isNotEmpty
-
+        let settings = cleanSettings settings
+        
         if settings.NoBanner |> not then
             nuget |> App.banner |> console
 
@@ -240,11 +259,14 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
 
                 renderables |> renderTables
 
+                let reportImg = match isSuccessScan errorHits with  
+                                    | true -> settings.GoodImageUri 
+                                    | false -> settings.BadImageUri
                 if settings.OutputDirectory <> "" then
                     trace "Building reports..."
-
+                    
                     let reportFile =
-                        (hits, errorHits, hitCounts, settings.SeverityLevels)
+                        (hits, errorHits, hitCounts, settings.SeverityLevels, reportImg)
                         |> Markdown.generate
                         |> Io.writeFile (reportFile settings.OutputDirectory)
 
@@ -262,7 +284,7 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
                     let repo = Github.repo settings.GithubRepo
                     let client = Github.client settings.GithubToken
 
-                    let comment = genComment trace (settings, hits, errorHits, hitCounts) 0
+                    let comment = genComment trace (settings, hits, errorHits, hitCounts, reportImg) 0
 
                     trace $"Posting {comment.title} report to Github repo {repo}..."
                     let _ = (comment |> Github.setPrComment client repo prId).Result
