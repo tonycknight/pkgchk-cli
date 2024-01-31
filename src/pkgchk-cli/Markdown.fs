@@ -11,6 +11,8 @@ module Markdown =
     let formatSeverity value =
         $"{Rendering.severityEmote value} {formatSeverityColour value}"
 
+    let imgLink uri = $"![image]({uri})"
+
     let nugetLinkPkgVsn package version =
         $"[{package}]({Rendering.nugetLink (package, version)})"
 
@@ -138,9 +140,13 @@ module Markdown =
         |> Seq.sortBy fst
         |> Seq.collect formatHitGroup
 
-    let generate (hits, errorHits, countSummary, severities) =
+    let generate (hits, errorHits, countSummary, severities, imageUri) =
         seq {
             yield! title errorHits
+
+            if String.isNotEmpty imageUri then
+                yield imgLink imageUri
+
             yield! formatHitCounts (severities, countSummary)
             yield! formatHits hits
             yield! footer
