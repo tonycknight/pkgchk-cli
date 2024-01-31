@@ -211,7 +211,7 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
         let trace = trace settings.TraceLogging
 
         let settings = cleanSettings settings
-        
+
         if settings.NoBanner |> not then
             nuget |> App.banner |> console
 
@@ -259,12 +259,14 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
 
                 renderables |> renderTables
 
-                let reportImg = match isSuccessScan errorHits with  
-                                    | true -> settings.GoodImageUri 
-                                    | false -> settings.BadImageUri
+                let reportImg =
+                    match isSuccessScan errorHits with
+                    | true -> settings.GoodImageUri
+                    | false -> settings.BadImageUri
+
                 if settings.OutputDirectory <> "" then
                     trace "Building reports..."
-                    
+
                     let reportFile =
                         (hits, errorHits, hitCounts, settings.SeverityLevels, reportImg)
                         |> Markdown.generate
