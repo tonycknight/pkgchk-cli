@@ -79,12 +79,12 @@ type PackageCheckCommandSettings() =
     [<DefaultValue("")>]
     member val GithubPrId = "" with get, set
 
-    [<CommandOption("--good-img", IsHidden = true)>]
+    [<CommandOption("--pass-img", IsHidden = true)>]
     [<Description("URI of an image for successful scans.")>]
     [<DefaultValue("")>]
     member val GoodImageUri = "" with get, set
 
-    [<CommandOption("--bad-img", IsHidden = true)>]
+    [<CommandOption("--fail-img", IsHidden = true)>]
     [<Description("URI of an image for failed scans.")>]
     [<DefaultValue("")>]
     member val BadImageUri = "" with get, set
