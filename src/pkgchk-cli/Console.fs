@@ -4,6 +4,8 @@ open System
 open Spectre.Console
 
 module Console =
+    let toRenderable x = x :> Spectre.Console.Rendering.IRenderable
+
     let markup (style: string) (value: string) = $"[{style}]{value}[/]"
     let italic = markup "italic"
     let white = markup Rendering.white
@@ -146,9 +148,9 @@ module Console =
             |> Seq.sortBy fst
             |> Seq.collect (fun (project, hits) ->
                 seq {
-                    project |> projectTable :> Spectre.Console.Rendering.IRenderable
-                    hits |> hitGroupTable
-                    new Text("")
+                    project |> projectTable |> toRenderable
+                    hits |> hitGroupTable |> toRenderable
+                    new Text("") |> toRenderable
                 })
 
         innerTables |> Seq.iter (fun tr -> table.AddRow tr |> ignore)
