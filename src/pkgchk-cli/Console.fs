@@ -4,7 +4,8 @@ open System
 open Spectre.Console
 
 module Console =
-    let toRenderable x = x :> Spectre.Console.Rendering.IRenderable
+    let toRenderable x =
+        x :> Spectre.Console.Rendering.IRenderable
 
     let markup (style: string) (value: string) = $"[{style}]{value}[/]"
     let italic = markup "italic"
