@@ -40,7 +40,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run SCA
-        uses: tonycknight/pkgchk-action@bugfix-double-reporting
+        uses: tonycknight/pkgchk-action@bugfix/double-reporting
         with:
           trace: true
           github-title: Package vulnerabilities
@@ -53,7 +53,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run SCA
-        uses: tonycknight/pkgchk-action@bugfix-double-reporting
+        uses: tonycknight/pkgchk-action@bugfix/double-reporting
         with:
           deprecated: true
           vulnerable: false
