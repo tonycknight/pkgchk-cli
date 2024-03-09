@@ -161,7 +161,7 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
             |> Markdown.generate
             |> String.joinLines
 
-        let summaryTitle = settings.GithubSummaryTitle // TODO: deduce...
+        let summaryTitle = settings.GithubSummaryTitle
 
         if markdown.Length < Github.maxCommentSize then
             GithubComment.create summaryTitle markdown
