@@ -41,6 +41,8 @@ jobs:
 
       - name: Run SCA
         uses: tonycknight/pkgchk-action@v1.0.12
+        with:
+          trace: true
 
   sca-deprecations:
     name: SCA deprecations
@@ -50,7 +52,8 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run SCA
-        uses: tonycknight/pkgchk-action@v1.0.12
+        uses: tonycknight/pkgchk-action@main
         with:
           deprecated: true
           vulnerable: false
+          trace: true
