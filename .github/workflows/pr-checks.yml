@@ -58,4 +58,4 @@ jobs:
           deprecated: true
           vulnerable: false
           trace: true
-          github-title: Package vulnerabilities
+          github-title: Package deprecations
