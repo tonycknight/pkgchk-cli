@@ -43,7 +43,7 @@
   <ItemGroup>
     <PackageReference Include="FSharp.Data" Version="6.3.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-    <PackageReference Include="Octokit" Version="9.1.1" />
+    <PackageReference Include="Octokit" Version="10.0.0" />
     <PackageReference Include="Spectre.Console.Cli" Version="0.48.0" />
     <PackageReference Include="Tk.Nuget" Version="0.1.41" />    
   </ItemGroup>
