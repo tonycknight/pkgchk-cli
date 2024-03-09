@@ -161,13 +161,15 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
             |> Markdown.generate
             |> String.joinLines
 
+        let summaryTitle = settings.GithubSummaryTitle
+
         if markdown.Length < Github.maxCommentSize then
-            GithubComment.create settings.GithubSummaryTitle markdown
+            GithubComment.create summaryTitle markdown
         else
             trace $"Shrinking Github output as too large (attempt #{attempt + 1})..."
 
             if attempt >= 1 then
-                GithubComment.create settings.GithubSummaryTitle "_The report's too big for Github - Please check logs_"
+                GithubComment.create summaryTitle "_The report is too big for Github - Please check logs_"
             else
                 genComment trace (settings, [], errorHits, hitCounts, imageUri) (attempt + 1)
 
@@ -289,7 +291,7 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
                     let comment = genComment trace (settings, hits, errorHits, hitCounts, reportImg) 0
 
                     trace $"Posting {comment.title} report to Github repo {repo}..."
-                    let _ = (comment |> Github.setPrComment client repo prId).Result
+                    let _ = (comment |> Github.setPrComment trace client repo prId).Result
                     $"{comment.title} report sent to Github." |> Console.italic |> console
 
                 errorHits |> returnCode

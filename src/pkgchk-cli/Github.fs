@@ -63,13 +63,15 @@ module Github =
                 return []
         }
 
-    let setPrComment (client: IGitHubClient) (owner, repo) prId (comment: GithubComment) =
+    let setPrComment trace (client: IGitHubClient) (owner, repo) prId (comment: GithubComment) =
         task {
 
             let (commentTitle, commentBody) = constructComment comment
 
             // As there's no concret mechanism in Octokit to affinitise comments, we must use titles as the discriminator.
             let! comments = getIssueComments client (owner, repo) prId
+
+            $"Found {comments |> Seq.length} comments." |> trace
 
             let previousComment =
                 comments
@@ -80,11 +82,13 @@ module Github =
                 match previousComment with
                 | Some c ->
                     task {
+                        $"Updating Github comment {c.Id}..." |> trace
                         let! x = client.Issue.Comment.Update(owner, repo, c.Id, commentBody)
                         return x
                     }
                 | None ->
                     task {
+                        "Creating new Github comment..." |> trace
                         let! x = client.Issue.Comment.Create(owner, repo, prId, commentBody)
                         return x
                     }
