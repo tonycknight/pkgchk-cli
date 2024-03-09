@@ -109,13 +109,13 @@ module GithubTests =
         let commentClient = commentClient ()
         let issueClient = issueClient () |> bindComments commentClient
         let client = client () |> bindIssues issueClient
-
+        
         let gc =
             { GithubComment.title = "title"
               GithubComment.body = "body" }
 
         let pr = 1
-        let rt = pkgchk.Github.setPrComment client repo pr gc
+        let rt = pkgchk.Github.setPrComment ignore client repo pr gc
         let r = rt.Result
 
         commentClient.Received(1).Create(fst repo, snd repo, pr, Arg.Any<string>())
@@ -135,7 +135,7 @@ module GithubTests =
         let issueClient = issueClient () |> bindComments commentClient
         let client = client () |> bindIssues issueClient
 
-        let rt = pkgchk.Github.setPrComment client repo pr gc
+        let rt = pkgchk.Github.setPrComment ignore client repo pr gc
         let r = rt.Result
 
         commentClient
