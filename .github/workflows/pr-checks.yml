@@ -32,30 +32,4 @@ jobs:
               "100": "XL"
             }
 
-  sca-vulnerabilities:
-    name: SCA vulnerabilities
-    runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Run SCA
-        uses: tonycknight/pkgchk-action@bugfix/double-reporting
-        with:
-          trace: true
-          github-title: Package vulnerabilities
-
-  sca-deprecations:
-    name: SCA deprecations
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Run SCA
-        uses: tonycknight/pkgchk-action@bugfix/double-reporting
-        with:
-          deprecated: true
-          vulnerable: false
-          trace: true
-          github-title: Package deprecations
