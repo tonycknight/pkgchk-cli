@@ -75,7 +75,10 @@ module Github =
             $"Found {comments |> Seq.length} comments." |> trace
 
             comments
-            |> Seq.iter (fun c -> $"Comment {c.Id}: {c.Body |> String.leading 100}" |> String.escapeMarkup |> trace)
+            |> Seq.iter (fun c ->
+                $"Comment {c.Id}: {c.Body |> String.leading 100}"
+                |> String.escapeMarkup
+                |> trace)
 
             // TODO: possible cause? is there a prefix that prevents matches?
             let previousComment =
