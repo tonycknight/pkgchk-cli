@@ -67,12 +67,15 @@ module Github =
         task {
 
             let (commentTitle, commentBody) = constructComment comment
-            
+
             // As there's no concret mechanism in Octokit to affinitise comments, we must use titles as the discriminator.
             let! comments = getIssueComments client (owner, repo) prId
 
             // TODO: Trace
-            $"Found {comments |> Seq.length} comments." |> trace 
+            $"Found {comments |> Seq.length} comments." |> trace
+
+            comments
+            |> Seq.iter (fun c -> $"Comment {c.Id}: {c.Body |> String.leading 100}" |> trace)
 
             // TODO: possible cause? is there a prefix that prevents matches?
             let previousComment =
@@ -82,7 +85,9 @@ module Github =
 
             match previousComment with
             | None -> $"No comment found matching {commentTitle}" |> trace
-            | Some c -> $"Found comment {c.Id} for update. Start: {c.Body |> String.leading 100}" |> trace
+            | Some c ->
+                $"Found comment {c.Id} for update. Start: {c.Body |> String.leading 100}"
+                |> trace
 
             let! newComment =
                 match previousComment with

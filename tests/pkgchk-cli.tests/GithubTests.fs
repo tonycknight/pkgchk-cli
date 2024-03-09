@@ -109,7 +109,7 @@ module GithubTests =
         let commentClient = commentClient ()
         let issueClient = issueClient () |> bindComments commentClient
         let client = client () |> bindIssues issueClient
-        
+
         let gc =
             { GithubComment.title = "title"
               GithubComment.body = "body" }
