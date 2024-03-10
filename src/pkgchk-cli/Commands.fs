@@ -79,6 +79,11 @@ type PackageCheckCommandSettings() =
     [<DefaultValue("")>]
     member val GithubPrId = "" with get, set
 
+    [<CommandOption("--github-commit", IsHidden = true)>]
+    [<Description("Commit hash.")>]
+    [<DefaultValue("")>]
+    member val GithubCommit = "" with get, set
+
     [<CommandOption("--pass-img", IsHidden = true)>]
     [<Description("URI of an image for successful scans.")>]
     [<DefaultValue("")>]
@@ -281,17 +286,27 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
                 if
                     String.isNotEmpty settings.GithubToken
                     && String.isNotEmpty settings.GithubRepo
-                    && String.isNotEmpty settings.GithubPrId
+                    && (String.isNotEmpty settings.GithubPrId || String.isNotEmpty settings.GithubCommit)
                 then
                     trace "Building Github reports..."
                     let prId = String.toInt settings.GithubPrId
                     let repo = Github.repo settings.GithubRepo
                     let client = Github.client settings.GithubToken
+                    let commit = settings.GithubCommit
 
                     let comment = genComment trace (settings, hits, errorHits, hitCounts, reportImg) 0
 
-                    trace $"Posting {comment.title} report to Github repo {repo}..."
-                    let _ = (comment |> Github.setPrComment trace client repo prId).Result
-                    $"{comment.title} report sent to Github." |> Console.italic |> console
+                    if String.isNotEmpty settings.GithubPrId then
+                        trace $"Posting {comment.title} PR comment to Github repo {repo}..."
+                        let _ = (comment |> Github.setPrComment trace client repo prId).Result
+                        $"{comment.title} report sent to Github." |> Console.italic |> console
+
+                    if String.isNotEmpty settings.GithubCommit then
+                        trace $"Posting {comment.title} build check to Github repo {repo}..."
+                        let isSuccess = isSuccessScan errorHits
+
+                        (comment |> Github.createCheck trace client repo commit isSuccess).Result
+                        |> ignore
+
 
                 errorHits |> returnCode
