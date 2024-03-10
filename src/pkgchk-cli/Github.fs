@@ -112,5 +112,5 @@ module Github =
 
             let! run = client.Check.Run.Create(owner, repo, checkRun)
 
-            $"Created checked for commit {run.HeadSha}, url: {run.HtmlUrl}." |> trace
+            $"Created check for commit {run.HeadSha}, url: {run.Url}." |> trace
         }

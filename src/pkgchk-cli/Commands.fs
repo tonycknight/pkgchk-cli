@@ -297,13 +297,13 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
                     let comment = genComment trace (settings, hits, errorHits, hitCounts, reportImg) 0
 
                     if String.isNotEmpty settings.GithubPrId then
-                        trace $"Posting {comment.title} report to Github repo {repo}..."
+                        trace $"Posting {comment.title} PR comment to Github repo {repo}..."
                         let _ = (comment |> Github.setPrComment trace client repo prId).Result
                         $"{comment.title} report sent to Github." |> Console.italic |> console
 
                     if String.isNotEmpty settings.GithubCommit then
+                        trace $"Posting {comment.title} build check to Github repo {repo}..."
                         let isSuccess = isSuccessScan errorHits
-
                         (comment |> Github.createCheck trace client repo commit isSuccess).Result
                         |> ignore
 
