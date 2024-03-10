@@ -96,16 +96,14 @@ module Github =
             return newComment
         }
 
-    let createCheck trace (client: IGitHubClient) (owner, repo) commit (comment: GithubComment) =
+    let createCheck trace (client: IGitHubClient) (owner, repo) commit isSuccess (comment: GithubComment) =
         task {
             $"Creating check for commit {commit}..." |> trace
 
-            let checkRunOutput = new NewCheckRunOutput(comment.title, comment.body)
-
             let checkRun = new NewCheckRun(comment.title, commit)
             checkRun.Status <- CheckStatus.Completed
-            checkRun.Conclusion <- CheckConclusion.Failure
-            checkRun.Output <- checkRunOutput
+            checkRun.Conclusion <- match isSuccess with | true -> CheckConclusion.Success | _ -> CheckConclusion.Failure
+            checkRun.Output <- new NewCheckRunOutput(comment.title, comment.body)
 
             let! run = client.Check.Run.Create(owner, repo, checkRun)
             

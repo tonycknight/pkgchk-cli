@@ -302,7 +302,8 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
                         $"{comment.title} report sent to Github." |> Console.italic |> console
 
                     if String.isNotEmpty settings.GithubCommit then
-                        let x = (comment |> Github.createCheck trace client repo commit).Result
-                        ignore x
+                        let isSuccess = isSuccessScan errorHits
+                        (comment |> Github.createCheck trace client repo commit isSuccess).Result |> ignore
+                        
 
                 errorHits |> returnCode
