@@ -102,10 +102,15 @@ module Github =
 
             let checkRun = new NewCheckRun(comment.title, commit)
             checkRun.Status <- CheckStatus.Completed
-            checkRun.Conclusion <- match isSuccess with | true -> CheckConclusion.Success | _ -> CheckConclusion.Failure
+
+            checkRun.Conclusion <-
+                match isSuccess with
+                | true -> CheckConclusion.Success
+                | _ -> CheckConclusion.Failure
+
             checkRun.Output <- new NewCheckRunOutput(comment.title, comment.body)
 
             let! run = client.Check.Run.Create(owner, repo, checkRun)
-            
+
             $"Created checked for commit {run.HeadSha}, url: {run.HtmlUrl}." |> trace
         }
