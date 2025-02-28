@@ -1,4 +1,4 @@
-name: Pull Request Labeling
+name: Pull Request checks
 
 on:
   pull_request:
