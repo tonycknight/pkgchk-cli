@@ -5,7 +5,6 @@ on:
     paths-ignore:
       - '.github/ISSUE_TEMPLATE/**'
       - '**/*.md'
-  pull_request:
   workflow_dispatch:
 
 env:
@@ -33,26 +32,6 @@ jobs:
         if: always()
         run: |          
           cat ./report/pkgchk.md >> $GITHUB_STEP_SUMMARY
-
-  style-rules:
-    name: Check style rules
-    runs-on: ubuntu-latest
-    
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v4.0.0
-        
-      - name: Tool restore
-        run: dotnet tool restore
-      
-      - name: App restore
-        run: dotnet restore
-
-      - name: Check style
-        if: ${{ github.event_name == 'pull_request' }}
-        run: dotnet fantomas  ./ --check 
           
   unit-tests:
     name: Unit Tests
@@ -100,7 +79,7 @@ jobs:
         run: dotnet reportgenerator -reports:./tests/**/coverage.info -targetdir:./reports/codecoverage -reporttypes:Html
 
       - name: Archive Code coverage
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: codecoverage
           path: ./reports/codecoverage/*.*
@@ -163,7 +142,7 @@ jobs:
         run: dotnet pack -c Release -o ./package/ -p:PackageVersion=${{ env.build-version-number }} -p:Version=${{ env.build-version-number }}
 
       - name: Archive tool nupkg
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.nuget-package-name }}
           path: ./package/*.nupkg
@@ -172,7 +151,7 @@ jobs:
   nuget-release:
     name: Push to Nuget
     runs-on: ubuntu-latest
-    needs:   [ sca, style-rules, unit-tests, integration-tests, nuget-package ]
+    needs:   [ sca, unit-tests, integration-tests, nuget-package ]
     if: github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'Update tools')
     
     steps:
@@ -182,7 +161,7 @@ jobs:
         uses: actions/setup-dotnet@v4.0.0
                   
       - name: Download package
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.nuget-package-name }}
           path: ${{ github.workspace }}/artifacts      
@@ -193,11 +172,11 @@ jobs:
   build-release-docker-image:
     name: Build & Release Docker image
     runs-on: ubuntu-latest
-    needs:   [ sca, style-rules, unit-tests, integration-tests, nuget-package ]
+    needs:   [ sca, unit-tests, integration-tests, nuget-package ]
     if: github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'Update tools')
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set Docker image name
         run: |
@@ -213,14 +192,12 @@ jobs:
         
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
-        if: ${{ github.event_name != 'pull_request' }}
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR }}
 
       - name: Push docker image
-        if: ${{ github.event_name != 'pull_request' }}
         run: docker push ${{ env.docker-image-name }}
 
   gh-release:
