@@ -15,22 +15,22 @@ type PackageCheckCommandSettings() =
     member val ProjectPath = "" with get, set
 
     [<CommandOption("--vulnerable")>]
-    [<Description("Toggle vulnerable package checks. -t true to include them, -t false to exclude.")>]
+    [<Description("Toggle vulnerable package checks. true to include them, false to exclude.")>]
     [<DefaultValue(true)>]
     member val IncludeVulnerables = true with get, set
 
     [<CommandOption("-t|--transitive")>]
-    [<Description("Toggle transitive package checks. -t true to include them, -t false to exclude.")>]
+    [<Description("Toggle transitive package checks. true to include them, false to exclude.")>]
     [<DefaultValue(true)>]
     member val IncludeTransitives = true with get, set
 
     [<CommandOption("--deprecated")>]
-    [<Description("Check deprecated packagess. -d true to include, -d false to exclude.")>]
+    [<Description("Check deprecated packagess. true to include, false to exclude.")>]
     [<DefaultValue(false)>]
     member val IncludeDeprecations = false with get, set
 
     [<CommandOption("--dependencies")>]
-    [<Description("List all dependency packagess. -d true to include, -d false to exclude.")>]
+    [<Description("List all dependency packagess. true to include, false to exclude.")>]
     [<DefaultValue(false)>]
     member val IncludeDependencies = false with get, set
 
