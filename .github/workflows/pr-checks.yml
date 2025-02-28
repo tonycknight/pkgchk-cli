@@ -4,6 +4,25 @@ on:
   pull_request:
     
 jobs:
+  style-rules:
+    name: Check style rules
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4.0.0
+        
+      - name: Tool restore
+        run: dotnet tool restore
+      
+      - name: App restore
+        run: dotnet restore
+
+      - name: Check style
+        run: dotnet fantomas  ./ --check 
+
   pr-scope:
     name: Set PR scope
     runs-on: ubuntu-latest
