@@ -31,9 +31,7 @@ module GithubTests =
     let issueClient () = Substitute.For<IIssuesClient>()
 
     let issueGet (issue: Issue) (issueClient: IIssuesClient) =
-        issueClient
-            .Get(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>())
-            .Returns(issue)
+        issueClient.Get(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>()).Returns(issue)
         |> ignore
 
         issueClient
@@ -45,9 +43,7 @@ module GithubTests =
     let commentClient () = Substitute.For<IIssueCommentsClient>()
 
     let commentsGet (comments: IssueComment[]) (client: IIssueCommentsClient) =
-        client
-            .GetAllForIssue(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>())
-            .Returns(comments)
+        client.GetAllForIssue(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>()).Returns(comments)
         |> ignore
 
         client
@@ -65,9 +61,7 @@ module GithubTests =
         let issueClient = issueClient () |> bindComments commentClient
         let client = client () |> bindIssues issueClient
 
-        issueClient
-            .Get(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>())
-            .Returns(throwIssueException)
+        issueClient.Get(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>()).Returns(throwIssueException)
         |> ignore
 
         let rt = pkgchk.Github.getIssueComments client repo 1
@@ -138,9 +132,7 @@ module GithubTests =
         let rt = pkgchk.Github.setPrComment ignore client repo pr gc
         let r = rt.Result
 
-        commentClient
-            .Received(1)
-            .Update(fst repo, snd repo, comment.Id, Arg.Any<string>())
+        commentClient.Received(1).Update(fst repo, snd repo, comment.Id, Arg.Any<string>())
         |> ignore
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
