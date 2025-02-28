@@ -100,7 +100,7 @@ jobs:
         run: dotnet reportgenerator -reports:./tests/**/coverage.info -targetdir:./reports/codecoverage -reporttypes:Html
 
       - name: Archive Code coverage
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: codecoverage
           path: ./reports/codecoverage/*.*
@@ -163,7 +163,7 @@ jobs:
         run: dotnet pack -c Release -o ./package/ -p:PackageVersion=${{ env.build-version-number }} -p:Version=${{ env.build-version-number }}
 
       - name: Archive tool nupkg
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.nuget-package-name }}
           path: ./package/*.nupkg
@@ -182,7 +182,7 @@ jobs:
         uses: actions/setup-dotnet@v4.0.0
                   
       - name: Download package
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.nuget-package-name }}
           path: ${{ github.workspace }}/artifacts      
@@ -197,7 +197,7 @@ jobs:
     if: github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'Update tools')
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set Docker image name
         run: |
