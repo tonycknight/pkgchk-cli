@@ -14,7 +14,7 @@ type PackageScanCommandSettings() =
     [<DefaultValue("")>]
     member val ProjectPath = "" with get, set
 
-    [<CommandOption("--vulnerable")>]
+    [<CommandOption("-v|--vulnerable")>]
     [<Description("Toggle vulnerable package checks. true to include them, false to exclude.")>]
     [<DefaultValue(true)>]
     member val IncludeVulnerables = true with get, set
@@ -24,7 +24,7 @@ type PackageScanCommandSettings() =
     [<DefaultValue(true)>]
     member val IncludeTransitives = true with get, set
 
-    [<CommandOption("--deprecated")>]
+    [<CommandOption("-d|--deprecated")>]
     [<Description("Check deprecated packagess. true to include, false to exclude.")>]
     [<DefaultValue(false)>]
     member val IncludeDeprecations = false with get, set
