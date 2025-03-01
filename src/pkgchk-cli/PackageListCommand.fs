@@ -12,7 +12,7 @@ type PackageListCommandSettings() =
     [<Description("The solution or project file to check.")>]
     [<DefaultValue("")>]
     member val ProjectPath = "" with get, set
-        
+
     [<CommandOption("-t|--transitive")>]
     [<Description("Toggle transitive package checks. true to include them, false to exclude.")>]
     [<DefaultValue(true)>]
@@ -98,13 +98,13 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
              h.packageId))
 
     let getHits = liftHits >> sortHits >> List.ofSeq
-        
+
     override _.Execute(context, settings) =
         let trace = trace settings.TraceLogging
 
         if settings.NoBanner |> not then
             nuget |> App.banner |> console
-                    
+
         match runRestore settings trace with
         | Choice2Of2 error -> error |> returnError
         | _ ->
@@ -137,7 +137,5 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                     }
 
                 renderTables renderables
-                
+
                 ReturnCodes.validationOk
-
-
