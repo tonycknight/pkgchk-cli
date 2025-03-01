@@ -66,7 +66,7 @@ module Io =
 
                 if proc.ExitCode <> 0 then
                     log $"Non-zero exit code: {proc.ExitCode}"
-                    $"Exit code {proc.ExitCode} from {proc.StartInfo.FileName} {proc.StartInfo.Arguments}" |> Choice2Of2
+                    $"Exit code {proc.ExitCode} from {proc.StartInfo.FileName} {proc.StartInfo.Arguments}{Environment.NewLine}{out}" |> Choice2Of2
 
                 else if (String.IsNullOrWhiteSpace(err)) then
                     log "Successfully fetched response."
