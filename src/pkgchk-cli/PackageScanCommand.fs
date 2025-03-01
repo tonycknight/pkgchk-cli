@@ -6,7 +6,7 @@ open System.Diagnostics.CodeAnalysis
 open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]
-type PackageCheckCommandSettings() =
+type PackageScanCommandSettings() =
     inherit CommandSettings()
 
     [<CommandArgument(0, "[SOLUTION|PROJECT]")>]
@@ -15,24 +15,19 @@ type PackageCheckCommandSettings() =
     member val ProjectPath = "" with get, set
 
     [<CommandOption("--vulnerable")>]
-    [<Description("Toggle vulnerable package checks. -t true to include them, -t false to exclude.")>]
+    [<Description("Toggle vulnerable package checks. true to include them, false to exclude.")>]
     [<DefaultValue(true)>]
     member val IncludeVulnerables = true with get, set
 
     [<CommandOption("-t|--transitive")>]
-    [<Description("Toggle transitive package checks. -t true to include them, -t false to exclude.")>]
+    [<Description("Toggle transitive package checks. true to include them, false to exclude.")>]
     [<DefaultValue(true)>]
     member val IncludeTransitives = true with get, set
 
     [<CommandOption("--deprecated")>]
-    [<Description("Check deprecated packagess. -d true to include, -d false to exclude.")>]
+    [<Description("Check deprecated packagess. true to include, false to exclude.")>]
     [<DefaultValue(false)>]
     member val IncludeDeprecations = false with get, set
-
-    [<CommandOption("--dependencies")>]
-    [<Description("List all dependency packagess. -d true to include, -d false to exclude.")>]
-    [<DefaultValue(false)>]
-    member val IncludeDependencies = false with get, set
 
     [<CommandOption("-o|--output")>]
     [<Description("Output directory for reports.")>]
@@ -45,7 +40,7 @@ type PackageCheckCommandSettings() =
     member val SeverityLevels: string array = [||] with get, set
 
     [<CommandOption("--trace")>]
-    [<Description("Enable trace logging.")>]
+    [<Description("Show detailed working and Nugeet results.")>]
     [<DefaultValue(false)>]
     member val TraceLogging = false with get, set
 
@@ -95,8 +90,8 @@ type PackageCheckCommandSettings() =
     member val BadImageUri = "" with get, set
 
 [<ExcludeFromCodeCoverage>]
-type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
-    inherit Command<PackageCheckCommandSettings>()
+type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
+    inherit Command<PackageScanCommandSettings>()
 
     let console = Spectre.Console.AnsiConsole.MarkupLine
 
@@ -113,7 +108,7 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
         finally
             proc.Dispose()
 
-    let runRestore (settings: PackageCheckCommandSettings) logging =
+    let runRestore (settings: PackageScanCommandSettings) logging =
         if settings.NoRestore then
             Choice1Of2 false
         else
@@ -160,7 +155,7 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
 
     let getHits = liftHits >> sortHits >> List.ofSeq
 
-    let rec genComment trace (settings: PackageCheckCommandSettings, hits, errorHits, hitCounts, imageUri) attempt =
+    let rec genComment trace (settings: PackageScanCommandSettings, hits, errorHits, hitCounts, imageUri) attempt =
         let markdown =
             (hits, errorHits, hitCounts, settings.SeverityLevels, imageUri)
             |> Markdown.generate
@@ -191,11 +186,11 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
     let reportFile outDir =
         outDir |> Io.toFullPath |> Io.combine "pkgchk.md" |> Io.normalise
 
-    let cleanSettings (settings: PackageCheckCommandSettings) =
+    let cleanSettings (settings: PackageScanCommandSettings) =
         settings.SeverityLevels <- settings.SeverityLevels |> Array.filter String.isNotEmpty
         settings
 
-    let validateSettings (settings: PackageCheckCommandSettings) =
+    let validateSettings (settings: PackageScanCommandSettings) =
         if String.isNotEmpty settings.GithubPrId then
             if String.isEmpty settings.GithubToken then
                 failwith "Missing Github token."
@@ -232,7 +227,7 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
                  settings.IncludeVulnerables,
                  settings.IncludeTransitives,
                  settings.IncludeDeprecations,
-                 settings.IncludeDependencies)
+                 false)
                 |> Sca.scanArgs
                 |> Array.map (fun (args, parser) -> (Io.createProcess args, parser))
                 |> Array.map (fun (proc, parser) ->

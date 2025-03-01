@@ -54,12 +54,12 @@ module TestUtils =
 
     let runPkgChkArgs outDir =
         sprintf
-            "dotnet pkgchk-cli.dll ./%s/testproj.csproj --transitive true --deprecated true --trace --no-banner "
+            "dotnet pkgchk-cli.dll scan ./%s/testproj.csproj --transitive true --deprecated true --trace --no-banner "
             outDir
 
     let runPkgChkDependenciesArgs outDir includeTransitives =
         sprintf
-            "dotnet pkgchk-cli.dll ./%s/testproj.csproj --transitive %b --vulnerable false --deprecated false --dependencies true --trace  --no-banner "
+            "dotnet pkgchk-cli.dll list ./%s/testproj.csproj --transitive %b --trace --no-banner "
             outDir
             includeTransitives
 
