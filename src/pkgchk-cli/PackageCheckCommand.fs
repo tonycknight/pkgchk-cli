@@ -6,7 +6,7 @@ open System.Diagnostics.CodeAnalysis
 open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]
-type PackageCheckCommandSettings() =
+type PackageScanCommandSettings() =
     inherit CommandSettings()
 
     [<CommandArgument(0, "[SOLUTION|PROJECT]")>]
@@ -95,8 +95,8 @@ type PackageCheckCommandSettings() =
     member val BadImageUri = "" with get, set
 
 [<ExcludeFromCodeCoverage>]
-type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
-    inherit Command<PackageCheckCommandSettings>()
+type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
+    inherit Command<PackageScanCommandSettings>()
 
     let console = Spectre.Console.AnsiConsole.MarkupLine
 
@@ -113,7 +113,7 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
         finally
             proc.Dispose()
 
-    let runRestore (settings: PackageCheckCommandSettings) logging =
+    let runRestore (settings: PackageScanCommandSettings) logging =
         if settings.NoRestore then
             Choice1Of2 false
         else
@@ -160,7 +160,7 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
 
     let getHits = liftHits >> sortHits >> List.ofSeq
 
-    let rec genComment trace (settings: PackageCheckCommandSettings, hits, errorHits, hitCounts, imageUri) attempt =
+    let rec genComment trace (settings: PackageScanCommandSettings, hits, errorHits, hitCounts, imageUri) attempt =
         let markdown =
             (hits, errorHits, hitCounts, settings.SeverityLevels, imageUri)
             |> Markdown.generate
@@ -191,11 +191,11 @@ type PackageCheckCommand(nuget: Tk.Nuget.INugetClient) =
     let reportFile outDir =
         outDir |> Io.toFullPath |> Io.combine "pkgchk.md" |> Io.normalise
 
-    let cleanSettings (settings: PackageCheckCommandSettings) =
+    let cleanSettings (settings: PackageScanCommandSettings) =
         settings.SeverityLevels <- settings.SeverityLevels |> Array.filter String.isNotEmpty
         settings
 
-    let validateSettings (settings: PackageCheckCommandSettings) =
+    let validateSettings (settings: PackageScanCommandSettings) =
         if String.isNotEmpty settings.GithubPrId then
             if String.isEmpty settings.GithubToken then
                 failwith "Missing Github token."

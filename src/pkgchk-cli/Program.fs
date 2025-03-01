@@ -14,11 +14,11 @@ module Program =
 
         let svcs = App.spectreServices ()
 
-        let app =
-            CommandApp<PackageCheckCommand>(svcs)
-                .WithDescription("Check project dependency packages for vulnerabilities and deprecations.")
-
-        app.Configure(fun c -> c.PropagateExceptions().ValidateExamples().TrimTrailingPeriods(false) |> ignore)
+        let app = CommandApp(svcs)
+        app.Configure(fun c -> 
+                            c.PropagateExceptions().ValidateExamples().TrimTrailingPeriods(false) |> ignore
+                            c.AddCommand<PackageScanCommand>("scan").WithDescription("Check project dependency packages for vulnerabilities and deprecations.") |> ignore                            
+                        )
 
         try
             app.Run(argv)
