@@ -40,7 +40,7 @@ type PackageScanCommandSettings() =
     member val SeverityLevels: string array = [||] with get, set
 
     [<CommandOption("--trace")>]
-    [<Description("Enable trace logging.")>]
+    [<Description("Show detailed working and Nugeet results.")>]
     [<DefaultValue(false)>]
     member val TraceLogging = false with get, set
 
