@@ -65,8 +65,8 @@ module Io =
                 err |> fmtOut |> log
 
                 if proc.ExitCode <> 0 then
-                    log $"Non-zero exit code: {proc.ExitCode}"
-                    $"Exit code {proc.ExitCode} from {proc.StartInfo.FileName} {proc.StartInfo.Arguments}{Environment.NewLine}{out}" |> Choice2Of2
+                    log $"Non-zero exit code: {proc.ExitCode}"                    
+                    $"Exit code {proc.ExitCode} from {proc.StartInfo.FileName} {proc.StartInfo.Arguments}{Environment.NewLine}{fmtOut out}" |> Choice2Of2
 
                 else if (String.IsNullOrWhiteSpace(err)) then
                     log "Successfully fetched response."
