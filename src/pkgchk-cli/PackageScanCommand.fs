@@ -29,11 +29,6 @@ type PackageScanCommandSettings() =
     [<DefaultValue(false)>]
     member val IncludeDeprecations = false with get, set
 
-    [<CommandOption("--dependencies")>]
-    [<Description("List all dependency packagess. true to include, false to exclude.")>]
-    [<DefaultValue(false)>]
-    member val IncludeDependencies = false with get, set
-
     [<CommandOption("-o|--output")>]
     [<Description("Output directory for reports.")>]
     [<DefaultValue("")>]
@@ -232,7 +227,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                  settings.IncludeVulnerables,
                  settings.IncludeTransitives,
                  settings.IncludeDeprecations,
-                 settings.IncludeDependencies)
+                 false)
                 |> Sca.scanArgs
                 |> Array.map (fun (args, parser) -> (Io.createProcess args, parser))
                 |> Array.map (fun (proc, parser) ->
