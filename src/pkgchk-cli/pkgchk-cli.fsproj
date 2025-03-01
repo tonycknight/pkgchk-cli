@@ -36,7 +36,7 @@
     <Compile Include="Markdown.fs" />
     <Compile Include="App.fs" />
     <Compile Include="Github.fs" />
-    <Compile Include="PackageCheckCommand.fs" />
+    <Compile Include="PackageScanCommand.fs" />
     <Compile Include="PackageListCommand.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
