@@ -50,8 +50,12 @@ module TestUtils =
         sprintf "dotnet add ./%s/testproj.csproj package %s -v 4.3.1" outDir regexPackage
 
     let addDeprecatedAadPackageArgs outDir =
-        sprintf "dotnet add ./%s/testproj.csproj package %s -v 5.3.0" outDir aadPackage
+        sprintf "dotnet add ./%s/testproj.csproj package %s -v 4.5.1" outDir aadPackage
 
+    let addPackageDowngradeAadPackageArgs outDir =
+        // conflicts with httpPackage - introduces 4.3.4 
+        sprintf "dotnet add ./%s/testproj.csproj package %s -v 5.3.0" outDir aadPackage
+        
     let runPkgChkArgs outDir =
         sprintf
             "dotnet pkgchk-cli.dll scan ./%s/testproj.csproj --transitive true --deprecated true --trace --no-banner "
@@ -125,6 +129,12 @@ module TestUtils =
         err |> should be NullOrEmptyString
         (rc, out, err)
 
+    let assertSysErrorPkgChk (rc, out, err) =
+        rc |> should equal 2
+        out |> should not' (be NullOrEmptyString)
+        err |> should be NullOrEmptyString
+        (rc, out, err)
+
     let assertTitleShowsVulnerabilities (rc, out, err) =
         out |> should haveSubstring "Vulnerabilities found!"
         (rc, out, err)
@@ -156,6 +166,13 @@ module TestUtils =
         >> executeProc
         >> logExecution output
         >> assertFailedPkgChk
+
+    let execSysErrorPkgChk (output: ITestOutputHelper) =
+        createProc
+        >> logProcArgs output
+        >> executeProc
+        >> logExecution output
+        >> assertSysErrorPkgChk
 
     let execSuccessPkgChk (output: ITestOutputHelper) =
         createProc

@@ -9,7 +9,7 @@ type DeprecatedPackageTests(output: ITestOutputHelper) =
     let execSuccess = execSuccess output
     let execSuccessPkgChk = execSuccessPkgChk output
     let execFailedPkgChk = execFailedPkgChk output
-
+    let execSysErrorFailedPkgChk = execSysErrorPkgChk output
 
 
     [<Fact>]
@@ -90,3 +90,24 @@ type DeprecatedPackageTests(output: ITestOutputHelper) =
         |> assertTitleShowsVulnerabilities
         |> assertPackagesFound [ httpPackage; aadPackage ]
         |> assertPackagesNotFound [ regexPackage ]
+
+    
+    [<Fact>]
+    let ``Project with downgraded packages returns Error``
+        ()
+        =
+
+        let outDir = getOutDir ()
+
+        createProjectArgs outDir |> execSuccess
+
+        addGoodRegexPackageArgs outDir |> execSuccess
+
+        addBadHttpPackageArgs outDir |> execSuccess
+
+        addPackageDowngradeAadPackageArgs outDir |> execSuccess
+
+        [ "high"; "legacy" ]
+        |> runPkgChkSeverityArgs outDir
+        |> execSysErrorFailedPkgChk        
+        
