@@ -58,67 +58,68 @@ To get help:
 
 To check for top-level and transitive dependency vulnerabilities:
 
-```pkgchk <project|solution>```
+```pkgchk scan <project|solution>```
 
 If there's only one project or solution file in your directory, omit the `<project|solution>` argument.
 
-### Options
+To list dependencies:
 
-The following options are disjunctive: they can be used independently of each other, or all together as you like.
+```pkgchk list <project|solution> ```
+
+If there's only one project or solution file in your directory, omit the `<project|solution>` argument.
+
+### Scan vulnerabilities and deprecations
 
 |  |  |  |   |
 | - | - | - | - |
 | `--vulnerable` | Scan for vulnerable packages | `true`/`false` | `true` by default |
 | `--deprecated` | Scan for deprecated packages | `true`/`false` | `false` by default |
-| `--dependencies` | Scan for dependency packages | `true`/`false` | `false` by default |
 | `--transitive` | Scan for transitive packages, vulnerable, deprecated or otherwise | `true`/`false` | `true` by default |
-
-Other options are:
-
-|  |  |  |   |
-| - | - | - | - |
 | `--output` | The relative or absolute directory for reports. If ommitted, no reports are generated | `string` | None by default |
 | `--severity` | Severity levels to search for, or deprecation reasons. Any number of severties can be given. | `string` | `High`, `Critical`, `Critical Bugs`, `Legacy` |
 | `--no-restore` | Don't automatically restore the project/solution. | n/a | Package restoration is automatic by default |
-
-### Examples
-
+| `--trace` | Show working logs | n/a |  |
 
 To check only for top-level dependency vulnerabilities:
 
-```pkgchk <project|solution> --transitive false```
+```pkgchk scan <project|solution> --transitive false```
 
 To add deprecated packages in a scan:
 
-```pkgchk <project|solution> --deprecated```
+```pkgchk scan <project|solution> --deprecated true```
 
 Vulnerable packages are automatically searched for. To turn off vulnerable package searches::
 
-```pkgchk <project|solution> --vulnerable false```
-
-To list top-level dependencies with transitives:
-
-```pkgchk <project|solution> --dependencies```
-
-To list top-level dependencies without transitives:
-
-```pkgchk <project|solution> --dependencies --transitive false```
-
-To list dependencies only without any vulnerability checks:
-
-```pkgchk <project|solution> --dependencies true --vulnerable false --deprecated false```
+```pkgchk scan <project|solution> --vulnerable false```
 
 To produce a markdown file, simply give an output folder:
 
-```pkgchk <project|solution> --output ./reports_directory```
+```pkgchk scan <project|solution> --output ./reports_directory```
 
-Project restores (`dotnet restore`) occur automatically. To suppress restores, just add `--no-restore`:
+Project restores (`dotnet restore`) occur automatically. To suppress restores and speed up scanning, just add `--no-restore`:
 
-```pkgchk <project|solution> --no-restore```
+```pkgchk scan <project|solution> --no-restore```
 
 By default only `High`, `Critical`, `Critical Bugs` and `Legacy` vulnerabilities and deprecations are detected. Specify the vulnerability severities (or deprecation reasons) with ``--severity`` switches, e.g. to just check for `Moderate` issues:
 
-```pkgchk <project|solution> --severity Moderate```
+```pkgchk scan <project|solution> --severity Moderate```
+
+
+### Listing dependencies
+
+|  |  |  |   |
+| - | - | - | - |
+| `--transitive` | Scan for transitive packages, vulnerable, deprecated or otherwise | `true`/`false` | `true` by default |
+| `--no-restore` | Don't automatically restore the project/solution. | n/a | Package restoration is automatic by default |
+| `--trace` | Show working logs | n/a |  |
+
+To list top-level dependencies with transitives:
+
+```pkgchk list <project|solution> ```
+
+To list top-level dependencies without transitives:
+
+```pkgchk list <project|solution> --transitive false```
 
 ## Integration within Github actions
 
@@ -128,7 +129,7 @@ Simply:
 name: run SCA
 run: |
     dotnet tool restore    
-    pkgchk <project|solution>
+    pkgchk scan <project|solution>
 ```
 
 ## Integration within other CI platforms
@@ -139,7 +140,7 @@ Simply ensure your repository has `pkgchk-cli` in its tools manifest, your CI in
 
 ```
 dotnet tool restore
-pkgchk <project|solution>
+pkgchk scan <project|solution>
 ```
 
 
