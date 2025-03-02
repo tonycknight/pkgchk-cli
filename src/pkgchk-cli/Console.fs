@@ -13,6 +13,7 @@ module Console =
     let green = markup Rendering.green
     let cyan = markup Rendering.cyan
     let yellow = markup Rendering.yellow
+    let orange = markup Rendering.orange
     let blue = markup Rendering.cornflowerblue
     let error = markup Rendering.red
 

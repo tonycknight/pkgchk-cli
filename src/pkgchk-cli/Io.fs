@@ -57,14 +57,20 @@ module Io =
 
                 sw.Stop()
                 log $"Duration: {sw.ElapsedMilliseconds:N2}ms"
-
+                log $"ExitCode: {proc.ExitCode}"
                 log "stdout:"
                 out |> fmtOut |> log
 
                 log "stderr:"
                 err |> fmtOut |> log
 
-                if (String.IsNullOrWhiteSpace(err)) then
+                if proc.ExitCode <> 0 then
+                    log $"Non-zero exit code: {proc.ExitCode}"
+
+                    $"Exit code {proc.ExitCode} from {proc.StartInfo.FileName} {proc.StartInfo.Arguments}{Environment.NewLine}{fmtOut out}"
+                    |> Choice2Of2
+
+                else if (String.IsNullOrWhiteSpace(err)) then
                     log "Successfully fetched response."
                     Choice1Of2(out)
                 else

@@ -76,7 +76,7 @@ module App =
                 sprintf
                     "%s%s %s"
                     Environment.NewLine
-                    (Console.green "A new version is available:")
+                    (Console.orange "A new version is available:")
                     (Console.cyan upgVsn.Value)
 
             ""
