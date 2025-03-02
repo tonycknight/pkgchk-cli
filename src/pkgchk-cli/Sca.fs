@@ -68,8 +68,12 @@ module Sca =
     let restoreArgs projectPath =
         projectPath |> Io.toFullPath |> sprintf "restore %s"
 
-    let parseError (parseable: string) (ex: Exception) = 
-        match parseable.Split(Environment.NewLine) |> Seq.filter (fun s -> s.StartsWith("error:")) |> Array.ofSeq with
+    let parseError (parseable: string) (ex: Exception) =
+        match
+            parseable.Split(Environment.NewLine)
+            |> Seq.filter (fun s -> s.StartsWith("error:"))
+            |> Array.ofSeq
+        with
         | [||] -> ex.Message
         | xs -> xs |> String.join Environment.NewLine
 
@@ -152,8 +156,8 @@ module Sca =
 
             Choice1Of2 hits
         with ex ->
-            parseError json ex |> Choice2Of2 
-            
+            parseError json ex |> Choice2Of2
+
     let parsePackageTree json =
 
         try

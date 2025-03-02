@@ -91,11 +91,9 @@ type DeprecatedPackageTests(output: ITestOutputHelper) =
         |> assertPackagesFound [ httpPackage; aadPackage ]
         |> assertPackagesNotFound [ regexPackage ]
 
-    
+
     [<Fact>]
-    let ``Project with downgraded packages returns Error``
-        ()
-        =
+    let ``Project with downgraded packages returns Error`` () =
 
         let outDir = getOutDir ()
 
@@ -107,7 +105,4 @@ type DeprecatedPackageTests(output: ITestOutputHelper) =
 
         addPackageDowngradeAadPackageArgs outDir |> execSuccess
 
-        [ "high"; "legacy" ]
-        |> runPkgChkSeverityArgs outDir
-        |> execSysErrorFailedPkgChk        
-        
+        [ "high"; "legacy" ] |> runPkgChkSeverityArgs outDir |> execSysErrorFailedPkgChk

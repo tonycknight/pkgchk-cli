@@ -53,9 +53,9 @@ module TestUtils =
         sprintf "dotnet add ./%s/testproj.csproj package %s -v 4.5.1" outDir aadPackage
 
     let addPackageDowngradeAadPackageArgs outDir =
-        // conflicts with httpPackage - introduces 4.3.4 
+        // conflicts with httpPackage - introduces 4.3.4
         sprintf "dotnet add ./%s/testproj.csproj package %s -v 5.3.0" outDir aadPackage
-        
+
     let runPkgChkArgs outDir =
         sprintf
             "dotnet pkgchk-cli.dll scan ./%s/testproj.csproj --transitive true --deprecated true --trace --no-banner "
