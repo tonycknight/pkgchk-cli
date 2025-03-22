@@ -2,6 +2,7 @@
 
 open System
 open FsCheck
+open FsCheck.FSharp
 open pkgchk.Combinators
 
 [<AutoOpen>]
@@ -16,12 +17,12 @@ module Arbitraries =
 type AlphaNumericString =
 
     static member Generate() =
-        Arb.Default.String() |> Arb.filter isValidString
-
+        ArbMap.defaults |> ArbMap.arbitrary<string> |> Arb.filter isValidString
+        
 type AlphaNumericStringSingletonArray =
 
     static member Generate() =
-        Arb.generate<string>
+        ArbMap.defaults |> ArbMap.generate<string>
         |> Gen.filter isValidString
         |> Gen.map (fun s -> [| s |])
         |> Arb.fromGen
