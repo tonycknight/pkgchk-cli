@@ -35,7 +35,7 @@ jobs:
         run: |
           dotnet tool restore
           set +e
-          dotnet pkgchk --transitive true --output ./report
+          dotnet pkgchk scan --transitive true --output ./report
           exitcode="$?"
           cat ./report/pkgchk.md >> $GITHUB_STEP_SUMMARY
           exit "$exitcode"
