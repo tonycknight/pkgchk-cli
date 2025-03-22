@@ -18,11 +18,12 @@ type AlphaNumericString =
 
     static member Generate() =
         ArbMap.defaults |> ArbMap.arbitrary<string> |> Arb.filter isValidString
-        
+
 type AlphaNumericStringSingletonArray =
 
     static member Generate() =
-        ArbMap.defaults |> ArbMap.generate<string>
+        ArbMap.defaults
+        |> ArbMap.generate<string>
         |> Gen.filter isValidString
         |> Gen.map (fun s -> [| s |])
         |> Arb.fromGen
