@@ -10,7 +10,7 @@
       "rollForward": false
     },
     "pkgchk-cli": {
-      "version": "0.2.397",
+      "version": "0.3.415",
       "commands": [
         "pkgchk"
       ],
