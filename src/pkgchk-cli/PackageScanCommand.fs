@@ -7,12 +7,7 @@ open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]
 type PackageScanCommandSettings() =
-    inherit CommandSettings()
-
-    [<CommandArgument(0, "[SOLUTION|PROJECT]")>]
-    [<Description("The solution or project file to check.")>]
-    [<DefaultValue("")>]
-    member val ProjectPath = "" with get, set
+    inherit PackageCommandSettings()
 
     [<CommandOption("-v|--vulnerable")>]
     [<Description("Toggle vulnerable package checks. true to include them, false to exclude.")>]
@@ -38,21 +33,6 @@ type PackageScanCommandSettings() =
     [<Description("Severity levels to scan for. Matches will return non-zero exit codes. Multiple levels can be specified.")>]
     [<DefaultValue([| "High"; "Critical"; "Critical Bugs"; "Legacy" |])>]
     member val SeverityLevels: string array = [||] with get, set
-
-    [<CommandOption("--trace")>]
-    [<Description("Show detailed working and Nuget results.")>]
-    [<DefaultValue(false)>]
-    member val TraceLogging = false with get, set
-
-    [<CommandOption("--no-restore")>]
-    [<Description("Don't automatically restore packages.")>]
-    [<DefaultValue(false)>]
-    member val NoRestore = false with get, set
-
-    [<CommandOption("--no-banner")>]
-    [<Description("Don't show the banner.")>]
-    [<DefaultValue(false)>]
-    member val NoBanner = false with get, set
 
     [<CommandOption("--github-token", IsHidden = true)>]
     [<Description("A Github token.")>]
