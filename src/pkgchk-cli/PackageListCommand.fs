@@ -16,94 +16,32 @@ type PackageListCommandSettings() =
 [<ExcludeFromCodeCoverage>]
 type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
     inherit Command<PackageListCommandSettings>()
-
-    let console = Spectre.Console.AnsiConsole.MarkupLine
-
-    let trace traceLogging =
-        if traceLogging then Console.grey >> console else ignore
-
-    let returnError error =
-        error |> Console.error |> console
-        ReturnCodes.sysError
-
-    let runProc logging proc =
-        try
-            proc |> Io.run logging
-        finally
-            proc.Dispose()
-
-    let runRestore (settings: PackageListCommandSettings) logging =
-        if settings.NoRestore then
-            Choice1Of2 false
-        else
-            let runRestoreProcParse run proc =
-                proc
-                |> run
-                |> (function
-                | Choice2Of2 error -> Choice2Of2 error
-                | _ -> Choice1Of2 true)
-
-            settings.ProjectPath
-            |> Sca.restoreArgs
-            |> Io.createProcess
-            |> runRestoreProcParse (runProc logging)
-
-    let getErrors procResults =
-        procResults
-        |> Seq.map (function
-            | Choice2Of2 x -> x
-            | _ -> "")
-        |> Seq.filter String.isNotEmpty
-        |> Seq.distinct
-
-    let renderTables (values: seq<Spectre.Console.Table>) =
-        values |> Seq.iter Spectre.Console.AnsiConsole.Write
-
-    let liftHits procResults =
-        procResults
-        |> Seq.collect (function
-            | Choice1Of2 xs -> xs
-            | _ -> [])
-        |> List.ofSeq
-
-    let sortHits (hits: seq<ScaHit>) =
-        hits
-        |> Seq.sortBy (fun h ->
-            ((match h.kind with
-              | ScaHitKind.Vulnerability -> 0
-              | ScaHitKind.Dependency -> 1
-              | ScaHitKind.VulnerabilityTransitive -> 2
-              | ScaHitKind.Deprecated -> 3
-              | ScaHitKind.DependencyTransitive -> 4),
-             h.packageId))
-
-    let getHits = liftHits >> sortHits >> List.ofSeq
-
+       
     override _.Execute(context, settings) =
-        let trace = trace settings.TraceLogging
+        let trace = Commands.trace settings.TraceLogging
 
         if settings.NoBanner |> not then
-            nuget |> App.banner |> console
+            nuget |> App.banner |> Commands.console
 
-        match runRestore settings trace with
-        | Choice2Of2 error -> error |> returnError
+        match Commands.runRestore settings trace with
+        | Choice2Of2 error -> error |> Commands.returnError
         | _ ->
             let results =
                 (settings.ProjectPath, false, settings.IncludeTransitives, false, true)
                 |> Sca.scanArgs
                 |> Array.map (fun (args, parser) -> (Io.createProcess args, parser))
                 |> Array.map (fun (proc, parser) ->
-                    match proc |> (runProc trace) with
+                    match proc |> (Commands.runProc trace) with
                     | Choice1Of2 json -> parser json
                     | Choice2Of2 x -> Choice2Of2 x)
 
-            let errors = getErrors results
+            let errors = Commands.getErrors results
 
             if Seq.isEmpty errors |> not then
-                errors |> String.joinLines |> returnError
+                errors |> String.joinLines |> Commands.returnError
             else
                 trace "Analysing results..."
-                let hits = getHits results
+                let hits = Commands.getHits results
                 let hitCounts = hits |> Sca.hitCountSummary |> List.ofSeq
 
                 trace "Building display..."
@@ -116,6 +54,6 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                             hitCounts |> Console.hitSummaryTable
                     }
 
-                renderTables renderables
+                Commands.renderTables renderables
 
                 ReturnCodes.validationOk
