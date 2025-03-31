@@ -19,7 +19,7 @@ type PackageListCommandSettings() =
     member val IncludeTransitives = true with get, set
 
     [<CommandOption("--trace")>]
-    [<Description("Show detailed working and Nugeet results.")>]
+    [<Description("Show detailed working and Nuget results.")>]
     [<DefaultValue(false)>]
     member val TraceLogging = false with get, set
 
