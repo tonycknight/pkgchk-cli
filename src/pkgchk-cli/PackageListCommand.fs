@@ -28,12 +28,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
         | _ ->
             let results =
                 (settings.ProjectPath, false, settings.IncludeTransitives, false, true)
-                |> Sca.scanArgs
-                |> Array.map (fun (args, parser) -> (Io.createProcess args, parser))
-                |> Array.map (fun (proc, parser) ->
-                    match proc |> (Commands.runProc trace) with
-                    | Choice1Of2 json -> parser json
-                    | Choice2Of2 x -> Choice2Of2 x)
+                |> Commands.scan trace
 
             let errors = Commands.getErrors results
 

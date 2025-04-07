@@ -64,3 +64,10 @@ module Commands =
 
     let getHits x = x |> liftHits |> sortHits |> List.ofSeq
 
+    let scan trace = 
+        Sca.scanArgs
+        >> Array.map (fun (args, parser) -> (Io.createProcess args, parser))
+        >> Array.map (fun (proc, parser) ->
+            match proc |> (runProc trace) with
+            | Choice1Of2 json -> parser json
+            | Choice2Of2 x -> Choice2Of2 x)

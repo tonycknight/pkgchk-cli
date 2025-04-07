@@ -146,12 +146,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                  settings.IncludeTransitives,
                  settings.IncludeDeprecations,
                  false)
-                |> Sca.scanArgs
-                |> Array.map (fun (args, parser) -> (Io.createProcess args, parser))
-                |> Array.map (fun (proc, parser) ->
-                    match proc |> (Commands.runProc trace) with
-                    | Choice1Of2 json -> parser json
-                    | Choice2Of2 x -> Choice2Of2 x)
+                 |> Commands.scan trace
 
             let errors = Commands.getErrors results
 
