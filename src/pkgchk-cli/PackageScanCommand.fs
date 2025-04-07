@@ -137,7 +137,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
         validateSettings settings
 
-        match Commands.runRestore settings trace with
+        match Commands.restore settings trace with
         | Choice2Of2 error -> error |> Commands.returnError
         | _ ->
             let results =

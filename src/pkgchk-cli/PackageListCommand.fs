@@ -23,7 +23,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
         if settings.NoBanner |> not then
             nuget |> App.banner |> Commands.console
 
-        match Commands.runRestore settings trace with
+        match Commands.restore settings trace with
         | Choice2Of2 error -> error |> Commands.returnError
         | _ ->
             let results =

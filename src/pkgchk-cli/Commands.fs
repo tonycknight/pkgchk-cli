@@ -17,7 +17,7 @@ module Commands =
         finally
             proc.Dispose()
 
-    let runRestore (settings: PackageCommandSettings) logging =
+    let restore (settings: PackageCommandSettings) logging =
         if settings.NoRestore then
             Choice1Of2 false
         else
@@ -32,6 +32,14 @@ module Commands =
             |> Sca.restoreArgs
             |> Io.createProcess
             |> runRestoreProcParse (runProc logging)
+
+    let scan trace = 
+        Sca.scanArgs
+        >> Array.map (fun (args, parser) -> (Io.createProcess args, parser))
+        >> Array.map (fun (proc, parser) ->
+            match proc |> (runProc trace) with
+            | Choice1Of2 json -> parser json
+            | Choice2Of2 x -> Choice2Of2 x)
 
     let getErrors procResults =
         procResults
@@ -64,10 +72,4 @@ module Commands =
 
     let getHits x = x |> liftHits |> sortHits |> List.ofSeq
 
-    let scan trace = 
-        Sca.scanArgs
-        >> Array.map (fun (args, parser) -> (Io.createProcess args, parser))
-        >> Array.map (fun (proc, parser) ->
-            match proc |> (runProc trace) with
-            | Choice1Of2 json -> parser json
-            | Choice2Of2 x -> Choice2Of2 x)
+
