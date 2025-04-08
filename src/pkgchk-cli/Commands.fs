@@ -2,20 +2,51 @@
 
 module Commands =
     
+    let private runProc logging proc =
+        try
+            proc |> Io.run logging
+        finally
+            proc.Dispose()
+    
     let console = Spectre.Console.AnsiConsole.MarkupLine
 
     let trace traceLogging =
         if traceLogging then Console.grey >> console else ignore
 
+    let getErrors procResults =
+        procResults
+        |> Seq.map (function
+            | Choice2Of2 x -> x
+            | _ -> "")
+        |> Seq.filter String.isNotEmpty
+        |> Seq.distinct
+
     let returnError error =
         error |> Console.error |> console
         ReturnCodes.sysError
+            
+    let renderTables (values: seq<Spectre.Console.Table>) =
+        values |> Seq.iter Spectre.Console.AnsiConsole.Write
 
-    let runProc logging proc =
-        try
-            proc |> Io.run logging
-        finally
-            proc.Dispose()
+    let liftHits procResults =
+        procResults
+        |> Seq.collect (function
+            | Choice1Of2 xs -> xs
+            | _ -> [])
+        |> List.ofSeq
+
+    let sortHits (hits: seq<ScaHit>) =
+        hits
+        |> Seq.sortBy (fun h ->
+            ((match h.kind with
+              | ScaHitKind.Vulnerability -> 0
+              | ScaHitKind.Dependency -> 1
+              | ScaHitKind.VulnerabilityTransitive -> 2
+              | ScaHitKind.Deprecated -> 3
+              | ScaHitKind.DependencyTransitive -> 4),
+             h.packageId))
+
+    let getHits x = x |> liftHits |> sortHits |> List.ofSeq
 
     let restore (settings: PackageCommandSettings) logging =
         if settings.NoRestore then
@@ -40,36 +71,5 @@ module Commands =
             match proc |> (runProc trace) with
             | Choice1Of2 json -> parser json
             | Choice2Of2 x -> Choice2Of2 x)
-
-    let getErrors procResults =
-        procResults
-        |> Seq.map (function
-            | Choice2Of2 x -> x
-            | _ -> "")
-        |> Seq.filter String.isNotEmpty
-        |> Seq.distinct
-
-    let renderTables (values: seq<Spectre.Console.Table>) =
-        values |> Seq.iter Spectre.Console.AnsiConsole.Write
-
-    let liftHits procResults =
-        procResults
-        |> Seq.collect (function
-            | Choice1Of2 xs -> xs
-            | _ -> [])
-        |> List.ofSeq
-
-    let sortHits (hits: seq<ScaHit>) =
-        hits
-        |> Seq.sortBy (fun h ->
-            ((match h.kind with
-              | ScaHitKind.Vulnerability -> 0
-              | ScaHitKind.Dependency -> 1
-              | ScaHitKind.VulnerabilityTransitive -> 2
-              | ScaHitKind.Deprecated -> 3
-              | ScaHitKind.DependencyTransitive -> 4),
-             h.packageId))
-
-    let getHits x = x |> liftHits |> sortHits |> List.ofSeq
 
 
