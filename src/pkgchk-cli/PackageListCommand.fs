@@ -16,7 +16,7 @@ type PackageListCommandSettings() =
 [<ExcludeFromCodeCoverage>]
 type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
     inherit Command<PackageListCommandSettings>()
-       
+
     override _.Execute(context, settings) =
         let trace = Commands.trace settings.TraceLogging
 

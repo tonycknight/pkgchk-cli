@@ -1,13 +1,13 @@
 ﻿namespace pkgchk
 
 module Commands =
-    
+
     let private runProc logging proc =
         try
             proc |> Io.run logging
         finally
             proc.Dispose()
-    
+
     let console = Spectre.Console.AnsiConsole.MarkupLine
 
     let trace traceLogging =
@@ -24,7 +24,7 @@ module Commands =
     let returnError error =
         error |> Console.error |> console
         ReturnCodes.sysError
-            
+
     let renderTables (values: seq<Spectre.Console.Table>) =
         values |> Seq.iter Spectre.Console.AnsiConsole.Write
 
@@ -64,12 +64,10 @@ module Commands =
             |> Io.createProcess
             |> runRestoreProcParse (runProc logging)
 
-    let scan trace = 
+    let scan trace =
         Sca.scanArgs
         >> Array.map (fun (args, parser) -> (Io.createProcess args, parser))
         >> Array.map (fun (proc, parser) ->
             match proc |> (runProc trace) with
             | Choice1Of2 json -> parser json
             | Choice2Of2 x -> Choice2Of2 x)
-
-

@@ -6,7 +6,7 @@ open System.Diagnostics.CodeAnalysis
 open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]
-type PackageCommandSettings()=
+type PackageCommandSettings() =
     inherit CommandSettings()
 
     [<CommandArgument(0, "[SOLUTION|PROJECT]")>]
