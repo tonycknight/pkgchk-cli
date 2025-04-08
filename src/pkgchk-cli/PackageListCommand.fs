@@ -27,7 +27,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
         | Choice2Of2 error -> error |> Commands.returnError
         | _ ->
             let results =
-                (settings.ProjectPath, false, settings.IncludeTransitives, false, true)
+                (settings.ProjectPath, false, settings.IncludeTransitives, false, true, false)
                 |> Commands.scan trace
 
             let errors = Commands.getErrors results

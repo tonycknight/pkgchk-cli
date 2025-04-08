@@ -145,7 +145,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                  settings.IncludeVulnerables,
                  settings.IncludeTransitives,
                  settings.IncludeDeprecations,
-                 false)
+                 false, false)
                 |> Commands.scan trace
 
             let errors = Commands.getErrors results
