@@ -180,8 +180,10 @@ module Sca =
                               packageId = tp.Id
                               resolvedVersion = tp.ResolvedVersion
                               severity = ""
-                              reasons = [||]
-                              suggestedReplacement = ""
+                              reasons = match tp.LatestVersion with // TODO: 
+                                        | Some _ -> [| "Upgrade available" |]
+                                        | _ -> [||] 
+                              suggestedReplacement = tp.LatestVersion |> Option.defaultValue "" // TODO: outdated? "latestVersion"
                               alternativePackageId = ""
                               advisoryUri = "" })))
 

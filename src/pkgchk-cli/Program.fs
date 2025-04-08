@@ -25,6 +25,9 @@ module Program =
             |> ignore
 
             c.AddCommand<PackageListCommand>("list").WithDescription("List project dependency packages.")
+            |> ignore
+
+            c.AddCommand<PackageUpgradeCommand>("upgrades").WithDescription("Find package upgrades.")
             |> ignore)
 
         try
