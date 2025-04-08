@@ -180,10 +180,11 @@ module Sca =
                               packageId = tp.Id
                               resolvedVersion = tp.ResolvedVersion
                               severity = ""
-                              reasons = match tp.LatestVersion with // TODO: 
-                                        | Some _ -> [| "Upgrade available" |]
-                                        | _ -> [||] 
-                              suggestedReplacement = tp.LatestVersion |> Option.defaultValue "" // TODO: outdated? "latestVersion"
+                              reasons =
+                                match tp.LatestVersion with
+                                | Some _ -> [| "Upgrade available" |]
+                                | _ -> [||]
+                              suggestedReplacement = tp.LatestVersion |> Option.defaultValue ""
                               alternativePackageId = ""
                               advisoryUri = "" })))
 
@@ -211,7 +212,15 @@ module Sca =
         with ex ->
             Choice2Of2("An error occurred parsing results." + Environment.NewLine)
 
-    let scanArgs (projectPath, includeVulnerabilities, includeTransitives, includeDeprecations, includeDependencies, includeOutdated) =
+    let scanArgs
+        (
+            projectPath,
+            includeVulnerabilities,
+            includeTransitives,
+            includeDeprecations,
+            includeDependencies,
+            includeOutdated
+        ) =
         let projPath = projectPath |> Io.toFullPath
 
         [| if includeVulnerabilities then
@@ -219,7 +228,7 @@ module Sca =
            if includeDeprecations then
                yield (projPath |> ScaArgs.scanDeprecations includeTransitives, parseVulnerabilities)
            if includeDependencies then
-               yield (projPath |> ScaArgs.scanDependencies includeTransitives, parsePackageTree) 
+               yield (projPath |> ScaArgs.scanDependencies includeTransitives, parsePackageTree)
            if includeOutdated then
                yield (ScaArgs.scanOutdated projPath, parsePackageTree) |]
 

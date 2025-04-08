@@ -21,8 +21,8 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
         | Choice2Of2 error -> error |> Commands.returnError
         | _ ->
             let results =
-                (settings.ProjectPath, false, false, false, false, true)
-                |> Commands.scan trace
+                (settings.ProjectPath, false, false, false, false, true) |> Commands.scan trace
+
             let errors = Commands.getErrors results
 
             if Seq.isEmpty errors |> not then
