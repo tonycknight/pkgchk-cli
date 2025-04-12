@@ -1,21 +1,15 @@
 ﻿namespace pkgchk
 
-open System.ComponentModel
 open System.Diagnostics.CodeAnalysis
 open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]
-type PackageListCommandSettings() =
+type PackageUpgradeCommandSettings() =
     inherit PackageCommandSettings()
 
-    [<CommandOption("-t|--transitive")>]
-    [<Description("Toggle transitive package checks. true to include them, false to exclude.")>]
-    [<DefaultValue(true)>]
-    member val IncludeTransitives = true with get, set
-
 [<ExcludeFromCodeCoverage>]
-type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
-    inherit Command<PackageListCommandSettings>()
+type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
+    inherit Command<PackageUpgradeCommandSettings>()
 
     override _.Execute(context, settings) =
         let trace = Commands.trace settings.TraceLogging
@@ -27,8 +21,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
         | Choice2Of2 error -> error |> Commands.returnError
         | _ ->
             let results =
-                (settings.ProjectPath, false, settings.IncludeTransitives, false, true, false)
-                |> Commands.scan trace
+                (settings.ProjectPath, false, false, false, false, true) |> Commands.scan trace
 
             let errors = Commands.getErrors results
 

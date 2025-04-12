@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -40,6 +40,7 @@
     <Compile Include="Commands.fs" />
     <Compile Include="PackageScanCommand.fs" />
     <Compile Include="PackageListCommand.fs" />
+    <Compile Include="PackageUpgradeCommand.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

@@ -21,7 +21,8 @@
             {
               "id": "Spectre.Console.Cli",
               "requestedVersion": "vsn 0.48.0",
-              "resolvedVersion": "vsn 0.48.0"
+              "resolvedVersion": "vsn 0.48.0",
+              "latestVersion": "vsn 13.0.3"
             }
           ],
           "transitivePackages": [

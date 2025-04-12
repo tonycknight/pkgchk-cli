@@ -1,6 +1,5 @@
 ﻿namespace pkgchk
 
-open System
 open System.ComponentModel
 open System.Diagnostics.CodeAnalysis
 open Spectre.Console.Cli

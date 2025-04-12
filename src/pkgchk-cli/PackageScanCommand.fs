@@ -145,6 +145,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                  settings.IncludeVulnerables,
                  settings.IncludeTransitives,
                  settings.IncludeDeprecations,
+                 false,
                  false)
                 |> Commands.scan trace
 
