@@ -49,7 +49,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4" />
     <PackageReference Include="Octokit" Version="14.0.0" />
     <PackageReference Include="Spectre.Console.Cli" Version="0.50.0" />
-    <PackageReference Include="Tk.Nuget" Version="0.1.61" />    
+    <PackageReference Include="Tk.Nuget" Version="0.1.83" />    
   </ItemGroup>
   
 </Project>
