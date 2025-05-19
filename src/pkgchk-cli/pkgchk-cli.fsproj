@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -45,11 +45,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FSharp.Data" Version="6.5.0" />
+    <PackageReference Include="FSharp.Data" Version="6.6.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4" />
     <PackageReference Include="Octokit" Version="14.0.0" />
     <PackageReference Include="Spectre.Console.Cli" Version="0.50.0" />
-    <PackageReference Include="Tk.Nuget" Version="0.1.61" />    
+	<PackageReference Include="System.Formats.Asn1" Version="9.0.5" />
+    <PackageReference Include="Tk.Nuget" Version="0.1.88" />    
   </ItemGroup>
   
 </Project>
