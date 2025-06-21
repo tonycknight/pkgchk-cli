@@ -10,4 +10,6 @@ updates:
       - ":game_die: dependencies"
       - ":robot: bot"
     open-pull-requests-limit: 20
-      
+    ignore:
+      - dependency-name: "FsUnit.xUnit"
+
