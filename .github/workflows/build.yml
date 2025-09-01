@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4.0.0
@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4.0.0
@@ -60,7 +60,7 @@ jobs:
         run: dotnet test -c Debug --filter FullyQualifiedName!~integration /p:CollectCoverage=true /p:CoverletOutput=./TestResults/coverage.info /p:CoverletOutputFormat=cobertura --logger "trx;LogFileName=test_results.trx" 
       
       - name: Unit test results
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v2
         if: always()
         with:
           name: unit test results
@@ -100,7 +100,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4.0.0
@@ -115,7 +115,7 @@ jobs:
         run: dotnet test -c Release --filter FullyQualifiedName~integration --logger "trx;LogFileName=test_results.trx" -v n
 
       - name: Integration test results
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v2
         if: always()
         with:
           name: integration test results - ${{ matrix.os }}
@@ -129,7 +129,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4.0.0
@@ -162,13 +162,13 @@ jobs:
     if: github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'Update tools') && github.actor != 'dependabot[bot]'
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4.0.0
                   
       - name: Download package
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ${{ env.nuget-package-name }}
           path: ${{ github.workspace }}/artifacts      
@@ -183,7 +183,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' 
 
     steps:    
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Create Release
         uses: ncipollo/release-action@v1

@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4.0.0
@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set label
-        uses: "pascalgn/size-label-action@v0.5.0"
+        uses: "pascalgn/size-label-action@v0.5.5"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
