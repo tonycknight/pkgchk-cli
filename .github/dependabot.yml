@@ -16,7 +16,7 @@ updates:
     ignore:
       - dependency-name: "FsUnit.xUnit"
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directory: "/.github/workflows"
     schedule:
       interval: "daily"
       time: "06:00"
