@@ -189,5 +189,5 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: v${{ env.build-version-number }}
-          prerelease: true
+          prerelease: false
           generateReleaseNotes: true
