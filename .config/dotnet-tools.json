@@ -10,14 +10,14 @@
       "rollForward": false
     },
     "pkgchk-cli": {
-      "version": "0.3.512",
+      "version": "0.3.540",
       "commands": [
         "pkgchk"
       ],
       "rollForward": false
     },
     "dotnet-reportgenerator-globaltool": {
-      "version": "5.4.12",
+      "version": "5.4.13",
       "commands": [
         "reportgenerator"
       ],
