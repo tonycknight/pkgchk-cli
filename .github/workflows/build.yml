@@ -86,7 +86,7 @@ jobs:
         run: dotnet reportgenerator -reports:./tests/**/coverage.info -targetdir:./reports/codecoverage -reporttypes:Html
 
       - name: Archive Code coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: codecoverage
           path: ./reports/codecoverage/*.*
@@ -149,7 +149,7 @@ jobs:
         run: dotnet pack -c Release -o ./package/ -p:PackageVersion=${{ env.build-version-number }} -p:Version=${{ env.build-version-number }}
 
       - name: Archive tool nupkg
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ env.nuget-package-name }}
           path: ./package/*.nupkg
@@ -168,7 +168,7 @@ jobs:
         uses: actions/setup-dotnet@v6
                   
       - name: Download package
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: ${{ env.nuget-package-name }}
           path: ${{ github.workspace }}/artifacts      
