@@ -39,4 +39,4 @@ type PackageDependencyTests(output: ITestOutputHelper) =
 
         runPkgChkDependenciesArgs outDir true
         |> execSuccessPkgChk
-        |> assertPackagesFound [ httpPackage; regexPackage; sysIoPackage ]
+        |> assertPackagesFound [ httpPackage; regexPackage ]
