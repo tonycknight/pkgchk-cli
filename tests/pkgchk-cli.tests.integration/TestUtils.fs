@@ -180,3 +180,4 @@ module TestUtils =
         >> executeProc
         >> logExecution output
         >> assertSuccessfulPkgChk
+
