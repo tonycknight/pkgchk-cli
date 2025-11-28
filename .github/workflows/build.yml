@@ -29,8 +29,6 @@ jobs:
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: '8.0.x'
                 
       - name: Check SCA
         run: |
@@ -51,8 +49,6 @@ jobs:
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: '8.0.x'
         
       - name: Tool restore
         run: dotnet tool restore
@@ -108,8 +104,6 @@ jobs:
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: '8.0.x'
         
       - name: Tool restore
         run: dotnet tool restore
@@ -139,8 +133,6 @@ jobs:
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: '8.0.x'
           
       - name: Tool restore
         run: dotnet tool restore
@@ -174,8 +166,6 @@ jobs:
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: '8.0.x'
                   
       - name: Download package
         uses: actions/download-artifact@v5
