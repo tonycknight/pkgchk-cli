@@ -69,7 +69,7 @@ module ScaArgs =
 module Sca =
 
     let restoreArgs projectPath =
-        projectPath |> Io.toFullPath |> sprintf "restore %s"
+        projectPath |> Io.toFullPath |> sprintf "restore %s -nowarn:NU1510"
 
     let parseError (parseable: string) (ex: Exception) =
         match
