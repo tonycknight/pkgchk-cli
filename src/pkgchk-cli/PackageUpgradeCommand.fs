@@ -1,11 +1,18 @@
 ﻿namespace pkgchk
 
+open System
+open System.ComponentModel
 open System.Diagnostics.CodeAnalysis
 open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]
 type PackageUpgradeCommandSettings() =
     inherit PackageCommandSettings()
+
+    [<CommandOption("-o|--output")>]
+    [<Description("Output directory for reports.")>]
+    [<DefaultValue("")>]
+    member val OutputDirectory = "" with get, set
 
 [<ExcludeFromCodeCoverage>]
 type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
@@ -43,5 +50,19 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                     }
 
                 Commands.renderTables renderables
+                                
+                if settings.OutputDirectory <> "" then
+                    trace "Building reports..."
+                    let reportFile =
+                        Io.toFullPath >> Io.combine "pkgchk.md" >> Io.normalise
+
+                    let reportFile =
+                        hits
+                        |> Markdown.generateUpgrades
+                        |> Io.writeFile (reportFile settings.OutputDirectory)
+
+                    $"{Environment.NewLine}Report file [link={reportFile}]{reportFile}[/] built."
+                    |> Console.italic
+                    |> Commands.console
 
                 ReturnCodes.validationOk

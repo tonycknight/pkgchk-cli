@@ -52,6 +52,11 @@ module Markdown =
         | [] -> seq { "# :heavy_check_mark: No vulnerabilities found!" }
         | _ -> seq { "# :warning: Vulnerabilities found!" }
 
+    let titleUpgrades hits =
+        match hits with
+        | [] -> seq { "# :heavy_check_mark: No upgrades found!" }
+        | _ -> seq { "# :warning: Upgrades found!" }
+
     let formatHitCounts (severities: seq<string>, counts: seq<ScaHitSummary>) =
         let tableHdr =
             seq {
@@ -148,6 +153,13 @@ module Markdown =
                 yield imgLink imageUri
 
             yield! formatHitCounts (severities, countSummary)
+            yield! formatHits hits
+            yield! footer
+        }
+
+    let generateUpgrades (hits) =
+        seq {            
+            yield! titleUpgrades hits
             yield! formatHits hits
             yield! footer
         }
