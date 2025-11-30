@@ -14,6 +14,11 @@ type PackageUpgradeCommandSettings() =
     [<DefaultValue("")>]
     member val OutputDirectory = "" with get, set
 
+    [<CommandOption("--break-on-upgrades")>]
+    [<Description("Break on outstanding package upgrades.")>]
+    [<DefaultValue(false)>]
+    member val BreakOnUpgrades = false with get, set
+
     [<CommandOption("--github-token", IsHidden = true)>]
     [<Description("A Github token.")>]
     [<DefaultValue("")>]
@@ -53,6 +58,12 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
             GithubComment.create settings.GithubSummaryTitle markdown
         else
             GithubComment.create settings.GithubSummaryTitle "_The report is too big for Github - Please check logs_"            
+    
+    let returnCode (settings: PackageUpgradeCommandSettings, hits: ScaHit list) =
+        match hits with
+        | [] -> ReturnCodes.validationOk
+        | _ when settings.BreakOnUpgrades -> ReturnCodes.validationFailed
+        | _ -> ReturnCodes.validationOk
 
     override _.Execute(context, settings) =
         let trace = Commands.trace settings.TraceLogging
@@ -125,4 +136,4 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                         (comment |> Github.createCheck trace client repo commit true).Result
                         |> ignore
 
-                ReturnCodes.validationOk
+                returnCode (settings, hits)
