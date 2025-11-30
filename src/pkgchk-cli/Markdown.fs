@@ -157,9 +157,13 @@ module Markdown =
             yield! footer
         }
 
-    let generateUpgrades (hits) =
+    let generateUpgrades (hits, imageUri) =
         seq {            
             yield! titleUpgrades hits
+
+            if String.isNotEmpty imageUri then
+                yield imgLink imageUri
+
             yield! formatHits hits
             yield! footer
         }
