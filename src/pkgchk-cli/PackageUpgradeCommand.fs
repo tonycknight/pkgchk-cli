@@ -151,8 +151,8 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
                     if String.isNotEmpty settings.GithubCommit then
                         trace $"Posting {comment.title} build check to Github repo {repo}..."
-                        
-                        (comment |> Github.createCheck trace client repo commit true).Result
+                        let isSuccess = isSuccessScan (settings, hits)
+                        (comment |> Github.createCheck trace client repo commit isSuccess).Result
                         |> ignore
 
                 returnCode (settings, hits)
