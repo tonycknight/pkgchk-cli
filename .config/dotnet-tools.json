@@ -3,21 +3,21 @@
   "isRoot": true,
   "tools": {
     "fantomas": {
-      "version": "7.0.3",
+      "version": "7.0.5",
       "commands": [
         "fantomas"
       ],
       "rollForward": false
     },
     "pkgchk-cli": {
-      "version": "0.3.540",
+      "version": "0.3.556",
       "commands": [
         "pkgchk"
       ],
       "rollForward": false
     },
     "dotnet-reportgenerator-globaltool": {
-      "version": "5.4.13",
+      "version": "5.5.1",
       "commands": [
         "reportgenerator"
       ],
