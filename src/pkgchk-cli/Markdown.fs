@@ -158,7 +158,7 @@ module Markdown =
         }
 
     let generateUpgrades (hits, imageUri) =
-        seq {            
+        seq {
             yield! titleUpgrades hits
 
             if String.isNotEmpty imageUri then

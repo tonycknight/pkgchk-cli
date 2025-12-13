@@ -53,22 +53,19 @@ type PackageUpgradeCommandSettings() =
     [<Description("URI of an image for outstanding upgrades.")>]
     [<DefaultValue("")>]
     member val BadImageUri = "" with get, set
-        
+
 [<ExcludeFromCodeCoverage>]
 type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
     inherit Command<PackageUpgradeCommandSettings>()
 
-    let genComment (settings: PackageUpgradeCommandSettings, hits, reportImg) = 
-        let markdown =
-            (hits, reportImg)
-            |> Markdown.generateUpgrades
-            |> String.joinLines
-            
+    let genComment (settings: PackageUpgradeCommandSettings, hits, reportImg) =
+        let markdown = (hits, reportImg) |> Markdown.generateUpgrades |> String.joinLines
+
         if markdown.Length < Github.maxCommentSize then
             GithubComment.create settings.GithubSummaryTitle markdown
         else
-            GithubComment.create settings.GithubSummaryTitle "_The report is too big for Github - Please check logs_"            
-    
+            GithubComment.create settings.GithubSummaryTitle "_The report is too big for Github - Please check logs_"
+
     let isSuccessScan (settings: PackageUpgradeCommandSettings, hits: ScaHit list) =
         match hits with
         | [] -> true
@@ -77,7 +74,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
     let returnCode (settings: PackageUpgradeCommandSettings, hits: ScaHit list) =
         match isSuccessScan (settings, hits) with
         | true -> ReturnCodes.validationOk
-        | false -> ReturnCodes.validationFailed        
+        | false -> ReturnCodes.validationFailed
 
     override _.Execute(context, settings) =
         let trace = Commands.trace settings.TraceLogging
@@ -111,7 +108,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                     }
 
                 Commands.renderTables renderables
-                    
+
                 let reportImg =
                     match isSuccessScan (settings, hits) with
                     | true -> settings.GoodImageUri
@@ -119,8 +116,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
                 if settings.OutputDirectory <> "" then
                     trace "Building reports..."
-                    let reportFile =
-                        Io.toFullPath >> Io.combine "pkgchk.md" >> Io.normalise
+                    let reportFile = Io.toFullPath >> Io.combine "pkgchk-upgrades.md" >> Io.normalise
 
                     let reportFile =
                         (hits, reportImg)
@@ -152,6 +148,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                     if String.isNotEmpty settings.GithubCommit then
                         trace $"Posting {comment.title} build check to Github repo {repo}..."
                         let isSuccess = isSuccessScan (settings, hits)
+
                         (comment |> Github.createCheck trace client repo commit isSuccess).Result
                         |> ignore
 
