@@ -3,6 +3,7 @@
 open System
 open System.ComponentModel
 open System.Diagnostics.CodeAnalysis
+open pkgchk.Combinators
 open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]
@@ -54,6 +55,14 @@ type PackageUpgradeCommandSettings() =
     [<DefaultValue("")>]
     member val BadImageUri = "" with get, set
 
+    [<CommandOption("-i|--included-packages", IsHidden = false)>]
+    [<Description("Names of included packages.")>]
+    member val IncludedPackages = [||] with get, set
+
+    [<CommandOption("-x|--excluded-packages", IsHidden = false)>]
+    [<Description("Names of excluded packages.")>]
+    member val ExcludedPackages = [||] with get, set
+
 [<ExcludeFromCodeCoverage>]
 type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
     inherit Command<PackageUpgradeCommandSettings>()
@@ -76,6 +85,27 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
         | true -> ReturnCodes.validationOk
         | false -> ReturnCodes.validationFailed
 
+    let filterPackages (settings: PackageUpgradeCommandSettings) (hits: ScaHit list) =
+        let inclusionMap =
+            settings.IncludedPackages
+            |> HashSet.ofSeq System.StringComparer.InvariantCultureIgnoreCase
+
+        let exclusionMap =
+            settings.ExcludedPackages
+            |> HashSet.ofSeq System.StringComparer.InvariantCultureIgnoreCase
+
+        let included (hit: ScaHit) =
+            match inclusionMap.Count with
+            | 0 -> true
+            | x -> inclusionMap.Contains hit.packageId
+
+        let excluded (hit: ScaHit) =
+            match exclusionMap.Count with
+            | 0 -> true
+            | x -> exclusionMap.Contains hit.packageId |> not
+
+        hits |> List.filter (included &&>> excluded)
+
     override _.Execute(context, settings) =
         let trace = Commands.trace settings.TraceLogging
 
@@ -94,7 +124,9 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                 errors |> String.joinLines |> Commands.returnError
             else
                 trace "Analysing results..."
-                let hits = Commands.getHits results
+
+                let hits = Commands.getHits results |> filterPackages settings
+
                 let hitCounts = hits |> Sca.hitCountSummary |> List.ofSeq
 
                 trace "Building display..."
