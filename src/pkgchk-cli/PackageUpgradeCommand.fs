@@ -55,12 +55,12 @@ type PackageUpgradeCommandSettings() =
     [<DefaultValue("")>]
     member val BadImageUri = "" with get, set
 
-    [<CommandOption("-i|--included-packages", IsHidden = false)>]
-    [<Description("Names of included packages.")>]
+    [<CommandOption("-i|--included-package", IsHidden = false)>]
+    [<Description("The name of a package to include in the scan. Multiple packages can be specified.")>]
     member val IncludedPackages = [||] with get, set
 
-    [<CommandOption("-x|--excluded-packages", IsHidden = false)>]
-    [<Description("Names of excluded packages.")>]
+    [<CommandOption("-x|--excluded-package", IsHidden = false)>]
+    [<Description("The name of a package to exclude from the scan. Multiple packages can be specified.")>]
     member val ExcludedPackages = [||] with get, set
 
 [<ExcludeFromCodeCoverage>]

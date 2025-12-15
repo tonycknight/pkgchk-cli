@@ -67,6 +67,25 @@ module TestUtils =
             outDir
             includeTransitives
 
+    let runPkgChkUpgradesArgs outDir (breakOnHit: bool) (inclusions: seq<string>) (exclusions: seq<string>) =
+        let inclusions =
+            inclusions
+            |> Seq.map (sprintf "--included-package %s")
+            |> pkgchk.String.join " "
+
+        let exclusions =
+            exclusions
+            |> Seq.map (sprintf "--excluded-package %s")
+            |> pkgchk.String.join " "
+
+        sprintf
+            "dotnet pkgchk-cli.dll upgrades ./%s/testproj.csproj --no-banner --break-on-upgrades %b %s %s"
+            outDir
+            breakOnHit
+            inclusions
+            exclusions
+
+
     let runPkgChkSeverityArgs outDir (severities: seq<string>) =
         let severityArgs =
             severities |> Seq.map (sprintf "--severity %s") |> pkgchk.String.join " "
@@ -120,6 +139,12 @@ module TestUtils =
     let assertSuccessfulPkgChk (rc, out, err) =
         rc |> should equal 0
         out |> should not' (be NullOrEmptyString)
+        err |> should be NullOrEmptyString
+        (rc, out, err)
+
+    let assertSuccessfulPkgChkNoOutput (rc, out, err) =
+        rc |> should equal 0
+        out |> should be NullOrEmptyString
         err |> should be NullOrEmptyString
         (rc, out, err)
 
@@ -180,3 +205,10 @@ module TestUtils =
         >> executeProc
         >> logExecution output
         >> assertSuccessfulPkgChk
+
+    let execSuccessPkgChkNoOutput (output: ITestOutputHelper) =
+        createProc
+        >> logProcArgs output
+        >> executeProc
+        >> logExecution output
+        >> assertSuccessfulPkgChkNoOutput
