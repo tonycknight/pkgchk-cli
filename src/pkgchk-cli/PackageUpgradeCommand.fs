@@ -137,6 +137,8 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
                         if hitCounts |> List.isEmpty |> not then
                             hitCounts |> Console.hitSummaryTable
+                        else
+                            pkgchk.Console.green "No upgrades found!" |> Commands.console
                     }
 
                 Commands.renderTables renderables

@@ -7,7 +7,6 @@ type UpgradePackageTests(output: ITestOutputHelper) =
 
     let execSuccess = execSuccess output
     let execSuccessProc = execSuccessPkgChk output
-    let execSuccessProcNoOutput = execSuccessPkgChkNoOutput output
     let execFailedProc = execFailedPkgChk output
 
     [<Fact>]
@@ -77,7 +76,7 @@ type UpgradePackageTests(output: ITestOutputHelper) =
         createProjectArgs outDir |> execSuccess
 
         runPkgChkUpgradesArgs outDir true [] []
-        |> execSuccessProcNoOutput
+        |> execSuccessProc
         |> assertPackagesNotFound [ httpPackage; regexPackage ]
 
 
@@ -92,5 +91,5 @@ type UpgradePackageTests(output: ITestOutputHelper) =
         addBadRegexPackageArgs outDir |> execSuccess
 
         runPkgChkUpgradesArgs outDir true [] [ httpPackage; regexPackage ]
-        |> execSuccessProcNoOutput
+        |> execSuccessProc
         |> assertPackagesNotFound [ httpPackage; regexPackage ]

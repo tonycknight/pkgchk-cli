@@ -205,10 +205,3 @@ module TestUtils =
         >> executeProc
         >> logExecution output
         >> assertSuccessfulPkgChk
-
-    let execSuccessPkgChkNoOutput (output: ITestOutputHelper) =
-        createProc
-        >> logProcArgs output
-        >> executeProc
-        >> logExecution output
-        >> assertSuccessfulPkgChkNoOutput
