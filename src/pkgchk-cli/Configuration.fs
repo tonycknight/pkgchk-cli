@@ -3,9 +3,15 @@
 open YamlDotNet.Serialization
 
 [<CLIMutable>]
-type Configuration =
-    { includedPackages: string[]
-      excludedPackages: string[] }
+type ScanConfiguration =
+    { noBanner: bool
+      includedPackages: string[]
+      excludedPackages: string[]
+      breakOnChanges: bool
+      severities: string[]
+      breakOnVulnerabilities: bool
+      breakOnDeprecations: bool
+      checkTransitives: bool }
 
 module Config =
     let private deserialiser = (new DeserializerBuilder()).Build()
@@ -13,8 +19,9 @@ module Config =
     let load (path: string) =
         use reader = new System.IO.StreamReader(path)
         let content = reader.ReadToEnd()
-        let r = deserialiser.Deserialize<Configuration>(content)
+        let r = deserialiser.Deserialize<ScanConfiguration>(content)
 
         { r with
             includedPackages = r.includedPackages |> Option.nullDefault [||]
-            excludedPackages = r.excludedPackages |> Option.nullDefault [||] }
+            excludedPackages = r.excludedPackages |> Option.nullDefault [||]
+            severities = r.severities |> Option.nullDefault [||] }

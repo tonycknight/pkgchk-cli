@@ -55,13 +55,18 @@ type PackageUpgradeCommandSettings() =
     [<DefaultValue("")>]
     member val BadImageUri = "" with get, set
 
+    [<CommandOption("--config", IsHidden = false)>]
+    [<Description("Configuration file path.")>]
+    [<DefaultValue("")>]
+    member val ConfigFile = "" with get, set
+
     [<CommandOption("-i|--included-package", IsHidden = false)>]
     [<Description("The name of a package to include in the scan. Multiple packages can be specified.")>]
-    member val IncludedPackages = [||] with get, set
+    member val IncludedPackages: string[] = [||] with get, set
 
     [<CommandOption("-x|--excluded-package", IsHidden = false)>]
     [<Description("The name of a package to exclude from the scan. Multiple packages can be specified.")>]
-    member val ExcludedPackages = [||] with get, set
+    member val ExcludedPackages: string[] = [||] with get, set
 
 [<ExcludeFromCodeCoverage>]
 type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
@@ -85,13 +90,26 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
         | true -> ReturnCodes.validationOk
         | false -> ReturnCodes.validationFailed
 
-    let filterPackages (settings: PackageUpgradeCommandSettings) (hits: ScaHit list) =
+    let config (settings: PackageUpgradeCommandSettings) =
+        match (settings.IncludedPackages, settings.ExcludedPackages, settings.ConfigFile) with
+        | ([||], [||], x) when x <> "" -> x |> Io.toFullPath |> Io.normalise |> Config.load
+        | _ ->
+            { pkgchk.ScanConfiguration.includedPackages = settings.IncludedPackages
+              excludedPackages = settings.ExcludedPackages
+              breakOnChanges = settings.BreakOnUpgrades
+              noBanner = settings.NoBanner
+              severities = [||]
+              breakOnVulnerabilities = false
+              breakOnDeprecations = false
+              checkTransitives = false }
+
+    let filterPackages (config: pkgchk.ScanConfiguration) (hits: ScaHit list) =
         let inclusionMap =
-            settings.IncludedPackages
+            config.includedPackages
             |> HashSet.ofSeq System.StringComparer.InvariantCultureIgnoreCase
 
         let exclusionMap =
-            settings.ExcludedPackages
+            config.excludedPackages
             |> HashSet.ofSeq System.StringComparer.InvariantCultureIgnoreCase
 
         let included (hit: ScaHit) =
@@ -125,7 +143,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
             else
                 trace "Analysing results..."
 
-                let hits = Commands.getHits results |> filterPackages settings
+                let hits = Commands.getHits results |> filterPackages (config settings)
 
                 let hitCounts = hits |> Sca.hitCountSummary |> List.ofSeq
 
