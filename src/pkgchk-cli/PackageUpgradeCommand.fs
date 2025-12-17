@@ -80,12 +80,12 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
         else
             GithubComment.create settings.GithubSummaryTitle "_The report is too big for Github - Please check logs_"
 
-    let isSuccessScan (settings: PackageUpgradeCommandSettings, hits: ScaHit list) =
+    let isSuccessScan (settings: ScanConfiguration, hits: ScaHit list) =
         match hits with
         | [] -> true
-        | _ -> not settings.BreakOnUpgrades
+        | _ -> not settings.breakOnUpgrades
 
-    let returnCode (settings: PackageUpgradeCommandSettings, hits: ScaHit list) =
+    let returnCode (settings: ScanConfiguration, hits: ScaHit list) =
         match isSuccessScan (settings, hits) with
         | true -> ReturnCodes.validationOk
         | false -> ReturnCodes.validationFailed
@@ -96,7 +96,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
         | _ ->
             { pkgchk.ScanConfiguration.includedPackages = settings.IncludedPackages
               excludedPackages = settings.ExcludedPackages
-              breakOnChanges = settings.BreakOnUpgrades
+              breakOnUpgrades = settings.BreakOnUpgrades
               noBanner = settings.NoBanner
               severities = [||]
               breakOnVulnerabilities = false
@@ -126,8 +126,8 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
     override _.Execute(context, settings) =
         let trace = Commands.trace settings.TraceLogging
-
-        if settings.NoBanner |> not then
+        let config = config settings
+        if config.noBanner |> not then
             nuget |> App.banner |> Commands.console
 
         match Commands.restore settings trace with
@@ -142,8 +142,8 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                 errors |> String.joinLines |> Commands.returnError
             else
                 trace "Analysing results..."
-
-                let hits = Commands.getHits results |> filterPackages (config settings)
+                
+                let hits = Commands.getHits results |> filterPackages config
 
                 let hitCounts = hits |> Sca.hitCountSummary |> List.ofSeq
 
@@ -162,7 +162,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                 Commands.renderTables renderables
 
                 let reportImg =
-                    match isSuccessScan (settings, hits) with
+                    match isSuccessScan (config, hits) with
                     | true -> settings.GoodImageUri
                     | false -> settings.BadImageUri
 
@@ -199,9 +199,9 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
                     if String.isNotEmpty settings.GithubCommit then
                         trace $"Posting {comment.title} build check to Github repo {repo}..."
-                        let isSuccess = isSuccessScan (settings, hits)
+                        let isSuccess = isSuccessScan (config, hits)
 
                         (comment |> Github.createCheck trace client repo commit isSuccess).Result
                         |> ignore
 
-                returnCode (settings, hits)
+                returnCode (config, hits)

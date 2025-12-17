@@ -7,7 +7,7 @@ type ScanConfiguration =
     { noBanner: bool
       includedPackages: string[]
       excludedPackages: string[]
-      breakOnChanges: bool
+      breakOnUpgrades: bool
       severities: string[]
       breakOnVulnerabilities: bool
       breakOnDeprecations: bool
