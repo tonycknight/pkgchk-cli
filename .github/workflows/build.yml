@@ -11,6 +11,8 @@ on:
   push:
     paths-ignore:
       - '.github/ISSUE_TEMPLATE/**'
+      - '.github/dependabot.yml'
+      - '.github/CODEOWNERS'
       - '**/*.md'
   workflow_dispatch:
 
