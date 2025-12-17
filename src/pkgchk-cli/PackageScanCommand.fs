@@ -176,7 +176,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
             else
                 trace "Analysing results..."
                 let hits = Commands.getHits results
-                
+
                 let errorHits = hits |> Sca.hitsByLevels config.severities
                 let hitCounts = errorHits |> Sca.hitCountSummary |> List.ofSeq
 

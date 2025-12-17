@@ -127,6 +127,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
     override _.Execute(context, settings) =
         let trace = Commands.trace settings.TraceLogging
         let config = config settings
+
         if config.noBanner |> not then
             nuget |> App.banner |> Commands.console
 
@@ -142,7 +143,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                 errors |> String.joinLines |> Commands.returnError
             else
                 trace "Analysing results..."
-                
+
                 let hits = Commands.getHits results |> filterPackages config
 
                 let hitCounts = hits |> Sca.hitCountSummary |> List.ofSeq
