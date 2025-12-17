@@ -69,6 +69,11 @@ type PackageScanCommandSettings() =
     [<DefaultValue("")>]
     member val BadImageUri = "" with get, set
 
+    [<CommandOption("--config", IsHidden = false)>]
+    [<Description("Configuration file path.")>]
+    [<DefaultValue("")>]
+    member val ConfigFile = "" with get, set
+
 [<ExcludeFromCodeCoverage>]
 type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
     inherit Command<PackageScanCommandSettings>()
@@ -127,12 +132,27 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
             if String.isInt settings.GithubPrId |> not then
                 failwith "The PR ID must be an integer."
 
+    let config (settings: PackageScanCommandSettings) =
+        match settings.ConfigFile with
+        | x when x <> "" -> x |> Io.toFullPath |> Io.normalise |> Config.load
+        | x ->
+            { pkgchk.ScanConfiguration.includedPackages = [||]
+              excludedPackages = [||]
+              breakOnUpgrades = false
+              noBanner = settings.NoBanner
+              severities = settings.SeverityLevels
+              breakOnVulnerabilities = settings.IncludeVulnerables
+              breakOnDeprecations = settings.IncludeDeprecations
+              checkTransitives = settings.IncludeTransitives }
+
     override _.Execute(context, settings) =
         let trace = Commands.trace settings.TraceLogging
 
         let settings = cleanSettings settings
 
-        if settings.NoBanner |> not then
+        let config = config settings
+
+        if config.noBanner |> not then
             nuget |> App.banner |> Commands.console
 
         validateSettings settings
@@ -142,9 +162,9 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
         | _ ->
             let results =
                 (settings.ProjectPath,
-                 settings.IncludeVulnerables,
-                 settings.IncludeTransitives,
-                 settings.IncludeDeprecations,
+                 config.breakOnVulnerabilities,
+                 config.checkTransitives,
+                 config.breakOnDeprecations,
                  false,
                  false)
                 |> Commands.scan trace
@@ -156,7 +176,8 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
             else
                 trace "Analysing results..."
                 let hits = Commands.getHits results
-                let errorHits = hits |> Sca.hitsByLevels settings.SeverityLevels
+                
+                let errorHits = hits |> Sca.hitsByLevels config.severities
                 let hitCounts = errorHits |> Sca.hitCountSummary |> List.ofSeq
 
                 trace "Building display..."
@@ -165,11 +186,11 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                     seq {
                         hits |> Console.hitsTable
 
-                        if settings.IncludeVulnerables || settings.IncludeDeprecations then
+                        if config.breakOnVulnerabilities || config.breakOnDeprecations then
                             errorHits |> Console.headlineTable
 
                         if hitCounts |> List.isEmpty |> not then
-                            settings.SeverityLevels |> Console.severitySettingsTable
+                            config.severities |> Console.severitySettingsTable
                             hitCounts |> Console.hitSummaryTable
                     }
 
@@ -184,7 +205,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                     trace "Building reports..."
 
                     let reportFile =
-                        (hits, errorHits, hitCounts, settings.SeverityLevels, reportImg)
+                        (hits, errorHits, hitCounts, config.severities, reportImg)
                         |> Markdown.generate
                         |> Io.writeFile (reportFile settings.OutputDirectory)
 
