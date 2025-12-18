@@ -3,7 +3,6 @@
 open System
 open System.ComponentModel
 open System.Diagnostics.CodeAnalysis
-open pkgchk.Combinators
 open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]
@@ -103,27 +102,6 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
               breakOnDeprecations = false
               checkTransitives = false }
 
-    let filterPackages (config: pkgchk.ScanConfiguration) (hits: ScaHit list) =
-        let inclusionMap =
-            config.includedPackages
-            |> HashSet.ofSeq System.StringComparer.InvariantCultureIgnoreCase
-
-        let exclusionMap =
-            config.excludedPackages
-            |> HashSet.ofSeq System.StringComparer.InvariantCultureIgnoreCase
-
-        let included (hit: ScaHit) =
-            match inclusionMap.Count with
-            | 0 -> true
-            | x -> inclusionMap.Contains hit.packageId
-
-        let excluded (hit: ScaHit) =
-            match exclusionMap.Count with
-            | 0 -> true
-            | x -> exclusionMap.Contains hit.packageId |> not
-
-        hits |> List.filter (included &&>> excluded)
-
     override _.Execute(context, settings) =
         let trace = Commands.trace settings.TraceLogging
         let config = config settings
@@ -144,7 +122,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
             else
                 trace "Analysing results..."
 
-                let hits = Commands.getHits results |> filterPackages config
+                let hits = Commands.getHits results |> Config.filterPackages config
 
                 let hitCounts = hits |> Sca.hitCountSummary |> List.ofSeq
 
