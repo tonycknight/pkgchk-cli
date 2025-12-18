@@ -7,7 +7,7 @@ open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]
 type PackageScanCommandSettings() =
-    inherit PackageCommandSettings()
+    inherit PackageGithubCommandSettings()
 
     [<CommandOption("-v|--vulnerable")>]
     [<Description("Toggle vulnerable package checks. true to include them, false to exclude.")>]
@@ -33,42 +33,7 @@ type PackageScanCommandSettings() =
     [<Description("Severity levels to scan for. Matches will return non-zero exit codes. Multiple levels can be specified.")>]
     [<DefaultValue([| "High"; "Critical"; "Critical Bugs"; "Legacy" |])>]
     member val SeverityLevels: string array = [||] with get, set
-
-    [<CommandOption("--github-token", IsHidden = true)>]
-    [<Description("A Github token.")>]
-    [<DefaultValue("")>]
-    member val GithubToken = "" with get, set
-
-    [<CommandOption("--github-repo", IsHidden = true)>]
-    [<Description("The name of the Github repository in the form <owner>/<repo>, e.g. github/octokit.")>]
-    [<DefaultValue("")>]
-    member val GithubRepo = "" with get, set
-
-    [<CommandOption("--github-title", IsHidden = true)>]
-    [<Description("The Github report title.")>]
-    [<DefaultValue("")>]
-    member val GithubSummaryTitle = "" with get, set
-
-    [<CommandOption("--github-pr", IsHidden = true)>]
-    [<Description("Pull request ID.")>]
-    [<DefaultValue("")>]
-    member val GithubPrId = "" with get, set
-
-    [<CommandOption("--github-commit", IsHidden = true)>]
-    [<Description("Commit hash.")>]
-    [<DefaultValue("")>]
-    member val GithubCommit = "" with get, set
-
-    [<CommandOption("--pass-img", IsHidden = true)>]
-    [<Description("URI of an image for successful scans.")>]
-    [<DefaultValue("")>]
-    member val GoodImageUri = "" with get, set
-
-    [<CommandOption("--fail-img", IsHidden = true)>]
-    [<Description("URI of an image for failed scans.")>]
-    [<DefaultValue("")>]
-    member val BadImageUri = "" with get, set
-
+       
     [<CommandOption("--config", IsHidden = false)>]
     [<Description("Configuration file path.")>]
     [<DefaultValue("")>]

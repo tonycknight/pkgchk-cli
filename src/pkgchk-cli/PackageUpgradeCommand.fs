@@ -7,7 +7,7 @@ open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]
 type PackageUpgradeCommandSettings() =
-    inherit PackageCommandSettings()
+    inherit PackageGithubCommandSettings()
 
     [<CommandOption("-o|--output")>]
     [<Description("Output directory for reports.")>]
@@ -18,41 +18,6 @@ type PackageUpgradeCommandSettings() =
     [<Description("Break on outstanding package upgrades.")>]
     [<DefaultValue(false)>]
     member val BreakOnUpgrades = false with get, set
-
-    [<CommandOption("--github-token", IsHidden = true)>]
-    [<Description("A Github token.")>]
-    [<DefaultValue("")>]
-    member val GithubToken = "" with get, set
-
-    [<CommandOption("--github-repo", IsHidden = true)>]
-    [<Description("The name of the Github repository in the form <owner>/<repo>, e.g. github/octokit.")>]
-    [<DefaultValue("")>]
-    member val GithubRepo = "" with get, set
-
-    [<CommandOption("--github-title", IsHidden = true)>]
-    [<Description("The Github report title.")>]
-    [<DefaultValue("")>]
-    member val GithubSummaryTitle = "" with get, set
-
-    [<CommandOption("--github-pr", IsHidden = true)>]
-    [<Description("Pull request ID.")>]
-    [<DefaultValue("")>]
-    member val GithubPrId = "" with get, set
-
-    [<CommandOption("--github-commit", IsHidden = true)>]
-    [<Description("Commit hash.")>]
-    [<DefaultValue("")>]
-    member val GithubCommit = "" with get, set
-
-    [<CommandOption("--pass-img", IsHidden = true)>]
-    [<Description("URI of an image for no outstanding upgrades.")>]
-    [<DefaultValue("")>]
-    member val GoodImageUri = "" with get, set
-
-    [<CommandOption("--fail-img", IsHidden = true)>]
-    [<Description("URI of an image for outstanding upgrades.")>]
-    [<DefaultValue("")>]
-    member val BadImageUri = "" with get, set
 
     [<CommandOption("--config", IsHidden = false)>]
     [<Description("Configuration file path.")>]
