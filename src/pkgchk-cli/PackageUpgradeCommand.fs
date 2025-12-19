@@ -69,6 +69,8 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
         if config.noBanner |> not then
             nuget |> App.banner |> Commands.console
 
+        settings.Validate()
+
         match Commands.restore settings trace with
         | Choice2Of2 error -> error |> Commands.returnError
         | _ ->
