@@ -41,7 +41,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
         | Choice2Of2 error -> error |> Commands.returnError
         | _ ->
             let results =
-                (settings.ProjectPath, false, settings.IncludeTransitives, false, true, false)
+                (settings.ProjectPath, false, config.checkTransitives, false, true, false)
                 |> Commands.scan trace
 
             let errors = Commands.getErrors results
@@ -50,14 +50,16 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                 errors |> String.joinLines |> Commands.returnError
             else
                 trace "Analysing results..."
-                let hits = Commands.getHits results
+                let hits = Commands.getHits results |> Config.filterPackages config
                 let hitCounts = hits |> Sca.hitCountSummary |> List.ofSeq
 
                 trace "Building display..."
 
                 let renderables =
                     seq {
-                        hits |> Console.hitsTable
+                        match hits with
+                        | [] -> Console.noscanHeadlineTable ()
+                        | hits -> hits |> Console.hitsTable
 
                         if hitCounts |> List.isEmpty |> not then
                             hitCounts |> Console.hitSummaryTable
