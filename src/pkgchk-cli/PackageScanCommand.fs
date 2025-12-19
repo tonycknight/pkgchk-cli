@@ -74,11 +74,11 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
         settings
 
     let config (settings: PackageScanCommandSettings) =
-        match settings.ConfigFile with
-        | x when x <> "" -> x |> Io.toFullPath |> Io.normalise |> Config.load
-        | x ->
-            { pkgchk.ScanConfiguration.includedPackages = [||]
-              excludedPackages = [||]
+        match (settings.IncludedPackages, settings.ExcludedPackages, settings.ConfigFile) with
+        | ([||], [||], x) when x <> "" -> x |> Io.toFullPath |> Io.normalise |> Config.load
+        | _ ->
+            { pkgchk.ScanConfiguration.includedPackages = settings.IncludedPackages
+              excludedPackages = settings.ExcludedPackages
               breakOnUpgrades = false
               noBanner = settings.NoBanner
               severities = settings.SeverityLevels
