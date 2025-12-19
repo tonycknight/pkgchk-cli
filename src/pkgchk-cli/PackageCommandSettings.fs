@@ -28,6 +28,11 @@ type PackageCommandSettings() =
     [<DefaultValue(false)>]
     member val NoBanner = false with get, set
 
+    [<CommandOption("--config", IsHidden = false)>]
+    [<Description("Configuration file path.")>]
+    [<DefaultValue("")>]
+    member val ConfigFile = "" with get, set
+
 [<ExcludeFromCodeCoverage>]
 type PackageGithubCommandSettings() =
     inherit PackageCommandSettings()

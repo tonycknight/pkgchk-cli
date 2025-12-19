@@ -19,11 +19,6 @@ type PackageUpgradeCommandSettings() =
     [<DefaultValue(false)>]
     member val BreakOnUpgrades = false with get, set
 
-    [<CommandOption("--config", IsHidden = false)>]
-    [<Description("Configuration file path.")>]
-    [<DefaultValue("")>]
-    member val ConfigFile = "" with get, set
-
     [<CommandOption("-i|--included-package", IsHidden = false)>]
     [<Description("The name of a package to include in the scan. Multiple packages can be specified.")>]
     member val IncludedPackages: string[] = [||] with get, set

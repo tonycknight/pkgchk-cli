@@ -34,11 +34,6 @@ type PackageScanCommandSettings() =
     [<DefaultValue([| "High"; "Critical"; "Critical Bugs"; "Legacy" |])>]
     member val SeverityLevels: string array = [||] with get, set
        
-    [<CommandOption("--config", IsHidden = false)>]
-    [<Description("Configuration file path.")>]
-    [<DefaultValue("")>]
-    member val ConfigFile = "" with get, set
-
 [<ExcludeFromCodeCoverage>]
 type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
     inherit Command<PackageScanCommandSettings>()

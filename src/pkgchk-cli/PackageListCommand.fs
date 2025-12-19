@@ -17,10 +17,24 @@ type PackageListCommandSettings() =
 type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
     inherit Command<PackageListCommandSettings>()
 
+    let config (settings: PackageListCommandSettings) =
+        match settings.ConfigFile with
+        | x when x <> "" -> x |> Io.toFullPath |> Io.normalise |> Config.load
+        | x ->
+            { pkgchk.ScanConfiguration.includedPackages = [||]
+              excludedPackages = [||]
+              breakOnUpgrades = false
+              noBanner = settings.NoBanner
+              severities = [||]
+              breakOnVulnerabilities = false
+              breakOnDeprecations = false
+              checkTransitives = settings.IncludeTransitives }
+
     override _.Execute(context, settings) =
         let trace = Commands.trace settings.TraceLogging
+        let config = config settings
 
-        if settings.NoBanner |> not then
+        if config.noBanner |> not then
             nuget |> App.banner |> Commands.console
 
         match Commands.restore settings trace with
