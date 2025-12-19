@@ -116,7 +116,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 errors |> String.joinLines |> Commands.returnError
             else
                 trace "Analysing results..."
-                let hits = Commands.getHits results
+                let hits = Commands.getHits results |> Config.filterPackages config
 
                 let errorHits = hits |> Sca.hitsByLevels config.severities
                 let hitCounts = errorHits |> Sca.hitCountSummary |> List.ofSeq
@@ -126,13 +126,18 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 let renderables =
                     seq {
                         hits |> Console.hitsTable
+                        let mutable headlineSet = false
 
                         if config.breakOnVulnerabilities || config.breakOnDeprecations then
-                            errorHits |> Console.headlineTable
+                            errorHits |> Console.vulnerabilityHeadlineTable
+                            headlineSet <- true
 
                         if hitCounts |> List.isEmpty |> not then
                             config.severities |> Console.severitySettingsTable
                             hitCounts |> Console.hitSummaryTable
+
+                        else if (not headlineSet) then
+                            Console.noscanHeadlineTable ()
                     }
 
                 renderables |> Commands.renderTables

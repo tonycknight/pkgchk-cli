@@ -54,7 +54,7 @@ module Console =
 
     let hitFramework (hit: ScaHit) = hit.framework |> blue
 
-    let title hits =
+    let vulnerabilitySummaryTitle hits =
         match hits with
         | [] -> seq { green "No vulnerabilities found!" }
         | _ -> seq { error "Vulnerabilities found!" }
@@ -159,13 +159,17 @@ module Console =
 
         table
 
-    let headlineTable errorHits =
+    let vulnerabilityHeadlineTable errorHits =
         let table = table () |> tableColumn ""
 
-        let title = errorHits |> title |> Array.ofSeq
+        let title = errorHits |> vulnerabilitySummaryTitle |> Array.ofSeq
 
         table.AddRow title
 
+    let noscanHeadlineTable () =
+        let table = table () |> tableColumn ""
+
+        [| green "Nothing found!" |] |> table.AddRow
 
     let severitySettingsTable severities =
         let table = table () |> tableColumn ""
