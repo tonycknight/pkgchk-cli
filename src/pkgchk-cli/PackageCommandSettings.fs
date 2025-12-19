@@ -72,7 +72,7 @@ type PackageGithubCommandSettings() =
     [<DefaultValue("")>]
     member val BadImageUri = "" with get, set
 
-    member this.Validate() = 
+    member this.Validate() =
         if String.isNotEmpty this.GithubPrId then
             if String.isEmpty this.GithubToken then
                 failwith "Missing Github token."
@@ -90,4 +90,3 @@ type PackageGithubCommandSettings() =
 
             if String.isInt this.GithubPrId |> not then
                 failwith "The PR ID must be an integer."
-

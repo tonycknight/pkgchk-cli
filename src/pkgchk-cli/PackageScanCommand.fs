@@ -33,7 +33,7 @@ type PackageScanCommandSettings() =
     [<Description("Severity levels to scan for. Matches will return non-zero exit codes. Multiple levels can be specified.")>]
     [<DefaultValue([| "High"; "Critical"; "Critical Bugs"; "Legacy" |])>]
     member val SeverityLevels: string array = [||] with get, set
-       
+
 [<ExcludeFromCodeCoverage>]
 type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
     inherit Command<PackageScanCommandSettings>()
