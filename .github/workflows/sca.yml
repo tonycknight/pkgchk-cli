@@ -9,14 +9,6 @@ permissions: # set permissions to principle of least privilege, codeql requires 
 
 on:
   workflow_dispatch:
-  workflow_call:
-    inputs:
-      username:
-        required: false
-        type: string
-    secrets:
-      token:
-        required: false
   schedule:
     - cron: '0 0 * * *'
 
@@ -28,14 +20,10 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v5
-        
-      - name: Check SCA
-        run: |
-          dotnet tool restore
-          set +e
-          dotnet pkgchk scan --transitive true --output ./report
-          exitcode="$?"
-          cat ./report/pkgchk.md >> $GITHUB_STEP_SUMMARY
-          exit "$exitcode"
+      - name: Dependency scan
+        uses: tonycknight/pkgchk-action@v1
+        with: 
+          scan-issues: true
+          scan-upgrades: true
+          vulnerable: true
+          deprecated: true  
