@@ -29,18 +29,13 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v5
-                
-      - name: Check SCA
-        run: |
-          dotnet tool restore
-          dotnet pkgchk scan --transitive true --output ./report
-
-      - name: SCA summary
-        if: always()
-        run: |          
-          cat ./report/pkgchk.md >> $GITHUB_STEP_SUMMARY
+      - name: Dependency scan
+        uses: tonycknight/pkgchk-action@v1
+        with: 
+          scan-issues: true
+          scan-upgrades: true
+          vulnerable: true
+          deprecated: true          
           
   unit-tests:
     name: Unit Tests
