@@ -123,7 +123,7 @@ To list top-level dependencies without transitives:
 
 ## Integration within Github actions
 
-Simply:
+If you want to directly use the tool in Github, simply restore the tool and run, with the same parameters as you'd use from the command line:
 
 ```
 name: run SCA
@@ -131,6 +131,8 @@ run: |
     dotnet tool restore    
     pkgchk scan <project|solution>
 ```
+
+Alternatively, if you want better visibility and easier control within GitHub, [see pkgchk-action](https://github.com/marketplace/actions/pkgchk).
 
 ## Integration within other CI platforms
 
