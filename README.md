@@ -135,12 +135,32 @@ To list top-level dependencies without transitives:
 
 |  |  |  |   |
 | - | - | - | - |
-| `--included-package` | The name of a package to specifically search for.  Multiple `--included-package` options can be given. | None by default |
-| `--excluded-package` | The name of a package to exclude from searches.  Multiple `--excluded-package` options can be given. | None by default |
+| `--included-package` | The name of a package to specifically search for.  Multiple `--included-package` parameter can be given. | None by default |
+| `--excluded-package` | The name of a package to exclude from searches.  Multiple `--excluded-package` parameter can be given. | None by default |
 | `--output` | The relative or absolute directory for reports. If ommitted, no reports are generated | `string` | None by default |
 | `--no-restore` | Don't automatically restore the project/solution. | n/a | Package restoration is automatic by default |
 | `--trace` | Show working logs | n/a |  |
 
+### Configuration files
+
+In some circumstances, you may need to apply a standard list of options, such as excluding specific packages across `scan`, `list`, `upgrade`.
+
+Each command has a `--config` parameter available for the name of a file, for example:
+
+```pkgchk upgrades --config pkgchkconfig.yml```
+
+Acceptable formats are YAML:
+
+| | | | 
+| - | - | - | 
+| `noBanner` | To hide the command line's banner. | |
+| `excludedPackages` | An array of package names to exclude, e.g. `excludedPackages: [ Ignored.Package ]` | 
+| `includedPackages` | An array of package names to include, e.g. `excludedPackages: [ Important.Package ]` | 
+| `breakOnUpgrades` | For the `upgrades` command, to return a non-zero return code if package upgrades are found. |
+| `severities` | For the `scan` command, an array of severities, equivalent to the command's `--severity` parameters. | 
+| `breakOnVulnerabilities` | For the `scan` command, equivalent to the commandss `--vulnerable` parametrer. |
+| `breakOnDeprecations` | For the `scan` command, equivalent to the command's `--deprecated` parameter. |
+| `checkTransitives` | Equivalent to the `--transitive` parameter. |
 
 ## Integration within Github actions
 
