@@ -73,25 +73,6 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
         settings.SeverityLevels <- settings.SeverityLevels |> Array.filter String.isNotEmpty
         settings
 
-    let validateSettings (settings: PackageScanCommandSettings) =
-        if String.isNotEmpty settings.GithubPrId then
-            if String.isEmpty settings.GithubToken then
-                failwith "Missing Github token."
-
-            if String.isEmpty settings.GithubRepo then
-                failwith "Missing Github repository. Use the form <owner>/<name>."
-
-            let repo = Github.repo settings.GithubRepo
-
-            if repo |> fst |> String.isEmpty then
-                failwith "The repository owner is missing. Use the form <owner>/<name>."
-
-            if repo |> snd |> String.isEmpty then
-                failwith "The repository name is missing. Use the form <owner>/<name>."
-
-            if String.isInt settings.GithubPrId |> not then
-                failwith "The PR ID must be an integer."
-
     let config (settings: PackageScanCommandSettings) =
         match settings.ConfigFile with
         | x when x <> "" -> x |> Io.toFullPath |> Io.normalise |> Config.load
@@ -115,7 +96,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
         if config.noBanner |> not then
             nuget |> App.banner |> Commands.console
 
-        validateSettings settings
+        settings.Validate()
 
         match Commands.restore settings trace with
         | Choice2Of2 error -> error |> Commands.returnError

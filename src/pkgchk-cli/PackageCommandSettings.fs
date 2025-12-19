@@ -71,3 +71,23 @@ type PackageGithubCommandSettings() =
     [<Description("URI of an image for failed scans.")>]
     [<DefaultValue("")>]
     member val BadImageUri = "" with get, set
+
+    member this.Validate() = 
+        if String.isNotEmpty this.GithubPrId then
+            if String.isEmpty this.GithubToken then
+                failwith "Missing Github token."
+
+            if String.isEmpty this.GithubRepo then
+                failwith "Missing Github repository. Use the form <owner>/<name>."
+
+            let repo = Github.repo this.GithubRepo
+
+            if repo |> fst |> String.isEmpty then
+                failwith "The repository owner is missing. Use the form <owner>/<name>."
+
+            if repo |> snd |> String.isEmpty then
+                failwith "The repository name is missing. Use the form <owner>/<name>."
+
+            if String.isInt this.GithubPrId |> not then
+                failwith "The PR ID must be an integer."
+
