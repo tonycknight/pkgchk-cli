@@ -48,8 +48,8 @@ module Commands =
 
     let getHits x = x |> liftHits |> sortHits |> List.ofSeq
 
-    let restore (settings: PackageCommandSettings) logging =
-        if settings.NoRestore then
+    let restore (config: ScanConfiguration) projectPath logging =
+        if config.noRestore then
             Choice1Of2 false
         else
             let runRestoreProcParse run proc =
@@ -59,7 +59,7 @@ module Commands =
                 | Choice2Of2 error -> Choice2Of2 error
                 | _ -> Choice1Of2 true)
 
-            settings.ProjectPath
+            projectPath
             |> Sca.restoreArgs
             |> Io.createProcess
             |> runRestoreProcParse (runProc logging)

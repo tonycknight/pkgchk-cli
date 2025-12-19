@@ -25,6 +25,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
               excludedPackages = settings.ExcludedPackages
               breakOnUpgrades = false
               noBanner = settings.NoBanner
+              noRestore = settings.NoRestore
               severities = [||]
               breakOnVulnerabilities = false
               breakOnDeprecations = false
@@ -37,7 +38,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
         if config.noBanner |> not then
             nuget |> App.banner |> Commands.console
 
-        match Commands.restore settings trace with
+        match Commands.restore config settings.ProjectPath trace with
         | Choice2Of2 error -> error |> Commands.returnError
         | _ ->
             let results =

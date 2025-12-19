@@ -6,6 +6,7 @@ open YamlDotNet.Serialization
 [<CLIMutable>]
 type ScanConfiguration =
     { noBanner: bool
+      noRestore: bool
       includedPackages: string[]
       excludedPackages: string[]
       breakOnUpgrades: bool

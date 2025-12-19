@@ -49,6 +49,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
               excludedPackages = settings.ExcludedPackages
               breakOnUpgrades = settings.BreakOnUpgrades
               noBanner = settings.NoBanner
+              noRestore = settings.NoRestore
               severities = [||]
               breakOnVulnerabilities = false
               breakOnDeprecations = false
@@ -63,7 +64,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
         settings.Validate()
 
-        match Commands.restore settings trace with
+        match Commands.restore config settings.ProjectPath trace with
         | Choice2Of2 error -> error |> Commands.returnError
         | _ ->
             let results =
