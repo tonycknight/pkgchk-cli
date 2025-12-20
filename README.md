@@ -149,11 +149,14 @@ Each command has a `--config` parameter available for the name of a file, for ex
 
 ```pkgchk upgrades --config pkgchkconfig.yml```
 
+If you specify `--config`, all other configurable parameters (see below) will be ignored.
+
 Acceptable formats are YAML:
 
 | | | | 
 | - | - | - | 
 | `noBanner` | To hide the command line's banner. | |
+| `noRestore` | Equivalent to the `--no-restore` parameter. | |
 | `excludedPackages` | An array of package names to exclude, e.g. `excludedPackages: [ Ignored.Package ]` | 
 | `includedPackages` | An array of package names to include, e.g. `excludedPackages: [ Important.Package ]` | 
 | `breakOnUpgrades` | For the `upgrades` command, to return a non-zero return code if package upgrades are found. |
