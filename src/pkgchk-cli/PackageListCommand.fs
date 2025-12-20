@@ -17,17 +17,32 @@ type PackageListCommandSettings() =
 type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
     inherit Command<PackageListCommandSettings>()
 
+    let config (settings: PackageListCommandSettings) =
+        match settings.ConfigFile with
+        | x when x <> "" -> x |> Io.toFullPath |> Io.normalise |> Config.load
+        | _ ->
+            { pkgchk.ScanConfiguration.includedPackages = settings.IncludedPackages
+              excludedPackages = settings.ExcludedPackages
+              breakOnUpgrades = false
+              noBanner = settings.NoBanner
+              noRestore = settings.NoRestore
+              severities = [||]
+              breakOnVulnerabilities = false
+              breakOnDeprecations = false
+              checkTransitives = settings.IncludeTransitives }
+
     override _.Execute(context, settings) =
         let trace = Commands.trace settings.TraceLogging
+        let config = config settings
 
-        if settings.NoBanner |> not then
+        if config.noBanner |> not then
             nuget |> App.banner |> Commands.console
 
-        match Commands.restore settings trace with
+        match Commands.restore config settings.ProjectPath trace with
         | Choice2Of2 error -> error |> Commands.returnError
         | _ ->
             let results =
-                (settings.ProjectPath, false, settings.IncludeTransitives, false, true, false)
+                (settings.ProjectPath, false, config.checkTransitives, false, true, false)
                 |> Commands.scan trace
 
             let errors = Commands.getErrors results
@@ -36,14 +51,16 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                 errors |> String.joinLines |> Commands.returnError
             else
                 trace "Analysing results..."
-                let hits = Commands.getHits results
+                let hits = Commands.getHits results |> Config.filterPackages config
                 let hitCounts = hits |> Sca.hitCountSummary |> List.ofSeq
 
                 trace "Building display..."
 
                 let renderables =
                     seq {
-                        hits |> Console.hitsTable
+                        match hits with
+                        | [] -> Console.noscanHeadlineTable ()
+                        | hits -> hits |> Console.hitsTable
 
                         if hitCounts |> List.isEmpty |> not then
                             hitCounts |> Console.hitSummaryTable

@@ -77,6 +77,12 @@ module String =
         | (true, x) -> x
         | _ -> 0
 
+module Option =
+    let nullDefault<'a> (defaultValue: 'a) (value: 'a) =
+        if obj.ReferenceEquals(value, null) then
+            defaultValue
+        else
+            value
 
 module ReturnCodes =
 

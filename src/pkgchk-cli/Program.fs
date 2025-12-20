@@ -33,5 +33,5 @@ module Program =
         try
             app.Run(argv)
         with ex ->
-            ex.Message |> Console.error |> console
+            ex.Message |> String.escapeMarkup |> Console.error |> console
             ReturnCodes.sysError

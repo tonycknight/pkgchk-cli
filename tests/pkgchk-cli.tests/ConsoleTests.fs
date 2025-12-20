@@ -93,8 +93,9 @@ module ConsoleTests =
         && t.Rows |> Seq.collect rowCellsAsMarkup |> markupsHaveContent
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
-    let ``title returns appropriate title`` (hits: pkgchk.ScaHit list) =
-        let result = pkgchk.Console.title hits |> pkgchk.String.joinLines
+    let ``vulnerabilitySummaryTitle returns appropriate title`` (hits: pkgchk.ScaHit list) =
+        let result =
+            pkgchk.Console.vulnerabilitySummaryTitle hits |> pkgchk.String.joinLines
 
         match hits with
         | [] -> result.StartsWith("[lime]No vulnerabilities found!")

@@ -7,7 +7,7 @@ open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]
 type PackageUpgradeCommandSettings() =
-    inherit PackageCommandSettings()
+    inherit PackageGithubCommandSettings()
 
     [<CommandOption("-o|--output")>]
     [<Description("Output directory for reports.")>]
@@ -18,41 +18,6 @@ type PackageUpgradeCommandSettings() =
     [<Description("Break on outstanding package upgrades.")>]
     [<DefaultValue(false)>]
     member val BreakOnUpgrades = false with get, set
-
-    [<CommandOption("--github-token", IsHidden = true)>]
-    [<Description("A Github token.")>]
-    [<DefaultValue("")>]
-    member val GithubToken = "" with get, set
-
-    [<CommandOption("--github-repo", IsHidden = true)>]
-    [<Description("The name of the Github repository in the form <owner>/<repo>, e.g. github/octokit.")>]
-    [<DefaultValue("")>]
-    member val GithubRepo = "" with get, set
-
-    [<CommandOption("--github-title", IsHidden = true)>]
-    [<Description("The Github report title.")>]
-    [<DefaultValue("")>]
-    member val GithubSummaryTitle = "" with get, set
-
-    [<CommandOption("--github-pr", IsHidden = true)>]
-    [<Description("Pull request ID.")>]
-    [<DefaultValue("")>]
-    member val GithubPrId = "" with get, set
-
-    [<CommandOption("--github-commit", IsHidden = true)>]
-    [<Description("Commit hash.")>]
-    [<DefaultValue("")>]
-    member val GithubCommit = "" with get, set
-
-    [<CommandOption("--pass-img", IsHidden = true)>]
-    [<Description("URI of an image for no outstanding upgrades.")>]
-    [<DefaultValue("")>]
-    member val GoodImageUri = "" with get, set
-
-    [<CommandOption("--fail-img", IsHidden = true)>]
-    [<Description("URI of an image for outstanding upgrades.")>]
-    [<DefaultValue("")>]
-    member val BadImageUri = "" with get, set
 
 [<ExcludeFromCodeCoverage>]
 type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
@@ -66,23 +31,40 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
         else
             GithubComment.create settings.GithubSummaryTitle "_The report is too big for Github - Please check logs_"
 
-    let isSuccessScan (settings: PackageUpgradeCommandSettings, hits: ScaHit list) =
+    let isSuccessScan (settings: ScanConfiguration, hits: ScaHit list) =
         match hits with
         | [] -> true
-        | _ -> not settings.BreakOnUpgrades
+        | _ -> not settings.breakOnUpgrades
 
-    let returnCode (settings: PackageUpgradeCommandSettings, hits: ScaHit list) =
+    let returnCode (settings: ScanConfiguration, hits: ScaHit list) =
         match isSuccessScan (settings, hits) with
         | true -> ReturnCodes.validationOk
         | false -> ReturnCodes.validationFailed
 
+    let config (settings: PackageUpgradeCommandSettings) =
+        match settings.ConfigFile with
+        | x when x <> "" -> x |> Io.toFullPath |> Io.normalise |> Config.load
+        | _ ->
+            { pkgchk.ScanConfiguration.includedPackages = settings.IncludedPackages
+              excludedPackages = settings.ExcludedPackages
+              breakOnUpgrades = settings.BreakOnUpgrades
+              noBanner = settings.NoBanner
+              noRestore = settings.NoRestore
+              severities = [||]
+              breakOnVulnerabilities = false
+              breakOnDeprecations = false
+              checkTransitives = false }
+
     override _.Execute(context, settings) =
         let trace = Commands.trace settings.TraceLogging
+        let config = config settings
 
-        if settings.NoBanner |> not then
+        if config.noBanner |> not then
             nuget |> App.banner |> Commands.console
 
-        match Commands.restore settings trace with
+        settings.Validate()
+
+        match Commands.restore config settings.ProjectPath trace with
         | Choice2Of2 error -> error |> Commands.returnError
         | _ ->
             let results =
@@ -94,7 +76,9 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                 errors |> String.joinLines |> Commands.returnError
             else
                 trace "Analysing results..."
-                let hits = Commands.getHits results
+
+                let hits = Commands.getHits results |> Config.filterPackages config
+
                 let hitCounts = hits |> Sca.hitCountSummary |> List.ofSeq
 
                 trace "Building display..."
@@ -105,12 +89,14 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
                         if hitCounts |> List.isEmpty |> not then
                             hitCounts |> Console.hitSummaryTable
+                        else
+                            pkgchk.Console.green "No upgrades found!" |> Commands.console
                     }
 
                 Commands.renderTables renderables
 
                 let reportImg =
-                    match isSuccessScan (settings, hits) with
+                    match isSuccessScan (config, hits) with
                     | true -> settings.GoodImageUri
                     | false -> settings.BadImageUri
 
@@ -147,9 +133,9 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
                     if String.isNotEmpty settings.GithubCommit then
                         trace $"Posting {comment.title} build check to Github repo {repo}..."
-                        let isSuccess = isSuccessScan (settings, hits)
+                        let isSuccess = isSuccessScan (config, hits)
 
                         (comment |> Github.createCheck trace client repo commit isSuccess).Result
                         |> ignore
 
-                returnCode (settings, hits)
+                returnCode (config, hits)

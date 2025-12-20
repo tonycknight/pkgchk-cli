@@ -7,7 +7,7 @@ open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]
 type PackageScanCommandSettings() =
-    inherit PackageCommandSettings()
+    inherit PackageGithubCommandSettings()
 
     [<CommandOption("-v|--vulnerable")>]
     [<Description("Toggle vulnerable package checks. true to include them, false to exclude.")>]
@@ -33,41 +33,6 @@ type PackageScanCommandSettings() =
     [<Description("Severity levels to scan for. Matches will return non-zero exit codes. Multiple levels can be specified.")>]
     [<DefaultValue([| "High"; "Critical"; "Critical Bugs"; "Legacy" |])>]
     member val SeverityLevels: string array = [||] with get, set
-
-    [<CommandOption("--github-token", IsHidden = true)>]
-    [<Description("A Github token.")>]
-    [<DefaultValue("")>]
-    member val GithubToken = "" with get, set
-
-    [<CommandOption("--github-repo", IsHidden = true)>]
-    [<Description("The name of the Github repository in the form <owner>/<repo>, e.g. github/octokit.")>]
-    [<DefaultValue("")>]
-    member val GithubRepo = "" with get, set
-
-    [<CommandOption("--github-title", IsHidden = true)>]
-    [<Description("The Github report title.")>]
-    [<DefaultValue("")>]
-    member val GithubSummaryTitle = "" with get, set
-
-    [<CommandOption("--github-pr", IsHidden = true)>]
-    [<Description("Pull request ID.")>]
-    [<DefaultValue("")>]
-    member val GithubPrId = "" with get, set
-
-    [<CommandOption("--github-commit", IsHidden = true)>]
-    [<Description("Commit hash.")>]
-    [<DefaultValue("")>]
-    member val GithubCommit = "" with get, set
-
-    [<CommandOption("--pass-img", IsHidden = true)>]
-    [<Description("URI of an image for successful scans.")>]
-    [<DefaultValue("")>]
-    member val GoodImageUri = "" with get, set
-
-    [<CommandOption("--fail-img", IsHidden = true)>]
-    [<Description("URI of an image for failed scans.")>]
-    [<DefaultValue("")>]
-    member val BadImageUri = "" with get, set
 
 [<ExcludeFromCodeCoverage>]
 type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
@@ -108,43 +73,40 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
         settings.SeverityLevels <- settings.SeverityLevels |> Array.filter String.isNotEmpty
         settings
 
-    let validateSettings (settings: PackageScanCommandSettings) =
-        if String.isNotEmpty settings.GithubPrId then
-            if String.isEmpty settings.GithubToken then
-                failwith "Missing Github token."
-
-            if String.isEmpty settings.GithubRepo then
-                failwith "Missing Github repository. Use the form <owner>/<name>."
-
-            let repo = Github.repo settings.GithubRepo
-
-            if repo |> fst |> String.isEmpty then
-                failwith "The repository owner is missing. Use the form <owner>/<name>."
-
-            if repo |> snd |> String.isEmpty then
-                failwith "The repository name is missing. Use the form <owner>/<name>."
-
-            if String.isInt settings.GithubPrId |> not then
-                failwith "The PR ID must be an integer."
+    let config (settings: PackageScanCommandSettings) =
+        match settings.ConfigFile with
+        | x when x <> "" -> x |> Io.toFullPath |> Io.normalise |> Config.load
+        | _ ->
+            { pkgchk.ScanConfiguration.includedPackages = settings.IncludedPackages
+              excludedPackages = settings.ExcludedPackages
+              breakOnUpgrades = false
+              noBanner = settings.NoBanner
+              noRestore = settings.NoRestore
+              severities = settings.SeverityLevels
+              breakOnVulnerabilities = settings.IncludeVulnerables
+              breakOnDeprecations = settings.IncludeDeprecations
+              checkTransitives = settings.IncludeTransitives }
 
     override _.Execute(context, settings) =
         let trace = Commands.trace settings.TraceLogging
 
         let settings = cleanSettings settings
 
-        if settings.NoBanner |> not then
+        let config = config settings
+
+        if config.noBanner |> not then
             nuget |> App.banner |> Commands.console
 
-        validateSettings settings
+        settings.Validate()
 
-        match Commands.restore settings trace with
+        match Commands.restore config settings.ProjectPath trace with
         | Choice2Of2 error -> error |> Commands.returnError
         | _ ->
             let results =
                 (settings.ProjectPath,
-                 settings.IncludeVulnerables,
-                 settings.IncludeTransitives,
-                 settings.IncludeDeprecations,
+                 config.breakOnVulnerabilities,
+                 config.checkTransitives,
+                 config.breakOnDeprecations,
                  false,
                  false)
                 |> Commands.scan trace
@@ -155,8 +117,9 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 errors |> String.joinLines |> Commands.returnError
             else
                 trace "Analysing results..."
-                let hits = Commands.getHits results
-                let errorHits = hits |> Sca.hitsByLevels settings.SeverityLevels
+                let hits = Commands.getHits results |> Config.filterPackages config
+
+                let errorHits = hits |> Sca.hitsByLevels config.severities
                 let hitCounts = errorHits |> Sca.hitCountSummary |> List.ofSeq
 
                 trace "Building display..."
@@ -164,13 +127,18 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 let renderables =
                     seq {
                         hits |> Console.hitsTable
+                        let mutable headlineSet = false
 
-                        if settings.IncludeVulnerables || settings.IncludeDeprecations then
-                            errorHits |> Console.headlineTable
+                        if config.breakOnVulnerabilities || config.breakOnDeprecations then
+                            errorHits |> Console.vulnerabilityHeadlineTable
+                            headlineSet <- true
 
                         if hitCounts |> List.isEmpty |> not then
-                            settings.SeverityLevels |> Console.severitySettingsTable
+                            config.severities |> Console.severitySettingsTable
                             hitCounts |> Console.hitSummaryTable
+
+                        else if (not headlineSet) then
+                            Console.noscanHeadlineTable ()
                     }
 
                 renderables |> Commands.renderTables
@@ -184,7 +152,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                     trace "Building reports..."
 
                     let reportFile =
-                        (hits, errorHits, hitCounts, settings.SeverityLevels, reportImg)
+                        (hits, errorHits, hitCounts, config.severities, reportImg)
                         |> Markdown.generate
                         |> Io.writeFile (reportFile settings.OutputDirectory)
 

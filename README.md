@@ -68,6 +68,12 @@ To list dependencies:
 
 If there's only one project or solution file in your directory, omit the `<project|solution>` argument.
 
+To list packages with upgrades:
+
+```pkgchk upgrades <project|solution> ```
+
+If there's only one project or solution file in your directory, omit the `<project|solution>` argument.
+
 ### Scan vulnerabilities and deprecations
 
 |  |  |  |   |
@@ -77,6 +83,8 @@ If there's only one project or solution file in your directory, omit the `<proje
 | `--transitive` | Scan for transitive packages, vulnerable, deprecated or otherwise | `true`/`false` | `true` by default |
 | `--output` | The relative or absolute directory for reports. If ommitted, no reports are generated | `string` | None by default |
 | `--severity` | Severity levels to search for, or deprecation reasons. Any number of severties can be given. | `string` | `High`, `Critical`, `Critical Bugs`, `Legacy` |
+| `--included-package` | The name of a package to specifically search for.  Multiple `--included-package` options can be given. | None by default |
+| `--excluded-package` | The name of a package to exclude from searches.  Multiple `--excluded-package` options can be given. | None by default |
 | `--no-restore` | Don't automatically restore the project/solution. | n/a | Package restoration is automatic by default |
 | `--trace` | Show working logs | n/a |  |
 
@@ -109,6 +117,8 @@ By default only `High`, `Critical`, `Critical Bugs` and `Legacy` vulnerabilities
 
 |  |  |  |   |
 | - | - | - | - |
+| `--included-package` | The name of a package to specifically search for.  Multiple `--included-package` options can be given. | None by default |
+| `--excluded-package` | The name of a package to exclude from searches.  Multiple `--excluded-package` options can be given. | None by default |
 | `--transitive` | Scan for transitive packages, vulnerable, deprecated or otherwise | `true`/`false` | `true` by default |
 | `--no-restore` | Don't automatically restore the project/solution. | n/a | Package restoration is automatic by default |
 | `--trace` | Show working logs | n/a |  |
@@ -121,9 +131,43 @@ To list top-level dependencies without transitives:
 
 ```pkgchk list <project|solution> --transitive false```
 
+### Finding upgrades
+
+|  |  |  |   |
+| - | - | - | - |
+| `--included-package` | The name of a package to specifically search for.  Multiple `--included-package` parameter can be given. | None by default |
+| `--excluded-package` | The name of a package to exclude from searches.  Multiple `--excluded-package` parameter can be given. | None by default |
+| `--output` | The relative or absolute directory for reports. If ommitted, no reports are generated | `string` | None by default |
+| `--no-restore` | Don't automatically restore the project/solution. | n/a | Package restoration is automatic by default |
+| `--trace` | Show working logs | n/a |  |
+
+### Configuration files
+
+In some circumstances, you may need to apply a standard list of options, such as excluding specific packages across `scan`, `list`, `upgrade`.
+
+Each command has a `--config` parameter available for the name of a file, for example:
+
+```pkgchk upgrades --config pkgchkconfig.yml```
+
+If you specify `--config`, all other configurable parameters (see below) will be ignored.
+
+Acceptable formats are YAML:
+
+| | | | 
+| - | - | - | 
+| `noBanner` | To hide the command line's banner. | |
+| `noRestore` | Equivalent to the `--no-restore` parameter. | |
+| `excludedPackages` | An array of package names to exclude, e.g. `excludedPackages: [ Ignored.Package ]` | 
+| `includedPackages` | An array of package names to include, e.g. `excludedPackages: [ Important.Package ]` | 
+| `breakOnUpgrades` | For the `upgrades` command, to return a non-zero return code if package upgrades are found. |
+| `severities` | For the `scan` command, an array of severities, equivalent to the command's `--severity` parameters. | 
+| `breakOnVulnerabilities` | For the `scan` command, equivalent to the commandss `--vulnerable` parametrer. |
+| `breakOnDeprecations` | For the `scan` command, equivalent to the command's `--deprecated` parameter. |
+| `checkTransitives` | Equivalent to the `--transitive` parameter. |
+
 ## Integration within Github actions
 
-Simply:
+If you want to directly use the tool in Github, simply restore the tool and run, with the same parameters as you'd use from the command line:
 
 ```
 name: run SCA
@@ -131,6 +175,8 @@ run: |
     dotnet tool restore    
     pkgchk scan <project|solution>
 ```
+
+Alternatively, if you want better visibility and easier control within GitHub, [see pkgchk-action](https://github.com/marketplace/actions/pkgchk).
 
 ## Integration within other CI platforms
 
