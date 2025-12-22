@@ -15,12 +15,12 @@ module Sca =
 
             projectPath
             |> ScaCommandArgs.restoreArgs
-            |> Io.createProcess
+            |> Process.createProcess
             |> runRestoreProcParse (CliCommands.runProc logging)
 
     let scan (context: ScaCommandContext) =
         ScaCommandArgs.scanArgs context
-        |> Array.map (fun (args, parser) -> (Io.createProcess args, parser))
+        |> Array.map (fun (args, parser) -> (Process.createProcess args, parser))
         |> Array.map (fun (proc, parser) ->
             match proc |> (CliCommands.runProc context.trace) with
             | Choice1Of2 json -> parser json

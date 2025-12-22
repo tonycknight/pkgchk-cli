@@ -4,7 +4,7 @@ module CliCommands =
 
     let runProc logging proc =
         try
-            proc |> Io.run logging
+            proc |> Process.run logging
         finally
             proc.Dispose()
 
