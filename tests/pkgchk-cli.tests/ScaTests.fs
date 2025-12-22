@@ -20,7 +20,7 @@ module ScaTests =
     [<InlineData(" ")>]
     [<InlineData("ABC")>]
     let ``parseVulnerabilities of plain text`` (text) =
-        match text |> pkgchk.Sca.parseVulnerabilities with
+        match text |> pkgchk.ScaCommandParsing.parseVulnerabilities with
         | Choice2Of2 msg -> ignore 0
         | _ -> failwith "No error raised"
 
@@ -31,7 +31,7 @@ module ScaTests =
 
         use reader = new System.IO.StreamReader(f)
 
-        let r = reader.ReadToEnd() |> pkgchk.Sca.parseVulnerabilities
+        let r = reader.ReadToEnd() |> pkgchk.ScaCommandParsing.parseVulnerabilities
 
         match r with
         | Choice1Of2 xs ->
@@ -48,7 +48,7 @@ module ScaTests =
 
         use reader = new System.IO.StreamReader(f)
 
-        let r = reader.ReadToEnd() |> pkgchk.Sca.parseVulnerabilities
+        let r = reader.ReadToEnd() |> pkgchk.ScaCommandParsing.parseVulnerabilities
 
         match r with
         | Choice1Of2 xs ->
@@ -73,7 +73,7 @@ module ScaTests =
     [<InlineData(" ")>]
     [<InlineData("ABC")>]
     let ``parsePackageTree of plain text`` (text) =
-        match text |> pkgchk.Sca.parsePackageTree with
+        match text |> pkgchk.ScaCommandParsing.parsePackageTree with
         | Choice2Of2 msg -> ignore 0
         | _ -> failwith "No error raised"
 
@@ -84,7 +84,7 @@ module ScaTests =
 
         use reader = new System.IO.StreamReader(f)
 
-        let r = reader.ReadToEnd() |> pkgchk.Sca.parsePackageTree
+        let r = reader.ReadToEnd() |> pkgchk.ScaCommandParsing.parsePackageTree
 
         match r with
         | Choice1Of2 xs ->
@@ -101,7 +101,7 @@ module ScaTests =
 
         use reader = new System.IO.StreamReader(f)
 
-        let r = reader.ReadToEnd() |> pkgchk.Sca.parsePackageTree
+        let r = reader.ReadToEnd() |> pkgchk.ScaCommandParsing.parsePackageTree
 
         match r with
         | Choice1Of2 xs ->

@@ -51,33 +51,7 @@ type ScaScanContext =
       includeDependencies: bool
       includeOutdated: bool }
 
-module ScaCommandArgs =
-    let private scanArgs vulnerable deprecated outdated includeTransitive path =
-        sprintf
-            "%s %s %s %s"
-            (sprintf "list %s package" path)
-            (match (vulnerable, deprecated, outdated) with
-             | (true, _, _) -> "--vulnerable"
-             | (_, true, _) -> "--deprecated"
-             | (_, _, true) -> "--outdated"
-             | (false, false, false) -> "")
-            (match includeTransitive with
-             | true -> "--include-transitive"
-             | _ -> "")
-            "--format json --output-version 1"
-
-    let scanVulnerabilities = scanArgs true false false
-
-    let scanDeprecations = scanArgs false true false
-
-    let scanDependencies = scanArgs false false false
-
-    let scanOutdated = scanArgs false false true false
-
-    let restoreArgs projectPath =
-        projectPath |> Io.toFullPath |> sprintf "restore %s -nowarn:NU1510"
-
-module Sca =
+module ScaCommandParsing =
     
     let parseError (parseable: string) (ex: Exception) =
         match
@@ -220,18 +194,45 @@ module Sca =
         with ex ->
             Choice2Of2("An error occurred parsing results." + Environment.NewLine)
 
+module ScaCommandArgs =
+    let private commandArgs vulnerable deprecated outdated includeTransitive path =
+        sprintf
+            "%s %s %s %s"
+            (sprintf "list %s package" path)
+            (match (vulnerable, deprecated, outdated) with
+             | (true, _, _) -> "--vulnerable"
+             | (_, true, _) -> "--deprecated"
+             | (_, _, true) -> "--outdated"
+             | (false, false, false) -> "")
+            (match includeTransitive with
+             | true -> "--include-transitive"
+             | _ -> "")
+            "--format json --output-version 1"
+
+    let scanVulnerabilities = commandArgs true false false
+
+    let scanDeprecations = commandArgs false true false
+
+    let scanDependencies = commandArgs false false false
+
+    let scanOutdated = commandArgs false false true false
+
+    let restoreArgs projectPath =
+        projectPath |> Io.toFullPath |> sprintf "restore %s -nowarn:NU1510"
+
+module Sca =
+
     let scanArgs (context: ScaScanContext) =
         let projPath = context.projectPath |> Io.toFullPath
 
         [| if context.includeVulnerabilities then
-               yield (projPath |> ScaCommandArgs.scanVulnerabilities context.includeTransitives, parseVulnerabilities)
+               yield (projPath |> ScaCommandArgs.scanVulnerabilities context.includeTransitives, ScaCommandParsing.parseVulnerabilities)
            if context.includeDeprecations then
-               yield (projPath |> ScaCommandArgs.scanDeprecations context.includeTransitives, parseVulnerabilities)
+               yield (projPath |> ScaCommandArgs.scanDeprecations context.includeTransitives, ScaCommandParsing.parseVulnerabilities)
            if context.includeDependencies then
-               yield (projPath |> ScaCommandArgs.scanDependencies context.includeTransitives, parsePackageTree)
+               yield (projPath |> ScaCommandArgs.scanDependencies context.includeTransitives, ScaCommandParsing.parsePackageTree)
            if context.includeOutdated then
-               yield (ScaCommandArgs.scanOutdated projPath, parsePackageTree) |]
-
+               yield (ScaCommandArgs.scanOutdated projPath, ScaCommandParsing.parsePackageTree) |]
 
     let hitsByLevels levels (hits: ScaHit list) =
         let levels = levels |> HashSet.ofSeq StringComparer.InvariantCultureIgnoreCase
