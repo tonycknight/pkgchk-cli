@@ -87,7 +87,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
                 let hits = CliScanning.getHits results |> Config.filterPackages config
 
-                let hitCounts = hits |> Sca.hitCountSummary |> List.ofSeq
+                let hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
 
                 trace "Building display..."
 

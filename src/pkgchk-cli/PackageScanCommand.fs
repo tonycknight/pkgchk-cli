@@ -118,8 +118,8 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 trace "Analysing results..."
                 let hits = CliScanning.getHits results |> Config.filterPackages config
 
-                let errorHits = hits |> Sca.hitsByLevels config.severities
-                let hitCounts = errorHits |> Sca.hitCountSummary |> List.ofSeq
+                let errorHits = hits |> ScaModels.hitsByLevels config.severities
+                let hitCounts = errorHits |> ScaModels.hitCountSummary |> List.ofSeq
 
                 trace "Building display..."
 

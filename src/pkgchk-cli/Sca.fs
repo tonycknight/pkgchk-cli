@@ -197,42 +197,5 @@ module ScaCommandArgs =
            if context.includeOutdated then
                yield (scanOutdated projPath, ScaCommandParsing.parsePackageTree) |]
 
-module Sca =
+//module Sca =
     
-    let hitsByLevels levels (hits: ScaHit list) =
-        let levels = levels |> HashSet.ofSeq StringComparer.InvariantCultureIgnoreCase
-
-        let filter =
-            (fun (h: ScaHit) ->
-                match h.kind with
-                | ScaHitKind.VulnerabilityTransitive
-                | ScaHitKind.Vulnerability -> h.severity |> HashSet.contains levels
-                | ScaHitKind.Deprecated -> h.reasons |> Seq.exists (HashSet.contains levels)
-                | ScaHitKind.Dependency
-                | ScaHitKind.DependencyTransitive -> false)
-
-        let remap (hit: ScaHit) =
-            match hit.kind with
-            | ScaHitKind.Deprecated ->
-                let reasons = hit.reasons |> Array.filter (HashSet.contains levels)
-                { hit with reasons = reasons }
-            | _ -> hit
-
-        hits |> List.filter filter |> List.map remap
-
-    let hitCountSummary (hits: seq<ScaHit>) =
-        hits
-        |> Seq.groupBy (fun h -> h.kind)
-        |> Seq.collect (fun (kind, hs) ->
-            hs
-            |> Seq.collect (fun h ->
-                seq {
-                    h.severity
-                    yield! h.reasons
-                }
-                |> Seq.filter String.isNotEmpty)
-            |> Seq.groupBy id
-            |> Seq.map (fun (s, xs) ->
-                { ScaHitSummary.kind = kind
-                  severity = s
-                  count = xs |> Seq.length }))

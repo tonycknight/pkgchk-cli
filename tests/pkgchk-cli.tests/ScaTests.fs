@@ -122,13 +122,13 @@ module ScaTests =
     [<Property(MaxTest = 1)>]
     let ``hitsByLevels on empty returns empty`` () =
         let hits = []
-        let result = hits |> pkgchk.Sca.hitsByLevels []
+        let result = hits |> pkgchk.ScaModels.hitsByLevels []
 
         result |> Seq.isEmpty
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``hitsByLevels by unknown severities returns empty`` (hits: pkgchk.ScaHit list) =
-        hits |> pkgchk.Sca.hitsByLevels [] |> Seq.isEmpty
+        hits |> pkgchk.ScaModels.hitsByLevels [] |> Seq.isEmpty
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString>; typeof<VulnerableScaHitKind> |], Verbose = true)>]
     let ``hitsByLevels vulnerable by known severities returns hits`` (hits: pkgchk.ScaHit list) =
@@ -139,7 +139,7 @@ module ScaTests =
             let severity = severities |> List.head
             let sort (h: pkgchk.ScaHit) = (h.kind, h.severity)
 
-            let result = hits |> pkgchk.Sca.hitsByLevels [ severity ] |> List.sortBy sort
+            let result = hits |> pkgchk.ScaModels.hitsByLevels [ severity ] |> List.sortBy sort
 
             let expectedHits =
                 hits
@@ -162,7 +162,7 @@ module ScaTests =
 
             let sort (h: pkgchk.ScaHit) = (h.kind, h.reasons |> Array.head)
 
-            let result = hits |> pkgchk.Sca.hitsByLevels [ reason ] |> List.sortBy sort
+            let result = hits |> pkgchk.ScaModels.hitsByLevels [ reason ] |> List.sortBy sort
 
             let expectedHits =
                 hits
@@ -176,7 +176,7 @@ module ScaTests =
     let ``hitCountSummary on vulnerable produces counts`` (hits: pkgchk.ScaHit list) =
         let hits = hits |> List.map (fun h -> { h with reasons = [||] })
         let sort (h: pkgchk.ScaHitSummary) = (h.kind, h.severity)
-        let results = pkgchk.Sca.hitCountSummary hits |> Seq.sortBy sort |> Array.ofSeq
+        let results = pkgchk.ScaModels.hitCountSummary hits |> Seq.sortBy sort |> Array.ofSeq
 
         let groupedHits = hits |> Seq.groupBy (fun h -> (h.kind, h.severity))
 
@@ -205,7 +205,7 @@ module ScaTests =
                     reasons = [| h.reasons.[0] |] })
 
         let sort (h: pkgchk.ScaHitSummary) = (h.kind, h.severity)
-        let results = pkgchk.Sca.hitCountSummary hits |> Seq.sortBy sort |> Array.ofSeq
+        let results = pkgchk.ScaModels.hitCountSummary hits |> Seq.sortBy sort |> Array.ofSeq
 
         let groupedHits = hits |> Seq.groupBy (fun h -> (h.kind, h.reasons |> Seq.head))
 
