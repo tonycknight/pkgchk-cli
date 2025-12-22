@@ -41,7 +41,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
     let rec genComment trace (settings: PackageScanCommandSettings, hits, errorHits, hitCounts, imageUri) attempt =
         let markdown =
             (hits, errorHits, hitCounts, settings.SeverityLevels, imageUri)
-            |> Markdown.generate
+            |> Markdown.generateScan
             |> String.joinLines
 
         let summaryTitle = settings.GithubSummaryTitle
@@ -153,7 +153,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
                     let reportFile =
                         (hits, errorHits, hitCounts, config.severities, reportImg)
-                        |> Markdown.generate
+                        |> Markdown.generateScan
                         |> Io.writeFile (reportFile settings.OutputDirectory)
 
                     $"{Environment.NewLine}Report file [link={reportFile}]{reportFile}[/] built."

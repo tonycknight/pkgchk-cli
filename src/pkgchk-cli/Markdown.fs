@@ -145,7 +145,7 @@ module Markdown =
         |> Seq.sortBy fst
         |> Seq.collect formatHitGroup
 
-    let generate (hits, errorHits, countSummary, severities, imageUri) =
+    let generateScan (hits, errorHits, countSummary, severities, imageUri) =
         seq {
             yield! title errorHits
 
