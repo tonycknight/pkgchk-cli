@@ -60,7 +60,7 @@ module Commands =
                 | _ -> Choice1Of2 true)
 
             projectPath
-            |> Sca.restoreArgs
+            |> ScaCommandArgs.restoreArgs
             |> Io.createProcess
             |> runRestoreProcParse (runProc logging)
 

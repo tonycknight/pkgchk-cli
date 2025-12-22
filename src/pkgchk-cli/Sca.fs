@@ -42,8 +42,16 @@ type ScaHitSummary =
       severity: string
       count: int }
 
-module ScaArgs =
+type ScaScanContext =
+    { trace: (string -> unit)
+      projectPath: string
+      includeVulnerabilities: bool
+      includeTransitives: bool
+      includeDeprecations: bool
+      includeDependencies: bool
+      includeOutdated: bool }
 
+module ScaCommandArgs =
     let private scanArgs vulnerable deprecated outdated includeTransitive path =
         sprintf
             "%s %s %s %s"
@@ -66,20 +74,11 @@ module ScaArgs =
 
     let scanOutdated = scanArgs false false true false
 
-type ScaScanContext =
-    { trace: (string -> unit)
-      projectPath: string
-      includeVulnerabilities: bool
-      includeTransitives: bool
-      includeDeprecations: bool
-      includeDependencies: bool
-      includeOutdated: bool }
-
-module Sca =
-
     let restoreArgs projectPath =
         projectPath |> Io.toFullPath |> sprintf "restore %s -nowarn:NU1510"
 
+module Sca =
+    
     let parseError (parseable: string) (ex: Exception) =
         match
             parseable.Split(Environment.NewLine)
@@ -225,13 +224,13 @@ module Sca =
         let projPath = context.projectPath |> Io.toFullPath
 
         [| if context.includeVulnerabilities then
-               yield (projPath |> ScaArgs.scanVulnerabilities context.includeTransitives, parseVulnerabilities)
+               yield (projPath |> ScaCommandArgs.scanVulnerabilities context.includeTransitives, parseVulnerabilities)
            if context.includeDeprecations then
-               yield (projPath |> ScaArgs.scanDeprecations context.includeTransitives, parseVulnerabilities)
+               yield (projPath |> ScaCommandArgs.scanDeprecations context.includeTransitives, parseVulnerabilities)
            if context.includeDependencies then
-               yield (projPath |> ScaArgs.scanDependencies context.includeTransitives, parsePackageTree)
+               yield (projPath |> ScaCommandArgs.scanDependencies context.includeTransitives, parsePackageTree)
            if context.includeOutdated then
-               yield (ScaArgs.scanOutdated projPath, parsePackageTree) |]
+               yield (ScaCommandArgs.scanOutdated projPath, parsePackageTree) |]
 
 
     let hitsByLevels levels (hits: ScaHit list) =

@@ -1,10 +1,10 @@
 ﻿namespace pkgchk.tests
 
 open FsUnit.Xunit
-open pkgchk.ScaArgs
+open pkgchk.ScaCommandArgs
 open Xunit
 
-module ScaArgsTests =
+module ScaCommandArgsTests =
 
     let includeTransitives =
         function
