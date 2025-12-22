@@ -66,9 +66,6 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
         | true -> ReturnCodes.validationOk
         | _ -> ReturnCodes.validationFailed
 
-    let reportFile outDir =
-        outDir |> Io.toFullPath |> Io.combine "pkgchk.md" |> Io.normalise
-
     let cleanSettings (settings: PackageScanCommandSettings) =
         settings.SeverityLevels <- settings.SeverityLevels |> Array.filter String.isNotEmpty
         settings
@@ -150,6 +147,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
                 if settings.OutputDirectory <> "" then
                     trace "Building reports..."
+                    let reportFile = Io.toFullPath >> Io.combine "pkgchk.md" >> Io.normalise
 
                     let reportFile =
                         (hits, errorHits, hitCounts, config.severities, reportImg)
