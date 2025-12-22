@@ -31,8 +31,8 @@
     <Compile Include="Utils.fs" />
     <Compile Include="Io.fs" />
     <Compile Include="ScaModels.fs" />
-    <Compile Include="Sca.fs" />
     <Compile Include="Configuration.fs" />
+    <Compile Include="ScaCommands.fs" />
     <Compile Include="Rendering.fs" />
     <Compile Include="Console.fs" />
     <Compile Include="Markdown.fs" />
@@ -40,6 +40,7 @@
     <Compile Include="Github.fs" />
     <Compile Include="PackageCommandSettings.fs" />
     <Compile Include="CliCommands.fs" />
+    <Compile Include="Sca.fs" />
     <Compile Include="PackageScanCommand.fs" />
     <Compile Include="PackageListCommand.fs" />
     <Compile Include="PackageUpgradeCommand.fs" />

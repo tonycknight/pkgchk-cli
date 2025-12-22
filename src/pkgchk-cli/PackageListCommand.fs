@@ -38,7 +38,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
         if config.noBanner |> not then
             nuget |> App.banner |> CliCommands.console
 
-        match CliScanning.restore config settings.ProjectPath trace with
+        match Sca.restore config settings.ProjectPath trace with
         | Choice2Of2 error -> error |> CliCommands.returnError
         | _ ->
             let ctx =
@@ -50,7 +50,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                   includeDependencies = true
                   includeOutdated = false }
 
-            let results = CliScanning.scan ctx
+            let results = Sca.scan ctx
 
             let errors = CliCommands.getErrors results
 

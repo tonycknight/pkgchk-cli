@@ -64,7 +64,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
         settings.Validate()
 
-        match CliScanning.restore config settings.ProjectPath trace with
+        match Sca.restore config settings.ProjectPath trace with
         | Choice2Of2 error -> error |> CliCommands.returnError
         | _ ->
             let ctx =
@@ -76,7 +76,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                   includeDependencies = false
                   includeOutdated = true }
 
-            let results = CliScanning.scan ctx
+            let results = Sca.scan ctx
 
             let errors = CliCommands.getErrors results
 
