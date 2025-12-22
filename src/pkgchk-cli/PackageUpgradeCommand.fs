@@ -52,7 +52,8 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
         let trace = CliCommands.trace settings.TraceLogging
         let config = config settings
 
-        not config.noBanner |> CliCommands.renderBanner nuget
+        if not config.noBanner then 
+            CliCommands.renderBanner nuget
 
         settings.Validate()
 

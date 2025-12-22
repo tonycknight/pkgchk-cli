@@ -28,9 +28,8 @@ module CliCommands =
     let renderTables (values: seq<Spectre.Console.Table>) =
         values |> Seq.iter Spectre.Console.AnsiConsole.Write
 
-    let renderBanner (nuget: Tk.Nuget.INugetClient) show =
-        if show then
-            nuget |> App.banner |> console
+    let renderBanner (nuget: Tk.Nuget.INugetClient) =
+        nuget |> App.banner |> console
 
     let returnCode isSuccess =
         match isSuccess with

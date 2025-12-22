@@ -83,7 +83,8 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
         let config = config settings
 
-        not config.noBanner |> CliCommands.renderBanner nuget
+        if not config.noBanner then 
+            CliCommands.renderBanner nuget
 
         settings.Validate()
 
