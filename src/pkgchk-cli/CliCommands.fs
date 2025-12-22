@@ -28,3 +28,9 @@ module CliCommands =
     let renderTables (values: seq<Spectre.Console.Table>) =
         values |> Seq.iter Spectre.Console.AnsiConsole.Write
 
+    let returnCode isSuccess =
+        match isSuccess with
+        | true -> ReturnCodes.validationOk
+        | _ -> ReturnCodes.validationFailed
+
+    

@@ -58,11 +58,6 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
     let isSuccessScan (hits: ScaHit list) = hits |> List.isEmpty
 
-    let returnCode (hits: ScaHit list) =
-        match isSuccessScan hits with
-        | true -> ReturnCodes.validationOk
-        | _ -> ReturnCodes.validationFailed
-
     let cleanSettings (settings: PackageScanCommandSettings) =
         settings.SeverityLevels <- settings.SeverityLevels |> Array.filter String.isNotEmpty
         settings
@@ -183,4 +178,4 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                         |> ignore
 
 
-                errorHits |> returnCode
+                errorHits |> isSuccessScan |> CliCommands.returnCode
