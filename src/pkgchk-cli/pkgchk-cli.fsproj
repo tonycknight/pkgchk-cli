@@ -38,7 +38,7 @@
     <Compile Include="App.fs" />
     <Compile Include="Github.fs" />
     <Compile Include="PackageCommandSettings.fs" />
-    <Compile Include="Commands.fs" />
+    <Compile Include="CliCommands.fs" />
     <Compile Include="PackageScanCommand.fs" />
     <Compile Include="PackageListCommand.fs" />
     <Compile Include="PackageUpgradeCommand.fs" />

@@ -1,8 +1,8 @@
 ﻿namespace pkgchk
 
-module Commands =
+module CliCommands =
 
-    let private runProc logging proc =
+    let runProc logging proc =
         try
             proc |> Io.run logging
         finally
@@ -28,14 +28,17 @@ module Commands =
     let renderTables (values: seq<Spectre.Console.Table>) =
         values |> Seq.iter Spectre.Console.AnsiConsole.Write
 
-    let liftHits procResults =
+// TODO: should be an part of the Sca module
+module CliScanning =
+
+    let private liftHits procResults =
         procResults
         |> Seq.collect (function
             | Choice1Of2 xs -> xs
             | _ -> [])
         |> List.ofSeq
 
-    let sortHits (hits: seq<ScaHit>) =
+    let private sortHits (hits: seq<ScaHit>) =
         hits
         |> Seq.sortBy (fun h ->
             ((match h.kind with
@@ -62,12 +65,12 @@ module Commands =
             projectPath
             |> ScaCommandArgs.restoreArgs
             |> Io.createProcess
-            |> runRestoreProcParse (runProc logging)
+            |> runRestoreProcParse (CliCommands.runProc logging)
 
     let scan (context: ScaScanContext) =
         ScaCommandArgs.scanArgs context
         |> Array.map (fun (args, parser) -> (Io.createProcess args, parser))
         |> Array.map (fun (proc, parser) ->
-            match proc |> (runProc context.trace) with
+            match proc |> (CliCommands.runProc context.trace) with
             | Choice1Of2 json -> parser json
             | Choice2Of2 x -> Choice2Of2 x)

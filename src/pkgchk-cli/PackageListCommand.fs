@@ -32,14 +32,14 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
               checkTransitives = settings.IncludeTransitives }
 
     override _.Execute(context, settings) =
-        let trace = Commands.trace settings.TraceLogging
+        let trace = CliCommands.trace settings.TraceLogging
         let config = config settings
 
         if config.noBanner |> not then
-            nuget |> App.banner |> Commands.console
+            nuget |> App.banner |> CliCommands.console
 
-        match Commands.restore config settings.ProjectPath trace with
-        | Choice2Of2 error -> error |> Commands.returnError
+        match CliScanning.restore config settings.ProjectPath trace with
+        | Choice2Of2 error -> error |> CliCommands.returnError
         | _ ->
             let ctx =
                 { ScaScanContext.trace = trace
@@ -50,15 +50,15 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                   includeDependencies = true
                   includeOutdated = false }
 
-            let results = Commands.scan ctx
+            let results = CliScanning.scan ctx
 
-            let errors = Commands.getErrors results
+            let errors = CliCommands.getErrors results
 
             if Seq.isEmpty errors |> not then
-                errors |> String.joinLines |> Commands.returnError
+                errors |> String.joinLines |> CliCommands.returnError
             else
                 trace "Analysing results..."
-                let hits = Commands.getHits results |> Config.filterPackages config
+                let hits = CliScanning.getHits results |> Config.filterPackages config
                 let hitCounts = hits |> Sca.hitCountSummary |> List.ofSeq
 
                 trace "Building display..."
@@ -73,6 +73,6 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                             hitCounts |> Console.hitSummaryTable
                     }
 
-                Commands.renderTables renderables
+                CliCommands.renderTables renderables
 
                 ReturnCodes.validationOk

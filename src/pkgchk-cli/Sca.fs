@@ -233,7 +233,7 @@ module ScaCommandArgs =
                yield (scanOutdated projPath, ScaCommandParsing.parsePackageTree) |]
 
 module Sca =
-
+    
     let hitsByLevels levels (hits: ScaHit list) =
         let levels = levels |> HashSet.ofSeq StringComparer.InvariantCultureIgnoreCase
 

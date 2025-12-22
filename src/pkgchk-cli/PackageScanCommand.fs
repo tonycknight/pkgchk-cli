@@ -85,19 +85,19 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
               checkTransitives = settings.IncludeTransitives }
 
     override _.Execute(context, settings) =
-        let trace = Commands.trace settings.TraceLogging
+        let trace = CliCommands.trace settings.TraceLogging
 
         let settings = cleanSettings settings
 
         let config = config settings
 
         if config.noBanner |> not then
-            nuget |> App.banner |> Commands.console
+            nuget |> App.banner |> CliCommands.console
 
         settings.Validate()
 
-        match Commands.restore config settings.ProjectPath trace with
-        | Choice2Of2 error -> error |> Commands.returnError
+        match CliScanning.restore config settings.ProjectPath trace with
+        | Choice2Of2 error -> error |> CliCommands.returnError
         | _ ->
             let ctx =
                 { ScaScanContext.trace = trace
@@ -108,15 +108,15 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                   includeDependencies = false
                   includeOutdated = false }
 
-            let results = Commands.scan ctx
+            let results = CliScanning.scan ctx
 
-            let errors = Commands.getErrors results
+            let errors = CliCommands.getErrors results
 
             if Seq.isEmpty errors |> not then
-                errors |> String.joinLines |> Commands.returnError
+                errors |> String.joinLines |> CliCommands.returnError
             else
                 trace "Analysing results..."
-                let hits = Commands.getHits results |> Config.filterPackages config
+                let hits = CliScanning.getHits results |> Config.filterPackages config
 
                 let errorHits = hits |> Sca.hitsByLevels config.severities
                 let hitCounts = errorHits |> Sca.hitCountSummary |> List.ofSeq
@@ -140,7 +140,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                             Console.noscanHeadlineTable ()
                     }
 
-                renderables |> Commands.renderTables
+                renderables |> CliCommands.renderTables
 
                 let reportImg =
                     match isSuccessScan errorHits with
@@ -158,7 +158,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
                     $"{Environment.NewLine}Report file [link={reportFile}]{reportFile}[/] built."
                     |> Console.italic
-                    |> Commands.console
+                    |> CliCommands.console
 
                 if
                     String.isNotEmpty settings.GithubToken
@@ -176,7 +176,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                     if String.isNotEmpty settings.GithubPrId then
                         trace $"Posting {comment.title} PR comment to Github repo {repo}..."
                         let _ = (comment |> Github.setPrComment trace client repo prId).Result
-                        $"{comment.title} report sent to Github." |> Console.italic |> Commands.console
+                        $"{comment.title} report sent to Github." |> Console.italic |> CliCommands.console
 
                     if String.isNotEmpty settings.GithubCommit then
                         trace $"Posting {comment.title} build check to Github repo {repo}..."
