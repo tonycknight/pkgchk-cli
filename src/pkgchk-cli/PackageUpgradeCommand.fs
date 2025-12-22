@@ -68,7 +68,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
         | Choice2Of2 error -> error |> CliCommands.returnError
         | _ ->
             let ctx =
-                { ScaScanContext.trace = trace
+                { ScaCommandContext.trace = trace
                   projectPath = settings.ProjectPath
                   includeVulnerabilities = false
                   includeTransitives = false

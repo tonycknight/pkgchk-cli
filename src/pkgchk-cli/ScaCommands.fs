@@ -6,7 +6,7 @@ open FSharp.Data
 type ScaVulnerabilityData = JsonProvider<"ScaVulnerabilitySample.json">
 type ScaPackageTreeData = JsonProvider<"PackageDependencyTreeSample.json">
 
-type ScaScanContext =
+type ScaCommandContext =
     { trace: (string -> unit)
       projectPath: string
       includeVulnerabilities: bool
@@ -184,7 +184,7 @@ module ScaCommandArgs =
     let restoreArgs projectPath =
         projectPath |> Io.toFullPath |> sprintf "restore %s -nowarn:NU1510"
 
-    let scanArgs (context: ScaScanContext) =
+    let scanArgs (context: ScaCommandContext) =
         let projPath = context.projectPath |> Io.toFullPath
 
         [| if context.includeVulnerabilities then
