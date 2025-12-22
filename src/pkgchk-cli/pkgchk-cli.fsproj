@@ -30,6 +30,7 @@
     <Content Include="PackageDependencyTreeSample.json" />
     <Compile Include="Utils.fs" />
     <Compile Include="Io.fs" />
+    <Compile Include="ScaModels.fs" />
     <Compile Include="Sca.fs" />
     <Compile Include="Configuration.fs" />
     <Compile Include="Rendering.fs" />
