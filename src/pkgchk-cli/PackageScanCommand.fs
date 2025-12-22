@@ -56,10 +56,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
             else
                 genComment trace (settings, [], errorHits, hitCounts, imageUri) (attempt + 1)
 
-    let isSuccessScan (hits: ScaHit list) =
-        match hits with
-        | [] -> true
-        | _ -> false
+    let isSuccessScan (hits: ScaHit list) = hits |> List.isEmpty
 
     let returnCode (hits: ScaHit list) =
         match isSuccessScan hits with
