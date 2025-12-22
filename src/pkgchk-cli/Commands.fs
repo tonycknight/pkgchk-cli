@@ -65,7 +65,7 @@ module Commands =
             |> runRestoreProcParse (runProc logging)
 
     let scan (context: ScaScanContext) =
-        Sca.scanArgs context
+        ScaCommandArgs.scanArgs context
         |> Array.map (fun (args, parser) -> (Io.createProcess args, parser))
         |> Array.map (fun (proc, parser) ->
             match proc |> (runProc context.trace) with

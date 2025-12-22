@@ -220,19 +220,19 @@ module ScaCommandArgs =
     let restoreArgs projectPath =
         projectPath |> Io.toFullPath |> sprintf "restore %s -nowarn:NU1510"
 
-module Sca =
-
     let scanArgs (context: ScaScanContext) =
         let projPath = context.projectPath |> Io.toFullPath
 
         [| if context.includeVulnerabilities then
-               yield (projPath |> ScaCommandArgs.scanVulnerabilities context.includeTransitives, ScaCommandParsing.parseVulnerabilities)
+               yield (projPath |> scanVulnerabilities context.includeTransitives, ScaCommandParsing.parseVulnerabilities)
            if context.includeDeprecations then
-               yield (projPath |> ScaCommandArgs.scanDeprecations context.includeTransitives, ScaCommandParsing.parseVulnerabilities)
+               yield (projPath |> scanDeprecations context.includeTransitives, ScaCommandParsing.parseVulnerabilities)
            if context.includeDependencies then
-               yield (projPath |> ScaCommandArgs.scanDependencies context.includeTransitives, ScaCommandParsing.parsePackageTree)
+               yield (projPath |> scanDependencies context.includeTransitives, ScaCommandParsing.parsePackageTree)
            if context.includeOutdated then
-               yield (ScaCommandArgs.scanOutdated projPath, ScaCommandParsing.parsePackageTree) |]
+               yield (scanOutdated projPath, ScaCommandParsing.parsePackageTree) |]
+
+module Sca =
 
     let hitsByLevels levels (hits: ScaHit list) =
         let levels = levels |> HashSet.ofSeq StringComparer.InvariantCultureIgnoreCase
