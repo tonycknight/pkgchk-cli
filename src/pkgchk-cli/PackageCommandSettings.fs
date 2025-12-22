@@ -88,7 +88,7 @@ type PackageGithubCommandSettings() =
             if String.isEmpty this.GithubRepo then
                 failwith "Missing Github repository. Use the form <owner>/<name>."
 
-            let repo = Github.repo this.GithubRepo
+            let repo = String.split '/' this.GithubRepo
 
             if repo |> fst |> String.isEmpty then
                 failwith "The repository owner is missing. Use the form <owner>/<name>."

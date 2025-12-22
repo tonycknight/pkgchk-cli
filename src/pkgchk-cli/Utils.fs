@@ -77,6 +77,11 @@ module String =
         | (true, x) -> x
         | _ -> 0
 
+    let split (delim: char) (value: string) =
+        match value.Split(delim, StringSplitOptions.None) with
+        | [| x; y |] -> (x, y)
+        | _ -> ("", value)
+
 module Option =
     let nullDefault<'a> (defaultValue: 'a) (value: 'a) =
         if obj.ReferenceEquals(value, null) then

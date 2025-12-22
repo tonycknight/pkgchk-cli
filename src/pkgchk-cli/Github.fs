@@ -17,11 +17,6 @@ module Github =
     [<Literal>]
     let maxCommentSize = 65536
 
-    let repo (value: string) =
-        match value.Split('/', StringSplitOptions.None) with
-        | [| owner; repo |] -> (owner, repo)
-        | _ -> ("", value)
-
     [<ExcludeFromCodeCoverage>]
     let client token =
         let header = new ProductHeaderValue(App.packageId)

@@ -128,7 +128,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                 then
                     trace "Building Github reports..."
                     let prId = String.toInt settings.GithubPrId
-                    let repo = Github.repo settings.GithubRepo
+                    let repo = String.split '/' settings.GithubRepo
                     let client = Github.client settings.GithubToken
                     let commit = settings.GithubCommit
 

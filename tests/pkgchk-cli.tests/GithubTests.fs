@@ -135,14 +135,4 @@ module GithubTests =
         commentClient.Received(1).Update(fst repo, snd repo, comment.Id, Arg.Any<string>())
         |> ignore
 
-    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
-    let ``repo constructs owner/repo`` (name: string[]) =
-        let input = name |> pkgchk.String.join "/"
-
-        let expected =
-            if name.Length = 2 then
-                (name.[0], name.[1])
-            else
-                ("", input)
-
-        input |> pkgchk.Github.repo = expected
+    
