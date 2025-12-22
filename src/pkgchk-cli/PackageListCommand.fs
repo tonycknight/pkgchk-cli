@@ -35,8 +35,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
         let trace = CliCommands.trace settings.TraceLogging
         let config = config settings
 
-        if config.noBanner |> not then
-            nuget |> App.banner |> CliCommands.console
+        not config.noBanner |> CliCommands.renderBanner nuget
 
         match Sca.restore config settings.ProjectPath trace with
         | Choice2Of2 error -> error |> CliCommands.returnError
