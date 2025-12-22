@@ -32,9 +32,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
             GithubComment.create settings.GithubSummaryTitle "_The report is too big for Github - Please check logs_"
 
     let isSuccessScan (settings: ScanConfiguration, hits: ScaHit list) =
-        match hits with
-        | [] -> true
-        | _ -> not settings.breakOnUpgrades
+        hits |> List.isEmpty || (not settings.breakOnUpgrades)
 
     let returnCode (settings: ScanConfiguration, hits: ScaHit list) =
         match isSuccessScan (settings, hits) with

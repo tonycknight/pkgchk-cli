@@ -14,6 +14,17 @@ type ScanConfiguration =
       breakOnVulnerabilities: bool
       breakOnDeprecations: bool
       checkTransitives: bool }
+    static member empty = 
+        {   ScanConfiguration.noBanner = false
+            noRestore = false
+            includedPackages = [||]
+            excludedPackages = [||]
+            breakOnUpgrades = false
+            severities = [||]
+            breakOnVulnerabilities = false
+            breakOnDeprecations = false
+            checkTransitives = false
+        }
 
 module Config =
     let private deserialiser = (new DeserializerBuilder()).Build()
