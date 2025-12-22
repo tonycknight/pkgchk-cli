@@ -34,11 +34,6 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
     let isSuccessScan (settings: ScanConfiguration, hits: ScaHit list) =
         hits |> List.isEmpty || (not settings.breakOnUpgrades)
 
-    let returnCode (settings: ScanConfiguration, hits: ScaHit list) =
-        match isSuccessScan (settings, hits) with
-        | true -> ReturnCodes.validationOk
-        | false -> ReturnCodes.validationFailed
-
     let config (settings: PackageUpgradeCommandSettings) =
         match settings.ConfigFile with
         | x when x <> "" -> x |> Io.toFullPath |> Io.normalise |> Config.load
@@ -144,4 +139,4 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                         (comment |> Github.createCheck trace client repo commit isSuccess).Result
                         |> ignore
 
-                returnCode (config, hits)
+                (config, hits) |> isSuccessScan |> CliCommands.returnCode
