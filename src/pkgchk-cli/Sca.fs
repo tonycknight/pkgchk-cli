@@ -66,6 +66,15 @@ module ScaArgs =
 
     let scanOutdated = scanArgs false false true false
 
+type ScaScanContext =
+    { trace: (string -> unit)
+      projectPath: string
+      includeVulnerabilities: bool
+      includeTransitives: bool
+      includeDeprecations: bool
+      includeDependencies: bool
+      includeOutdated: bool }
+
 module Sca =
 
     let restoreArgs projectPath =
@@ -212,24 +221,16 @@ module Sca =
         with ex ->
             Choice2Of2("An error occurred parsing results." + Environment.NewLine)
 
-    let scanArgs
-        (
-            projectPath,
-            includeVulnerabilities,
-            includeTransitives,
-            includeDeprecations,
-            includeDependencies,
-            includeOutdated
-        ) =
-        let projPath = projectPath |> Io.toFullPath
+    let scanArgs (context: ScaScanContext) =
+        let projPath = context.projectPath |> Io.toFullPath
 
-        [| if includeVulnerabilities then
-               yield (projPath |> ScaArgs.scanVulnerabilities includeTransitives, parseVulnerabilities)
-           if includeDeprecations then
-               yield (projPath |> ScaArgs.scanDeprecations includeTransitives, parseVulnerabilities)
-           if includeDependencies then
-               yield (projPath |> ScaArgs.scanDependencies includeTransitives, parsePackageTree)
-           if includeOutdated then
+        [| if context.includeVulnerabilities then
+               yield (projPath |> ScaArgs.scanVulnerabilities context.includeTransitives, parseVulnerabilities)
+           if context.includeDeprecations then
+               yield (projPath |> ScaArgs.scanDeprecations context.includeTransitives, parseVulnerabilities)
+           if context.includeDependencies then
+               yield (projPath |> ScaArgs.scanDependencies context.includeTransitives, parsePackageTree)
+           if context.includeOutdated then
                yield (ScaArgs.scanOutdated projPath, parsePackageTree) |]
 
 

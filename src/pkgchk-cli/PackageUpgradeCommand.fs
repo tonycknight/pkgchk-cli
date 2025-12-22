@@ -67,8 +67,16 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
         match Commands.restore config settings.ProjectPath trace with
         | Choice2Of2 error -> error |> Commands.returnError
         | _ ->
-            let results =
-                (settings.ProjectPath, false, false, false, false, true) |> Commands.scan trace
+            let ctx =
+                { ScaScanContext.trace = trace
+                  projectPath = settings.ProjectPath
+                  includeVulnerabilities = false
+                  includeTransitives = false
+                  includeDeprecations = false
+                  includeDependencies = false
+                  includeOutdated = true }
+
+            let results = Commands.scan ctx
 
             let errors = Commands.getErrors results
 

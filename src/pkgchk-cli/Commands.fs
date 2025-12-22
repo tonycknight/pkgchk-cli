@@ -64,10 +64,10 @@ module Commands =
             |> Io.createProcess
             |> runRestoreProcParse (runProc logging)
 
-    let scan trace =
-        Sca.scanArgs
-        >> Array.map (fun (args, parser) -> (Io.createProcess args, parser))
-        >> Array.map (fun (proc, parser) ->
-            match proc |> (runProc trace) with
+    let scan (context: ScaScanContext) =
+        Sca.scanArgs context
+        |> Array.map (fun (args, parser) -> (Io.createProcess args, parser))
+        |> Array.map (fun (proc, parser) ->
+            match proc |> (runProc context.trace) with
             | Choice1Of2 json -> parser json
             | Choice2Of2 x -> Choice2Of2 x)

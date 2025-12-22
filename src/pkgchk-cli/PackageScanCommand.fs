@@ -99,14 +99,16 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
         match Commands.restore config settings.ProjectPath trace with
         | Choice2Of2 error -> error |> Commands.returnError
         | _ ->
-            let results =
-                (settings.ProjectPath,
-                 config.breakOnVulnerabilities,
-                 config.checkTransitives,
-                 config.breakOnDeprecations,
-                 false,
-                 false)
-                |> Commands.scan trace
+            let ctx =
+                { ScaScanContext.trace = trace
+                  projectPath = settings.ProjectPath
+                  includeVulnerabilities = config.breakOnVulnerabilities
+                  includeTransitives = config.checkTransitives
+                  includeDeprecations = config.breakOnDeprecations
+                  includeDependencies = false
+                  includeOutdated = false }
+
+            let results = Commands.scan ctx
 
             let errors = Commands.getErrors results
 
