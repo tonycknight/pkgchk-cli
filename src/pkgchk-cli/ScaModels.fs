@@ -38,9 +38,7 @@ type ScaHitSummary =
       severity: string
       count: int }
 
-
 module ScaModels =
-    
     
     let hitsByLevels levels (hits: ScaHit list) =
         let levels = levels |> HashSet.ofSeq StringComparer.InvariantCultureIgnoreCase
@@ -79,3 +77,24 @@ module ScaModels =
                 { ScaHitSummary.kind = kind
                   severity = s
                   count = xs |> Seq.length }))
+
+    let private liftHits procResults =
+        procResults
+        |> Seq.collect (function
+            | Choice1Of2 xs -> xs
+            | _ -> [])
+        |> List.ofSeq
+
+    let private sortHits (hits: seq<ScaHit>) =
+        hits
+        |> Seq.sortBy (fun h ->
+            ((match h.kind with
+              | ScaHitKind.Vulnerability -> 0
+              | ScaHitKind.Dependency -> 1
+              | ScaHitKind.VulnerabilityTransitive -> 2
+              | ScaHitKind.Deprecated -> 3
+              | ScaHitKind.DependencyTransitive -> 4),
+             h.packageId))
+
+    let getHits x = x |> liftHits |> sortHits |> List.ofSeq
+

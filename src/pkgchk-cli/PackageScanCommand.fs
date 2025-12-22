@@ -116,7 +116,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 errors |> String.joinLines |> CliCommands.returnError
             else
                 trace "Analysing results..."
-                let hits = CliScanning.getHits results |> Config.filterPackages config
+                let hits = ScaModels.getHits results |> Config.filterPackages config
 
                 let errorHits = hits |> ScaModels.hitsByLevels config.severities
                 let hitCounts = errorHits |> ScaModels.hitCountSummary |> List.ofSeq

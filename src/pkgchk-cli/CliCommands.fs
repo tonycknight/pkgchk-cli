@@ -31,26 +31,6 @@ module CliCommands =
 // TODO: should be an part of the Sca module
 module CliScanning =
 
-    let private liftHits procResults =
-        procResults
-        |> Seq.collect (function
-            | Choice1Of2 xs -> xs
-            | _ -> [])
-        |> List.ofSeq
-
-    let private sortHits (hits: seq<ScaHit>) =
-        hits
-        |> Seq.sortBy (fun h ->
-            ((match h.kind with
-              | ScaHitKind.Vulnerability -> 0
-              | ScaHitKind.Dependency -> 1
-              | ScaHitKind.VulnerabilityTransitive -> 2
-              | ScaHitKind.Deprecated -> 3
-              | ScaHitKind.DependencyTransitive -> 4),
-             h.packageId))
-
-    let getHits x = x |> liftHits |> sortHits |> List.ofSeq
-
     let restore (config: ScanConfiguration) projectPath logging =
         if config.noRestore then
             Choice1Of2 false

@@ -58,7 +58,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                 errors |> String.joinLines |> CliCommands.returnError
             else
                 trace "Analysing results..."
-                let hits = CliScanning.getHits results |> Config.filterPackages config
+                let hits = ScaModels.getHits results |> Config.filterPackages config
                 let hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
 
                 trace "Building display..."
