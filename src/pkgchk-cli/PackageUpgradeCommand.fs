@@ -105,12 +105,11 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
                 if settings.OutputDirectory <> "" then
                     trace "Building reports..."
-                    let reportFile = "pkgchk-upgrades.md" |> Io.composeFilePath settings.OutputDirectory
-                                        
-                    (hits, reportImg) 
-                        |> Markdown.generateUpgrades 
-                        |> Io.writeFile reportFile
-                        |> CliCommands.renderReportLine
+
+                    (hits, reportImg)
+                    |> Markdown.generateUpgrades
+                    |> Io.writeFile ("pkgchk-upgrades.md" |> Io.composeFilePath settings.OutputDirectory)
+                    |> CliCommands.renderReportLine
 
                 if
                     String.isNotEmpty settings.GithubToken

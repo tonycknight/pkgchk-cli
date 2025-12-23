@@ -57,9 +57,9 @@ module Markdown =
         | [] -> seq { "# :heavy_check_mark: No upgrades found!" }
         | _ -> seq { "# :warning: Upgrades found!" }
 
-    let titleList() =
+    let titleList () =
         seq { "# :heavy_check_mark: Package dependencies" }
-        
+
     let formatHitCounts (severities: seq<string>, counts: seq<ScaHitSummary>) =
         let tableHdr =
             seq {
@@ -173,7 +173,7 @@ module Markdown =
 
     let generateList hits =
         seq {
-            yield! titleList()
+            yield! titleList ()
             yield! formatHits hits
             yield! footer
         }
