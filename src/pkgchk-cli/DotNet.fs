@@ -188,8 +188,8 @@ module DotNetArgs =
            if context.includeOutdated then
                yield (scanOutdated projPath, DotNetParsing.parsePackageTree) |]
 
-
 module DotNet =
+
     let private runProc logging proc =
         try
             proc |> Process.run logging
