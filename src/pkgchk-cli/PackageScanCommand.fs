@@ -76,6 +76,15 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
               breakOnDeprecations = settings.IncludeDeprecations
               checkTransitives = settings.IncludeTransitives }
 
+    let commandContext trace (settings: PackageScanCommandSettings) config =
+        {   ScaCommandContext.trace = trace
+            projectPath = settings.ProjectPath
+            includeVulnerabilities = config.breakOnVulnerabilities
+            includeTransitives = config.checkTransitives
+            includeDeprecations = config.breakOnDeprecations
+            includeDependencies = false
+            includeOutdated = false }
+
     override _.Execute(context, settings) =
         let trace = CliCommands.trace settings.TraceLogging
 
@@ -91,15 +100,8 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
         match DotNet.restore config settings.ProjectPath trace with
         | Choice2Of2 error -> error |> CliCommands.returnError
         | _ ->
-            let ctx =
-                { ScaCommandContext.trace = trace
-                  projectPath = settings.ProjectPath
-                  includeVulnerabilities = config.breakOnVulnerabilities
-                  includeTransitives = config.checkTransitives
-                  includeDeprecations = config.breakOnDeprecations
-                  includeDependencies = false
-                  includeOutdated = false }
-
+            let ctx = commandContext trace settings config
+                
             let results = DotNet.scan ctx
 
             let errors = CliCommands.getErrors results

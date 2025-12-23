@@ -48,6 +48,15 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
               breakOnDeprecations = false
               checkTransitives = false }
 
+    let commandContext trace (settings: PackageUpgradeCommandSettings) =
+        {   ScaCommandContext.trace = trace
+            projectPath = settings.ProjectPath
+            includeVulnerabilities = false
+            includeTransitives = false
+            includeDeprecations = false
+            includeDependencies = false
+            includeOutdated = true }
+
     override _.Execute(context, settings) =
         let trace = CliCommands.trace settings.TraceLogging
         let config = config settings
@@ -60,15 +69,8 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
         match DotNet.restore config settings.ProjectPath trace with
         | Choice2Of2 error -> error |> CliCommands.returnError
         | _ ->
-            let ctx =
-                { ScaCommandContext.trace = trace
-                  projectPath = settings.ProjectPath
-                  includeVulnerabilities = false
-                  includeTransitives = false
-                  includeDeprecations = false
-                  includeDependencies = false
-                  includeOutdated = true }
-
+            let ctx = commandContext trace settings
+                
             let results = DotNet.scan ctx
 
             let errors = CliCommands.getErrors results
