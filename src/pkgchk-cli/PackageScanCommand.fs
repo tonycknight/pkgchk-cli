@@ -85,6 +85,23 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
             includeDependencies = false
             includeOutdated = false }
 
+    let renderables config hits hitCounts errorHits =
+        seq {
+            hits |> Console.hitsTable
+            let mutable headlineSet = false
+
+            if config.breakOnVulnerabilities || config.breakOnDeprecations then
+                errorHits |> Console.vulnerabilityHeadlineTable
+                headlineSet <- true
+
+            if hitCounts |> List.isEmpty |> not then
+                config.severities |> Console.severitySettingsTable
+                hitCounts |> Console.hitSummaryTable
+
+            else if (not headlineSet) then
+                Console.noscanHeadlineTable ()
+        }
+
     override _.Execute(context, settings) =
         let trace = CliCommands.trace settings.TraceLogging
 
@@ -117,24 +134,8 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
                 trace "Building display..."
 
-                let renderables =
-                    seq {
-                        hits |> Console.hitsTable
-                        let mutable headlineSet = false
-
-                        if config.breakOnVulnerabilities || config.breakOnDeprecations then
-                            errorHits |> Console.vulnerabilityHeadlineTable
-                            headlineSet <- true
-
-                        if hitCounts |> List.isEmpty |> not then
-                            config.severities |> Console.severitySettingsTable
-                            hitCounts |> Console.hitSummaryTable
-
-                        else if (not headlineSet) then
-                            Console.noscanHeadlineTable ()
-                    }
-
-                renderables |> CliCommands.renderTables
+                renderables config hits hitCounts errorHits 
+                    |> CliCommands.renderTables
 
                 let reportImg =
                     match isSuccessScan errorHits with
