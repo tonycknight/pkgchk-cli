@@ -42,7 +42,7 @@ module Markdown =
             ""
             "---"
             ""
-            "_With :heart: from [pkgchk-cli](https://github.com/tonycknight/pkgchk-cli) Thank you for using my software_"
+            (System.DateTime.UtcNow.ToString("F") |> sprintf "_Build %s UTC with :heart: from [pkgchk-cli](https://github.com/tonycknight/pkgchk-cli) Thank you for using my software!_")
             ""
             "---"
         }
