@@ -36,7 +36,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
     let config (settings: PackageUpgradeCommandSettings) =
         match settings.ConfigFile with
-        | x when x <> "" -> x |> Io.toFullPath |> Io.normalise |> Config.load
+        | x when x <> "" -> x |> Io.fullPath |> Io.normalise |> Config.load
         | _ ->
             { pkgchk.ScanConfiguration.includedPackages = settings.IncludedPackages
               excludedPackages = settings.ExcludedPackages

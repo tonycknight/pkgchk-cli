@@ -7,9 +7,9 @@ open System.IO
 [<ExcludeFromCodeCoverage>]
 module Io =
 
-    let combine name path = System.IO.Path.Combine(path, name)
+    let private combine name path = System.IO.Path.Combine(path, name)
 
-    let toFullPath (path: string) =
+    let fullPath (path: string) =
         if not <| Path.IsPathRooted(path) then
             let wd = Environment.CurrentDirectory
 
@@ -29,5 +29,5 @@ module Io =
         path
 
     let composeFilePath directory fileName =
-        let file = toFullPath >> combine fileName >> normalise
+        let file = fullPath >> combine fileName >> normalise
         file directory

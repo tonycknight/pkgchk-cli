@@ -182,10 +182,10 @@ module ScaCommandArgs =
     let scanOutdated = commandArgs false false true false
 
     let restoreArgs projectPath =
-        projectPath |> Io.toFullPath |> sprintf "restore %s -nowarn:NU1510"
+        projectPath |> Io.fullPath |> sprintf "restore %s -nowarn:NU1510"
 
     let scanArgs (context: ScaCommandContext) =
-        let projPath = context.projectPath |> Io.toFullPath
+        let projPath = context.projectPath |> Io.fullPath
 
         [| if context.includeVulnerabilities then
                yield (projPath |> scanVulnerabilities context.includeTransitives, ScaCommandParsing.parseVulnerabilities)
