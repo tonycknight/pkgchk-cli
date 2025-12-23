@@ -31,6 +31,15 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
               breakOnDeprecations = false
               checkTransitives = settings.IncludeTransitives }
 
+    let commandContext trace (settings: PackageListCommandSettings) config =
+        {   ScaCommandContext.trace = trace
+            projectPath = settings.ProjectPath
+            includeVulnerabilities = false
+            includeTransitives = config.checkTransitives
+            includeDeprecations = false
+            includeDependencies = true
+            includeOutdated = false }
+
     override _.Execute(context, settings) =
         let trace = CliCommands.trace settings.TraceLogging
         let config = config settings
@@ -41,15 +50,8 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
         match DotNet.restore config settings.ProjectPath trace with
         | Choice2Of2 error -> error |> CliCommands.returnError
         | _ ->
-            let ctx =
-                { ScaCommandContext.trace = trace
-                  projectPath = settings.ProjectPath
-                  includeVulnerabilities = false
-                  includeTransitives = config.checkTransitives
-                  includeDeprecations = false
-                  includeDependencies = true
-                  includeOutdated = false }
-
+            let ctx = commandContext trace settings config
+                
             let results = DotNet.scan ctx
 
             let errors = CliCommands.getErrors results
