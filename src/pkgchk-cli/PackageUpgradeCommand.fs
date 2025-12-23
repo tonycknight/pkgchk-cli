@@ -57,6 +57,16 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
             includeDependencies = false
             includeOutdated = true }
 
+    let renderables hits hitCounts =
+        seq {
+            hits |> Console.hitsTable
+
+            if hitCounts |> List.isEmpty |> not then
+                hitCounts |> Console.hitSummaryTable
+            else
+                pkgchk.Console.green "No upgrades found!" |> CliCommands.console
+        }
+
     override _.Execute(context, settings) =
         let trace = CliCommands.trace settings.TraceLogging
         let config = config settings
@@ -86,17 +96,8 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
                 trace "Building display..."
 
-                let renderables =
-                    seq {
-                        hits |> Console.hitsTable
-
-                        if hitCounts |> List.isEmpty |> not then
-                            hitCounts |> Console.hitSummaryTable
-                        else
-                            pkgchk.Console.green "No upgrades found!" |> CliCommands.console
-                    }
-
-                CliCommands.renderTables renderables
+                renderables hits hitCounts
+                    |> CliCommands.renderTables 
 
                 let reportImg =
                     match isSuccessScan (config, hits) with
