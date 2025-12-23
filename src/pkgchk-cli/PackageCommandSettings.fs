@@ -41,6 +41,11 @@ type PackageCommandSettings() =
     [<DefaultValue("")>]
     member val ConfigFile = "" with get, set
 
+    [<CommandOption("-o|--output")>]
+    [<Description("Output directory for reports.")>]
+    [<DefaultValue("")>]
+    member val OutputDirectory = "" with get, set
+
 [<ExcludeFromCodeCoverage>]
 type PackageGithubCommandSettings() =
     inherit PackageCommandSettings()

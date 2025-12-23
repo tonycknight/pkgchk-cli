@@ -24,11 +24,6 @@ type PackageScanCommandSettings() =
     [<DefaultValue(false)>]
     member val IncludeDeprecations = false with get, set
 
-    [<CommandOption("-o|--output")>]
-    [<Description("Output directory for reports.")>]
-    [<DefaultValue("")>]
-    member val OutputDirectory = "" with get, set
-
     [<CommandOption("-s|--severity")>]
     [<Description("Severity levels to scan for. Matches will return non-zero exit codes. Multiple levels can be specified.")>]
     [<DefaultValue([| "High"; "Critical"; "Critical Bugs"; "Legacy" |])>]

@@ -13,11 +13,6 @@ type PackageListCommandSettings() =
     [<DefaultValue(true)>]
     member val IncludeTransitives = true with get, set
 
-    [<CommandOption("-o|--output")>]
-    [<Description("Output directory for reports.")>]
-    [<DefaultValue("")>]
-    member val OutputDirectory = "" with get, set
-
 [<ExcludeFromCodeCoverage>]
 type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
     inherit Command<PackageListCommandSettings>()

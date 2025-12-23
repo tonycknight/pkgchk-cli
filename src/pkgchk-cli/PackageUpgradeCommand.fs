@@ -9,11 +9,6 @@ open Spectre.Console.Cli
 type PackageUpgradeCommandSettings() =
     inherit PackageGithubCommandSettings()
 
-    [<CommandOption("-o|--output")>]
-    [<Description("Output directory for reports.")>]
-    [<DefaultValue("")>]
-    member val OutputDirectory = "" with get, set
-
     [<CommandOption("--break-on-upgrades")>]
     [<Description("Break on outstanding package upgrades.")>]
     [<DefaultValue(false)>]
