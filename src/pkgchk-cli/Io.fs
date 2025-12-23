@@ -27,3 +27,7 @@ module Io =
         System.IO.Directory.CreateDirectory dir |> ignore
         System.IO.File.AppendAllLines(path, lines)
         path
+
+    let composeFilePath directory fileName =
+        let file = toFullPath >> combine fileName >> normalise
+        file directory

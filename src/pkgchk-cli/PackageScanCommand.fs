@@ -144,12 +144,13 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
                 if settings.OutputDirectory <> "" then
                     trace "Building reports..."
-                    let reportFile = Io.toFullPath >> Io.combine "pkgchk.md" >> Io.normalise
+                    
+                    let reportFile = "pkgchk.md" |> Io.composeFilePath settings.OutputDirectory
 
                     let reportFile =
                         (hits, errorHits, hitCounts, config.severities, reportImg)
                         |> Markdown.generateScan
-                        |> Io.writeFile (reportFile settings.OutputDirectory)
+                        |> Io.writeFile reportFile
 
                     $"{Environment.NewLine}Report file [link={reportFile}]{reportFile}[/] built."
                     |> Console.italic

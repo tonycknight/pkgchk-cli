@@ -106,12 +106,12 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
                 if settings.OutputDirectory <> "" then
                     trace "Building reports..."
-                    let reportFile = Io.toFullPath >> Io.combine "pkgchk-upgrades.md" >> Io.normalise
+                    let reportFile = "pkgchk-upgrades.md" |> Io.composeFilePath settings.OutputDirectory
 
                     let reportFile =
                         (hits, reportImg)
                         |> Markdown.generateUpgrades
-                        |> Io.writeFile (reportFile settings.OutputDirectory)
+                        |> Io.writeFile reportFile
 
                     $"{Environment.NewLine}Report file [link={reportFile}]{reportFile}[/] built."
                     |> Console.italic
