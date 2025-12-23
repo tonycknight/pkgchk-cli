@@ -86,9 +86,9 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                     trace "Building reports..."
                     let reportFile = "pkgchk-dependencies.md" |> Io.composeFilePath settings.OutputDirectory
 
-                    let reportFile =
-                        hits |> Markdown.generateList |> Io.writeFile reportFile
-
-                    CliCommands.renderReportLine reportFile
+                    hits 
+                        |> Markdown.generateList 
+                        |> Io.writeFile reportFile
+                        |> CliCommands.renderReportLine
 
                 ReturnCodes.validationOk

@@ -145,13 +145,11 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                     trace "Building reports..."
 
                     let reportFile = "pkgchk.md" |> Io.composeFilePath settings.OutputDirectory
-
-                    let reportFile =
-                        (hits, errorHits, hitCounts, config.severities, reportImg)
+                                        
+                    (hits, errorHits, hitCounts, config.severities, reportImg)
                         |> Markdown.generateScan
                         |> Io.writeFile reportFile
-
-                    CliCommands.renderReportLine reportFile
+                        |> CliCommands.renderReportLine 
 
                 if
                     String.isNotEmpty settings.GithubToken
