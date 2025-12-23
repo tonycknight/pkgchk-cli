@@ -1,6 +1,6 @@
 ﻿namespace pkgchk
 
-module Sca =
+module DotNet =
     
     let restore (config: ScanConfiguration) projectPath logging =
         if config.noRestore then

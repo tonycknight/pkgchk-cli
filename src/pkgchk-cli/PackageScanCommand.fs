@@ -88,7 +88,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
         settings.Validate()
 
-        match Sca.restore config settings.ProjectPath trace with
+        match DotNet.restore config settings.ProjectPath trace with
         | Choice2Of2 error -> error |> CliCommands.returnError
         | _ ->
             let ctx =
@@ -100,7 +100,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                   includeDependencies = false
                   includeOutdated = false }
 
-            let results = Sca.scan ctx
+            let results = DotNet.scan ctx
 
             let errors = CliCommands.getErrors results
 
