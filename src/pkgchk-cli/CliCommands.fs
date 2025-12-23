@@ -6,7 +6,7 @@ module CliCommands =
 
     let trace traceLogging =
         if traceLogging then Console.grey >> console else ignore
-            
+
     let returnError error =
         error |> Console.error |> console
         ReturnCodes.sysError
