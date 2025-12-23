@@ -40,6 +40,16 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
             includeDependencies = true
             includeOutdated = false }
 
+    let renderables hits hitCounts =
+        seq {
+            match hits with
+            | [] -> Console.noscanHeadlineTable ()
+            | hits -> hits |> Console.hitsTable
+
+            if hitCounts |> List.isEmpty |> not then
+                hitCounts |> Console.hitSummaryTable
+        }
+
     override _.Execute(context, settings) =
         let trace = CliCommands.trace settings.TraceLogging
         let config = config settings
@@ -65,16 +75,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
 
                 trace "Building display..."
 
-                let renderables =
-                    seq {
-                        match hits with
-                        | [] -> Console.noscanHeadlineTable ()
-                        | hits -> hits |> Console.hitsTable
-
-                        if hitCounts |> List.isEmpty |> not then
-                            hitCounts |> Console.hitSummaryTable
-                    }
-
-                CliCommands.renderTables renderables
+                renderables hits hitCounts
+                    |> CliCommands.renderTables
 
                 ReturnCodes.validationOk
