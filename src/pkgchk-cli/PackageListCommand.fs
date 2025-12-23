@@ -32,13 +32,13 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
               checkTransitives = settings.IncludeTransitives }
 
     let commandContext trace (settings: PackageListCommandSettings) config =
-        {   ScaCommandContext.trace = trace
-            projectPath = settings.ProjectPath
-            includeVulnerabilities = false
-            includeTransitives = config.checkTransitives
-            includeDeprecations = false
-            includeDependencies = true
-            includeOutdated = false }
+        { ScaCommandContext.trace = trace
+          projectPath = settings.ProjectPath
+          includeVulnerabilities = false
+          includeTransitives = config.checkTransitives
+          includeDeprecations = false
+          includeDependencies = true
+          includeOutdated = false }
 
     let renderables hits hitCounts =
         seq {
@@ -54,14 +54,14 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
         let trace = CliCommands.trace settings.TraceLogging
         let config = config settings
 
-        if not config.noBanner then 
+        if not config.noBanner then
             CliCommands.renderBanner nuget
 
         match DotNet.restore config settings.ProjectPath trace with
         | Choice2Of2 error -> error |> CliCommands.returnError
         | _ ->
             let ctx = commandContext trace settings config
-                
+
             let results = DotNet.scan ctx
 
             let errors = CliCommands.getErrors results
@@ -75,7 +75,6 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
 
                 trace "Building display..."
 
-                renderables hits hitCounts
-                    |> CliCommands.renderTables
+                renderables hits hitCounts |> CliCommands.renderTables
 
                 ReturnCodes.validationOk

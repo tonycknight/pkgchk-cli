@@ -1,7 +1,7 @@
 ﻿namespace pkgchk
 
 module DotNet =
-    
+
     let restore (config: ScanConfiguration) projectPath logging =
         if config.noRestore then
             Choice1Of2 false
@@ -25,5 +25,3 @@ module DotNet =
             match proc |> (CliCommands.runProc context.trace) with
             | Choice1Of2 json -> parser json
             | Choice2Of2 x -> Choice2Of2 x)
-
-    

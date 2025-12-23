@@ -16,7 +16,7 @@ type ScaCommandContext =
       includeOutdated: bool }
 
 module ScaCommandParsing =
-    
+
     let parseError (parseable: string) (ex: Exception) =
         match
             parseable.Split(Environment.NewLine)
@@ -188,11 +188,11 @@ module ScaCommandArgs =
         let projPath = context.projectPath |> Io.fullPath
 
         [| if context.includeVulnerabilities then
-               yield (projPath |> scanVulnerabilities context.includeTransitives, ScaCommandParsing.parseVulnerabilities)
+               yield
+                   (projPath |> scanVulnerabilities context.includeTransitives, ScaCommandParsing.parseVulnerabilities)
            if context.includeDeprecations then
                yield (projPath |> scanDeprecations context.includeTransitives, ScaCommandParsing.parseVulnerabilities)
            if context.includeDependencies then
                yield (projPath |> scanDependencies context.includeTransitives, ScaCommandParsing.parsePackageTree)
            if context.includeOutdated then
                yield (scanOutdated projPath, ScaCommandParsing.parsePackageTree) |]
-

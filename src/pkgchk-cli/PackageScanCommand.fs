@@ -77,13 +77,13 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
               checkTransitives = settings.IncludeTransitives }
 
     let commandContext trace (settings: PackageScanCommandSettings) config =
-        {   ScaCommandContext.trace = trace
-            projectPath = settings.ProjectPath
-            includeVulnerabilities = config.breakOnVulnerabilities
-            includeTransitives = config.checkTransitives
-            includeDeprecations = config.breakOnDeprecations
-            includeDependencies = false
-            includeOutdated = false }
+        { ScaCommandContext.trace = trace
+          projectPath = settings.ProjectPath
+          includeVulnerabilities = config.breakOnVulnerabilities
+          includeTransitives = config.checkTransitives
+          includeDeprecations = config.breakOnDeprecations
+          includeDependencies = false
+          includeOutdated = false }
 
     let renderables config hits hitCounts errorHits =
         seq {
@@ -109,7 +109,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
         let config = config settings
 
-        if not config.noBanner then 
+        if not config.noBanner then
             CliCommands.renderBanner nuget
 
         settings.Validate()
@@ -118,7 +118,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
         | Choice2Of2 error -> error |> CliCommands.returnError
         | _ ->
             let ctx = commandContext trace settings config
-                
+
             let results = DotNet.scan ctx
 
             let errors = CliCommands.getErrors results
@@ -134,8 +134,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
                 trace "Building display..."
 
-                renderables config hits hitCounts errorHits 
-                    |> CliCommands.renderTables
+                renderables config hits hitCounts errorHits |> CliCommands.renderTables
 
                 let reportImg =
                     match isSuccessScan errorHits with
@@ -144,7 +143,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
                 if settings.OutputDirectory <> "" then
                     trace "Building reports..."
-                    
+
                     let reportFile = "pkgchk.md" |> Io.composeFilePath settings.OutputDirectory
 
                     let reportFile =
@@ -172,7 +171,10 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                     if String.isNotEmpty settings.GithubPrId then
                         trace $"Posting {comment.title} PR comment to Github repo {repo}..."
                         let _ = (comment |> Github.setPrComment trace client repo prId).Result
-                        $"{comment.title} report sent to Github." |> Console.italic |> CliCommands.console
+
+                        $"{comment.title} report sent to Github."
+                        |> Console.italic
+                        |> CliCommands.console
 
                     if String.isNotEmpty settings.GithubCommit then
                         trace $"Posting {comment.title} build check to Github repo {repo}..."

@@ -176,7 +176,9 @@ module ScaTests =
     let ``hitCountSummary on vulnerable produces counts`` (hits: pkgchk.ScaHit list) =
         let hits = hits |> List.map (fun h -> { h with reasons = [||] })
         let sort (h: pkgchk.ScaHitSummary) = (h.kind, h.severity)
-        let results = pkgchk.ScaModels.hitCountSummary hits |> Seq.sortBy sort |> Array.ofSeq
+
+        let results =
+            pkgchk.ScaModels.hitCountSummary hits |> Seq.sortBy sort |> Array.ofSeq
 
         let groupedHits = hits |> Seq.groupBy (fun h -> (h.kind, h.severity))
 
@@ -205,7 +207,9 @@ module ScaTests =
                     reasons = [| h.reasons.[0] |] })
 
         let sort (h: pkgchk.ScaHitSummary) = (h.kind, h.severity)
-        let results = pkgchk.ScaModels.hitCountSummary hits |> Seq.sortBy sort |> Array.ofSeq
+
+        let results =
+            pkgchk.ScaModels.hitCountSummary hits |> Seq.sortBy sort |> Array.ofSeq
 
         let groupedHits = hits |> Seq.groupBy (fun h -> (h.kind, h.reasons |> Seq.head))
 

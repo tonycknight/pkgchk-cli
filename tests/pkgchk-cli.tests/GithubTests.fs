@@ -134,5 +134,3 @@ module GithubTests =
 
         commentClient.Received(1).Update(fst repo, snd repo, comment.Id, Arg.Any<string>())
         |> ignore
-
-    

@@ -39,7 +39,7 @@ type ScaHitSummary =
       count: int }
 
 module ScaModels =
-    
+
     let hitsByLevels levels (hits: ScaHit list) =
         let levels = levels |> HashSet.ofSeq StringComparer.InvariantCultureIgnoreCase
 
@@ -97,4 +97,3 @@ module ScaModels =
              h.packageId))
 
     let getHits x = x |> liftHits |> sortHits |> List.ofSeq
-

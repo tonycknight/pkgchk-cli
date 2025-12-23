@@ -49,13 +49,13 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
               checkTransitives = false }
 
     let commandContext trace (settings: PackageUpgradeCommandSettings) =
-        {   ScaCommandContext.trace = trace
-            projectPath = settings.ProjectPath
-            includeVulnerabilities = false
-            includeTransitives = false
-            includeDeprecations = false
-            includeDependencies = false
-            includeOutdated = true }
+        { ScaCommandContext.trace = trace
+          projectPath = settings.ProjectPath
+          includeVulnerabilities = false
+          includeTransitives = false
+          includeDeprecations = false
+          includeDependencies = false
+          includeOutdated = true }
 
     let renderables hits hitCounts =
         seq {
@@ -71,7 +71,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
         let trace = CliCommands.trace settings.TraceLogging
         let config = config settings
 
-        if not config.noBanner then 
+        if not config.noBanner then
             CliCommands.renderBanner nuget
 
         settings.Validate()
@@ -80,7 +80,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
         | Choice2Of2 error -> error |> CliCommands.returnError
         | _ ->
             let ctx = commandContext trace settings
-                
+
             let results = DotNet.scan ctx
 
             let errors = CliCommands.getErrors results
@@ -96,8 +96,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
                 trace "Building display..."
 
-                renderables hits hitCounts
-                    |> CliCommands.renderTables 
+                renderables hits hitCounts |> CliCommands.renderTables
 
                 let reportImg =
                     match isSuccessScan (config, hits) with
@@ -109,9 +108,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                     let reportFile = "pkgchk-upgrades.md" |> Io.composeFilePath settings.OutputDirectory
 
                     let reportFile =
-                        (hits, reportImg)
-                        |> Markdown.generateUpgrades
-                        |> Io.writeFile reportFile
+                        (hits, reportImg) |> Markdown.generateUpgrades |> Io.writeFile reportFile
 
                     $"{Environment.NewLine}Report file [link={reportFile}]{reportFile}[/] built."
                     |> Console.italic
@@ -133,7 +130,10 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                     if String.isNotEmpty settings.GithubPrId then
                         trace $"Posting {comment.title} PR comment to Github repo {repo}..."
                         let _ = (comment |> Github.setPrComment trace client repo prId).Result
-                        $"{comment.title} report sent to Github." |> Console.italic |> CliCommands.console
+
+                        $"{comment.title} report sent to Github."
+                        |> Console.italic
+                        |> CliCommands.console
 
                     if String.isNotEmpty settings.GithubCommit then
                         trace $"Posting {comment.title} build check to Github repo {repo}..."
