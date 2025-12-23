@@ -151,9 +151,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                         |> Markdown.generateScan
                         |> Io.writeFile reportFile
 
-                    $"{Environment.NewLine}Report file [link={reportFile}]{reportFile}[/] built."
-                    |> Console.italic
-                    |> CliCommands.console
+                    CliCommands.renderReportLine reportFile
 
                 if
                     String.isNotEmpty settings.GithubToken

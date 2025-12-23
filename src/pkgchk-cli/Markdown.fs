@@ -47,7 +47,7 @@ module Markdown =
             "---"
         }
 
-    let title hits =
+    let titleScan hits =
         match hits with
         | [] -> seq { "# :heavy_check_mark: No vulnerabilities found!" }
         | _ -> seq { "# :warning: Vulnerabilities found!" }
@@ -57,6 +57,9 @@ module Markdown =
         | [] -> seq { "# :heavy_check_mark: No upgrades found!" }
         | _ -> seq { "# :warning: Upgrades found!" }
 
+    let titleList() =
+        seq { "# :heavy_check_mark: Package dependencies" }
+        
     let formatHitCounts (severities: seq<string>, counts: seq<ScaHitSummary>) =
         let tableHdr =
             seq {
@@ -147,7 +150,7 @@ module Markdown =
 
     let generateScan (hits, errorHits, countSummary, severities, imageUri) =
         seq {
-            yield! title errorHits
+            yield! titleScan errorHits
 
             if String.isNotEmpty imageUri then
                 yield imgLink imageUri
@@ -164,6 +167,13 @@ module Markdown =
             if String.isNotEmpty imageUri then
                 yield imgLink imageUri
 
+            yield! formatHits hits
+            yield! footer
+        }
+
+    let generateList hits =
+        seq {
+            yield! titleList()
             yield! formatHits hits
             yield! footer
         }

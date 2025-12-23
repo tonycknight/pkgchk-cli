@@ -13,6 +13,11 @@ type PackageListCommandSettings() =
     [<DefaultValue(true)>]
     member val IncludeTransitives = true with get, set
 
+    [<CommandOption("-o|--output")>]
+    [<Description("Output directory for reports.")>]
+    [<DefaultValue("")>]
+    member val OutputDirectory = "" with get, set
+
 [<ExcludeFromCodeCoverage>]
 type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
     inherit Command<PackageListCommandSettings>()
@@ -76,5 +81,14 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                 trace "Building display..."
 
                 renderables hits hitCounts |> CliCommands.renderTables
+
+                if settings.OutputDirectory <> "" then
+                    trace "Building reports..."
+                    let reportFile = "pkgchk-dependencies.md" |> Io.composeFilePath settings.OutputDirectory
+
+                    let reportFile =
+                        hits |> Markdown.generateList |> Io.writeFile reportFile
+
+                    CliCommands.renderReportLine reportFile
 
                 ReturnCodes.validationOk

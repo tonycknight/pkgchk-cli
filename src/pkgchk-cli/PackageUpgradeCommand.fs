@@ -110,9 +110,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                     let reportFile =
                         (hits, reportImg) |> Markdown.generateUpgrades |> Io.writeFile reportFile
 
-                    $"{Environment.NewLine}Report file [link={reportFile}]{reportFile}[/] built."
-                    |> Console.italic
-                    |> CliCommands.console
+                    CliCommands.renderReportLine reportFile
 
                 if
                     String.isNotEmpty settings.GithubToken

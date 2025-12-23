@@ -30,6 +30,11 @@ module CliCommands =
 
     let renderBanner (nuget: Tk.Nuget.INugetClient) = nuget |> App.banner |> console
 
+    let renderReportLine reportFile =
+        $"{System.Environment.NewLine}Report file [link={reportFile}]{reportFile}[/] built."
+            |> Console.italic
+            |> console
+
     let returnCode isSuccess =
         match isSuccess with
         | true -> ReturnCodes.validationOk
