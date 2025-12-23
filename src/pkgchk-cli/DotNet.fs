@@ -150,6 +150,7 @@ module DotNetParsing =
             Choice2Of2("An error occurred parsing results." + Environment.NewLine)
 
 module DotNetArgs =
+
     let private commandArgs vulnerable deprecated outdated includeTransitive path =
         sprintf
             "%s %s %s %s"
@@ -189,6 +190,11 @@ module DotNetArgs =
 
 
 module DotNet =
+    let private runProc logging proc =
+        try
+            proc |> Process.run logging
+        finally
+            proc.Dispose()
 
     let restore (config: ScanConfiguration) projectPath logging =
         if config.noRestore then
@@ -204,12 +210,20 @@ module DotNet =
             projectPath
             |> DotNetArgs.restoreArgs
             |> Process.createProcess
-            |> runRestoreProcParse (CliCommands.runProc logging)
+            |> runRestoreProcParse (runProc logging)
 
     let scan (context: ScaCommandContext) =
         DotNetArgs.scanArgs context
         |> Array.map (fun (args, parser) -> (Process.createProcess args, parser))
         |> Array.map (fun (proc, parser) ->
-            match proc |> (CliCommands.runProc context.trace) with
+            match proc |> (runProc context.trace) with
             | Choice1Of2 json -> parser json
             | Choice2Of2 x -> Choice2Of2 x)
+
+    let scanErrors procResults =
+        procResults
+        |> Seq.map (function
+            | Choice2Of2 x -> x
+            | _ -> "")
+        |> Seq.filter String.isNotEmpty
+        |> Seq.distinct

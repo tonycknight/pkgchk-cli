@@ -78,7 +78,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
             let results = DotNet.scan ctx
 
-            let errors = CliCommands.getErrors results
+            let errors = DotNet.scanErrors results
 
             if Seq.isEmpty errors |> not then
                 errors |> String.joinLines |> CliCommands.returnError
