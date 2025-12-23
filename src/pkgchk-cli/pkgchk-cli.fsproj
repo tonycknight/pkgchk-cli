@@ -33,7 +33,6 @@
     <Compile Include="ScaModels.fs" />
     <Compile Include="Process.fs" />
     <Compile Include="Configuration.fs" />
-    <Compile Include="ScaCommands.fs" />
     <Compile Include="Rendering.fs" />
     <Compile Include="Console.fs" />
     <Compile Include="Markdown.fs" />

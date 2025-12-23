@@ -15,9 +15,10 @@
     <EmbeddedResource Include="PackageDependencyTreeSample.json" />
     <Compile Include="TestDataGenerators.fs" />
     <Compile Include="StringsTests.fs" />
-    <Compile Include="ScaCommandArgsTests.fs" />
+    <Compile Include="DotNetArgsTests.fs" />
+    <Compile Include="DotNetParsingTests.fs" />
     <Compile Include="ScaHitTests.fs" />
-    <Compile Include="ScaTests.fs" />
+    <Compile Include="ScaModelsTests.fs" />
     <Compile Include="ConsoleTests.fs" />
     <Compile Include="MarkdownTests.fs" />
     <Compile Include="GithubCommentTests.fs" />
