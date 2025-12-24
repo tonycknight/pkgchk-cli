@@ -48,7 +48,7 @@ module MarkdownTests =
     let ``nugetLinkPkgVsn builds markdown link`` (packageId: string, version: string) =
         let result = pkgchk.Markdown.nugetLinkPkgVsn packageId version
 
-        result.StartsWith($"[{packageId}]")
+        result.StartsWith($"[{packageId} {version}]")
         && result.EndsWith($"({pkgchk.Rendering.nugetLink (packageId, version)})")
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
