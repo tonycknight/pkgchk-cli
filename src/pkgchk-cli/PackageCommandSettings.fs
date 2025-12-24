@@ -85,6 +85,11 @@ type PackageGithubCommandSettings() =
     [<DefaultValue("")>]
     member val BadImageUri = "" with get, set
 
+    member this.HasGithubParamters() =
+        String.isNotEmpty this.GithubToken
+        && String.isNotEmpty this.GithubRepo
+        && (String.isNotEmpty this.GithubPrId || String.isNotEmpty this.GithubCommit)
+
     member this.Validate() =
         if String.isNotEmpty this.GithubPrId then
             if String.isEmpty this.GithubToken then

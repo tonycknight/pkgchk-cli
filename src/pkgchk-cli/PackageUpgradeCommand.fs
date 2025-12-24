@@ -106,11 +106,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                     |> Io.writeFile ("pkgchk-upgrades.md" |> Io.composeFilePath settings.OutputDirectory)
                     |> CliCommands.renderReportLine
 
-                if
-                    String.isNotEmpty settings.GithubToken
-                    && String.isNotEmpty settings.GithubRepo
-                    && (String.isNotEmpty settings.GithubPrId || String.isNotEmpty settings.GithubCommit)
-                then
+                if settings.HasGithubParamters() then
                     trace "Building Github reports..."
                     let prId = String.toInt settings.GithubPrId
                     let repo = String.split '/' settings.GithubRepo
