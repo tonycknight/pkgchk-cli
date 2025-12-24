@@ -38,7 +38,7 @@ module MarkdownTests =
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``title returns appropriate title`` (hits: pkgchk.ScaHit list) =
-        let result = title hits |> pkgchk.String.joinLines
+        let result = titleScan hits |> pkgchk.String.joinLines
 
         match hits with
         | [] -> result.Contains("No vulnerabilities found!")
@@ -48,7 +48,7 @@ module MarkdownTests =
     let ``nugetLinkPkgVsn builds markdown link`` (packageId: string, version: string) =
         let result = pkgchk.Markdown.nugetLinkPkgVsn packageId version
 
-        result.StartsWith($"[{packageId}]")
+        result.StartsWith($"[{packageId} {version}]")
         && result.EndsWith($"({pkgchk.Rendering.nugetLink (packageId, version)})")
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]

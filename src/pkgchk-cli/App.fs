@@ -34,12 +34,13 @@ module App =
     [<Literal>]
     let packageId = "Pkgchk-Cli"
 
+    [<Literal>]
+    let repo = "https://github.com/tonycknight/pkgchk-cli"
+
     let version () =
         Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyInformationalVersionAttribute>()
         |> Seq.map (fun a -> a.InformationalVersion)
         |> Seq.tryHead
-
-    let repo = "https://github.com/tonycknight/pkgchk-cli"
 
     let upgradeVersion (nuget: Tk.Nuget.INugetClient) =
         task {

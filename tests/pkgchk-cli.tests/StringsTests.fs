@@ -61,3 +61,15 @@ module StringsTests =
         | xs ->
             let idx = xs |> Array.findIndex (fun d -> d = finalSeparator)
             idx = xs.Length - 1
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``split constructs owner/repo`` (name: string[]) =
+        let input = name |> pkgchk.String.join "/"
+
+        let expected =
+            if name.Length = 2 then
+                (name.[0], name.[1])
+            else
+                ("", input)
+
+        input |> pkgchk.String.split '/' = expected

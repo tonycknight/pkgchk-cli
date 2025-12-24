@@ -14,7 +14,7 @@ module Markdown =
     let imgLink uri = $"![image]({uri})"
 
     let nugetLinkPkgVsn package version =
-        $"[{package}]({Rendering.nugetLink (package, version)})"
+        $"[{package} {version}]({Rendering.nugetLink (package, version)})"
 
     let nugetLinkPkgSuggestion package suggestion =
         let url = Rendering.nugetLink (package, "")
@@ -38,16 +38,21 @@ module Markdown =
         |> sprintf "__Vulnerabilities found matching %s__"
 
     let footer =
+        let now = System.DateTime.UtcNow.ToString("F")
+
         seq {
             ""
             "---"
             ""
-            "_With :heart: from [pkgchk-cli](https://github.com/tonycknight/pkgchk-cli) Thank you for using my software_"
+
+            $"_Built on {now} UTC with :heart: from [{App.packageId.ToLower()}]({App.repo}) Thank you for using my software._"
+            |> colourise "#818589"
+
             ""
             "---"
         }
 
-    let title hits =
+    let titleScan hits =
         match hits with
         | [] -> seq { "# :heavy_check_mark: No vulnerabilities found!" }
         | _ -> seq { "# :warning: Vulnerabilities found!" }
@@ -56,6 +61,9 @@ module Markdown =
         match hits with
         | [] -> seq { "# :heavy_check_mark: No upgrades found!" }
         | _ -> seq { "# :warning: Upgrades found!" }
+
+    let titleList () =
+        seq { "# :heavy_check_mark: Package dependencies" }
 
     let formatHitCounts (severities: seq<string>, counts: seq<ScaHitSummary>) =
         let tableHdr =
@@ -94,21 +102,19 @@ module Markdown =
             | ScaHitKind.VulnerabilityTransitive
             | ScaHitKind.Vulnerability ->
                 sprintf
-                    "| %s | %s | %s: %s %s | [Advisory](%s) | "
+                    "| %s | %s | %s: %s | %s | "
                     (Rendering.formatHitKind hit.kind)
                     (formatSeverity hit.severity)
                     (pkgFramework hit)
                     (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
-                    hit.resolvedVersion
-                    hit.advisoryUri
+                    $"Advisory: [{hit.advisoryUri}]({hit.advisoryUri})"
             | ScaHitKind.Deprecated ->
                 sprintf
-                    "| %s | %s | %s: %s %s | %s | "
+                    "| %s | %s | %s: %s | %s | "
                     (Rendering.formatHitKind hit.kind)
                     (formatReasons hit.reasons)
                     (pkgFramework hit)
                     (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
-                    hit.resolvedVersion
                     (match (hit.suggestedReplacement, hit.alternativePackageId) with
                      | "", _ -> ""
                      | x, y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> sprintf "Use %s"
@@ -116,11 +122,13 @@ module Markdown =
             | ScaHitKind.Dependency
             | ScaHitKind.DependencyTransitive ->
                 sprintf
-                    "| %s |  | %s: %s %s |  | "
+                    "| %s |  | %s: %s | %s | "
                     (Rendering.formatHitKind hit.kind)
                     (pkgFramework hit)
                     (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
-                    hit.resolvedVersion
+                    (match hit.suggestedReplacement with
+                     | "" -> ""
+                     | vsn -> nugetLinkPkgVsn hit.packageId vsn |> sprintf "Upgrade to %s")
         }
 
     let formatHitGroup (hit: (string * seq<ScaHit>)) =
@@ -145,9 +153,9 @@ module Markdown =
         |> Seq.sortBy fst
         |> Seq.collect formatHitGroup
 
-    let generate (hits, errorHits, countSummary, severities, imageUri) =
+    let generateScan (hits, errorHits, countSummary, severities, imageUri) =
         seq {
-            yield! title errorHits
+            yield! titleScan errorHits
 
             if String.isNotEmpty imageUri then
                 yield imgLink imageUri
@@ -164,6 +172,13 @@ module Markdown =
             if String.isNotEmpty imageUri then
                 yield imgLink imageUri
 
+            yield! formatHits hits
+            yield! footer
+        }
+
+    let generateList hits =
+        seq {
+            yield! titleList ()
             yield! formatHits hits
             yield! footer
         }

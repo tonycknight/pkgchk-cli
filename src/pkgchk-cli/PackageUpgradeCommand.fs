@@ -9,11 +9,6 @@ open Spectre.Console.Cli
 type PackageUpgradeCommandSettings() =
     inherit PackageGithubCommandSettings()
 
-    [<CommandOption("-o|--output")>]
-    [<Description("Output directory for reports.")>]
-    [<DefaultValue("")>]
-    member val OutputDirectory = "" with get, set
-
     [<CommandOption("--break-on-upgrades")>]
     [<Description("Break on outstanding package upgrades.")>]
     [<DefaultValue(false)>]
@@ -32,18 +27,11 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
             GithubComment.create settings.GithubSummaryTitle "_The report is too big for Github - Please check logs_"
 
     let isSuccessScan (settings: ScanConfiguration, hits: ScaHit list) =
-        match hits with
-        | [] -> true
-        | _ -> not settings.breakOnUpgrades
-
-    let returnCode (settings: ScanConfiguration, hits: ScaHit list) =
-        match isSuccessScan (settings, hits) with
-        | true -> ReturnCodes.validationOk
-        | false -> ReturnCodes.validationFailed
+        hits |> List.isEmpty || (not settings.breakOnUpgrades)
 
     let config (settings: PackageUpgradeCommandSettings) =
         match settings.ConfigFile with
-        | x when x <> "" -> x |> Io.toFullPath |> Io.normalise |> Config.load
+        | x when x <> "" -> x |> Io.fullPath |> Io.normalise |> Config.load
         | _ ->
             { pkgchk.ScanConfiguration.includedPackages = settings.IncludedPackages
               excludedPackages = settings.ExcludedPackages
@@ -55,45 +43,55 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
               breakOnDeprecations = false
               checkTransitives = false }
 
+    let commandContext trace (settings: PackageUpgradeCommandSettings) =
+        { ScaCommandContext.trace = trace
+          projectPath = settings.ProjectPath
+          includeVulnerabilities = false
+          includeTransitives = false
+          includeDeprecations = false
+          includeDependencies = false
+          includeOutdated = true }
+
+    let renderables hits hitCounts =
+        seq {
+            hits |> Console.hitsTable
+
+            if hitCounts |> List.isEmpty |> not then
+                hitCounts |> Console.hitSummaryTable
+            else
+                pkgchk.Console.green "No upgrades found!" |> CliCommands.console
+        }
+
     override _.Execute(context, settings) =
-        let trace = Commands.trace settings.TraceLogging
+        let trace = CliCommands.trace settings.TraceLogging
         let config = config settings
 
-        if config.noBanner |> not then
-            nuget |> App.banner |> Commands.console
+        if not config.noBanner then
+            CliCommands.renderBanner nuget
 
         settings.Validate()
 
-        match Commands.restore config settings.ProjectPath trace with
-        | Choice2Of2 error -> error |> Commands.returnError
+        match DotNet.restore config settings.ProjectPath trace with
+        | Choice2Of2 error -> error |> CliCommands.returnError
         | _ ->
-            let results =
-                (settings.ProjectPath, false, false, false, false, true) |> Commands.scan trace
+            let ctx = commandContext trace settings
 
-            let errors = Commands.getErrors results
+            let results = DotNet.scan ctx
+
+            let errors = DotNet.scanErrors results
 
             if Seq.isEmpty errors |> not then
-                errors |> String.joinLines |> Commands.returnError
+                errors |> String.joinLines |> CliCommands.returnError
             else
                 trace "Analysing results..."
 
-                let hits = Commands.getHits results |> Config.filterPackages config
+                let hits = ScaModels.getHits results |> Config.filterPackages config
 
-                let hitCounts = hits |> Sca.hitCountSummary |> List.ofSeq
+                let hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
 
                 trace "Building display..."
 
-                let renderables =
-                    seq {
-                        hits |> Console.hitsTable
-
-                        if hitCounts |> List.isEmpty |> not then
-                            hitCounts |> Console.hitSummaryTable
-                        else
-                            pkgchk.Console.green "No upgrades found!" |> Commands.console
-                    }
-
-                Commands.renderTables renderables
+                renderables hits hitCounts |> CliCommands.renderTables
 
                 let reportImg =
                     match isSuccessScan (config, hits) with
@@ -102,16 +100,11 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
                 if settings.OutputDirectory <> "" then
                     trace "Building reports..."
-                    let reportFile = Io.toFullPath >> Io.combine "pkgchk-upgrades.md" >> Io.normalise
 
-                    let reportFile =
-                        (hits, reportImg)
-                        |> Markdown.generateUpgrades
-                        |> Io.writeFile (reportFile settings.OutputDirectory)
-
-                    $"{Environment.NewLine}Report file [link={reportFile}]{reportFile}[/] built."
-                    |> Console.italic
-                    |> Commands.console
+                    (hits, reportImg)
+                    |> Markdown.generateUpgrades
+                    |> Io.writeFile ("pkgchk-upgrades.md" |> Io.composeFilePath settings.OutputDirectory)
+                    |> CliCommands.renderReportLine
 
                 if
                     String.isNotEmpty settings.GithubToken
@@ -120,7 +113,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                 then
                     trace "Building Github reports..."
                     let prId = String.toInt settings.GithubPrId
-                    let repo = Github.repo settings.GithubRepo
+                    let repo = String.split '/' settings.GithubRepo
                     let client = Github.client settings.GithubToken
                     let commit = settings.GithubCommit
 
@@ -129,7 +122,10 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                     if String.isNotEmpty settings.GithubPrId then
                         trace $"Posting {comment.title} PR comment to Github repo {repo}..."
                         let _ = (comment |> Github.setPrComment trace client repo prId).Result
-                        $"{comment.title} report sent to Github." |> Console.italic |> Commands.console
+
+                        $"{comment.title} report sent to Github."
+                        |> Console.italic
+                        |> CliCommands.console
 
                     if String.isNotEmpty settings.GithubCommit then
                         trace $"Posting {comment.title} build check to Github repo {repo}..."
@@ -138,4 +134,4 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                         (comment |> Github.createCheck trace client repo commit isSuccess).Result
                         |> ignore
 
-                returnCode (config, hits)
+                (config, hits) |> isSuccessScan |> CliCommands.returnCode

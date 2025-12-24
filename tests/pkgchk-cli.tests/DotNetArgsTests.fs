@@ -1,10 +1,10 @@
 ﻿namespace pkgchk.tests
 
 open FsUnit.Xunit
-open pkgchk.ScaArgs
+open pkgchk.DotNetArgs
 open Xunit
 
-module ScaArgsTests =
+module DotNetArgs =
 
     let includeTransitives =
         function

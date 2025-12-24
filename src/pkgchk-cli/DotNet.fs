@@ -6,70 +6,7 @@ open FSharp.Data
 type ScaVulnerabilityData = JsonProvider<"ScaVulnerabilitySample.json">
 type ScaPackageTreeData = JsonProvider<"PackageDependencyTreeSample.json">
 
-type ScaHitKind =
-    | Vulnerability
-    | VulnerabilityTransitive
-    | Deprecated
-    | Dependency
-    | DependencyTransitive
-
-type ScaHit =
-    { kind: ScaHitKind
-      framework: string
-      projectPath: string
-      packageId: string
-      resolvedVersion: string
-      severity: string
-      advisoryUri: string
-      reasons: string[]
-      suggestedReplacement: string
-      alternativePackageId: string }
-
-    static member empty =
-        { ScaHit.projectPath = ""
-          framework = ""
-          packageId = ""
-          resolvedVersion = ""
-          severity = ""
-          reasons = [||]
-          suggestedReplacement = ""
-          alternativePackageId = ""
-          advisoryUri = ""
-          kind = ScaHitKind.Vulnerability }
-
-type ScaHitSummary =
-    { kind: ScaHitKind
-      severity: string
-      count: int }
-
-module ScaArgs =
-
-    let private scanArgs vulnerable deprecated outdated includeTransitive path =
-        sprintf
-            "%s %s %s %s"
-            (sprintf "list %s package" path)
-            (match (vulnerable, deprecated, outdated) with
-             | (true, _, _) -> "--vulnerable"
-             | (_, true, _) -> "--deprecated"
-             | (_, _, true) -> "--outdated"
-             | (false, false, false) -> "")
-            (match includeTransitive with
-             | true -> "--include-transitive"
-             | _ -> "")
-            "--format json --output-version 1"
-
-    let scanVulnerabilities = scanArgs true false false
-
-    let scanDeprecations = scanArgs false true false
-
-    let scanDependencies = scanArgs false false false
-
-    let scanOutdated = scanArgs false false true false
-
-module Sca =
-
-    let restoreArgs projectPath =
-        projectPath |> Io.toFullPath |> sprintf "restore %s -nowarn:NU1510"
+module DotNetParsing =
 
     let parseError (parseable: string) (ex: Exception) =
         match
@@ -212,61 +149,81 @@ module Sca =
         with ex ->
             Choice2Of2("An error occurred parsing results." + Environment.NewLine)
 
-    let scanArgs
-        (
-            projectPath,
-            includeVulnerabilities,
-            includeTransitives,
-            includeDeprecations,
-            includeDependencies,
-            includeOutdated
-        ) =
-        let projPath = projectPath |> Io.toFullPath
+module DotNetArgs =
 
-        [| if includeVulnerabilities then
-               yield (projPath |> ScaArgs.scanVulnerabilities includeTransitives, parseVulnerabilities)
-           if includeDeprecations then
-               yield (projPath |> ScaArgs.scanDeprecations includeTransitives, parseVulnerabilities)
-           if includeDependencies then
-               yield (projPath |> ScaArgs.scanDependencies includeTransitives, parsePackageTree)
-           if includeOutdated then
-               yield (ScaArgs.scanOutdated projPath, parsePackageTree) |]
+    let private commandArgs vulnerable deprecated outdated includeTransitive path =
+        sprintf
+            "%s %s %s %s"
+            (sprintf "list %s package" path)
+            (match (vulnerable, deprecated, outdated) with
+             | (true, _, _) -> "--vulnerable"
+             | (_, true, _) -> "--deprecated"
+             | (_, _, true) -> "--outdated"
+             | (false, false, false) -> "")
+            (match includeTransitive with
+             | true -> "--include-transitive"
+             | _ -> "")
+            "--format json --output-version 1"
 
+    let scanVulnerabilities = commandArgs true false false
 
-    let hitsByLevels levels (hits: ScaHit list) =
-        let levels = levels |> HashSet.ofSeq StringComparer.InvariantCultureIgnoreCase
+    let scanDeprecations = commandArgs false true false
 
-        let filter =
-            (fun (h: ScaHit) ->
-                match h.kind with
-                | ScaHitKind.VulnerabilityTransitive
-                | ScaHitKind.Vulnerability -> h.severity |> HashSet.contains levels
-                | ScaHitKind.Deprecated -> h.reasons |> Seq.exists (HashSet.contains levels)
-                | ScaHitKind.Dependency
-                | ScaHitKind.DependencyTransitive -> false)
+    let scanDependencies = commandArgs false false false
 
-        let remap (hit: ScaHit) =
-            match hit.kind with
-            | ScaHitKind.Deprecated ->
-                let reasons = hit.reasons |> Array.filter (HashSet.contains levels)
-                { hit with reasons = reasons }
-            | _ -> hit
+    let scanOutdated = commandArgs false false true false
 
-        hits |> List.filter filter |> List.map remap
+    let restoreArgs projectPath =
+        projectPath |> Io.fullPath |> sprintf "restore %s -nowarn:NU1510"
 
-    let hitCountSummary (hits: seq<ScaHit>) =
-        hits
-        |> Seq.groupBy (fun h -> h.kind)
-        |> Seq.collect (fun (kind, hs) ->
-            hs
-            |> Seq.collect (fun h ->
-                seq {
-                    h.severity
-                    yield! h.reasons
-                }
-                |> Seq.filter String.isNotEmpty)
-            |> Seq.groupBy id
-            |> Seq.map (fun (s, xs) ->
-                { ScaHitSummary.kind = kind
-                  severity = s
-                  count = xs |> Seq.length }))
+    let scanArgs (context: ScaCommandContext) =
+        let projPath = context.projectPath |> Io.fullPath
+
+        [| if context.includeVulnerabilities then
+               yield (projPath |> scanVulnerabilities context.includeTransitives, DotNetParsing.parseVulnerabilities)
+           if context.includeDeprecations then
+               yield (projPath |> scanDeprecations context.includeTransitives, DotNetParsing.parseVulnerabilities)
+           if context.includeDependencies then
+               yield (projPath |> scanDependencies context.includeTransitives, DotNetParsing.parsePackageTree)
+           if context.includeOutdated then
+               yield (scanOutdated projPath, DotNetParsing.parsePackageTree) |]
+
+module DotNet =
+
+    let private runProc logging proc =
+        try
+            proc |> Process.run logging
+        finally
+            proc.Dispose()
+
+    let restore (config: ScanConfiguration) projectPath logging =
+        if config.noRestore then
+            Choice1Of2 false
+        else
+            let runRestoreProcParse run proc =
+                proc
+                |> run
+                |> (function
+                | Choice2Of2 error -> Choice2Of2 error
+                | _ -> Choice1Of2 true)
+
+            projectPath
+            |> DotNetArgs.restoreArgs
+            |> Process.createProcess
+            |> runRestoreProcParse (runProc logging)
+
+    let scan (context: ScaCommandContext) =
+        DotNetArgs.scanArgs context
+        |> Array.map (fun (args, parser) -> (Process.createProcess args, parser))
+        |> Array.map (fun (proc, parser) ->
+            match proc |> (runProc context.trace) with
+            | Choice1Of2 json -> parser json
+            | Choice2Of2 x -> Choice2Of2 x)
+
+    let scanErrors procResults =
+        procResults
+        |> Seq.map (function
+            | Choice2Of2 x -> x
+            | _ -> "")
+        |> Seq.filter String.isNotEmpty
+        |> Seq.distinct
