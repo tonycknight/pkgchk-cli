@@ -1,6 +1,5 @@
 ﻿namespace pkgchk
 
-open System
 open System.ComponentModel
 open System.Diagnostics.CodeAnalysis
 open Spectre.Console.Cli
@@ -108,23 +107,10 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                     trace "Building Github reports..."
                     let comment = genComment (settings, hits, reportImg)
 
-                    let prId = String.toInt settings.GithubPrId
-                    let repo = String.split '/' settings.GithubRepo
-                    let client = Github.client settings.GithubToken
-                    let commit = settings.GithubCommit
-
                     if String.isNotEmpty settings.GithubPrId then
-                        trace $"Posting {comment.title} PR comment to Github repo {repo}..."
-                        let _ = (comment |> Github.setPrComment trace client repo prId).Result
-
-                        $"{comment.title} report sent to Github."
-                        |> Console.italic
-                        |> CliCommands.console
+                        Github.sendPrComment settings trace comment
 
                     if String.isNotEmpty settings.GithubCommit then
-                        trace $"Posting {comment.title} build check to Github repo {repo}..."
-
-                        (comment |> Github.createCheck trace client repo commit isSuccess).Result
-                        |> ignore
+                        Github.sendCheck settings trace isSuccess comment
 
                 isSuccess |> CliCommands.returnCode

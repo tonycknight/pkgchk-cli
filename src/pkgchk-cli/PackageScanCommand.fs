@@ -1,6 +1,5 @@
 ﻿namespace pkgchk
 
-open System
 open System.ComponentModel
 open System.Diagnostics.CodeAnalysis
 open Spectre.Console.Cli
@@ -146,7 +145,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 if settings.HasGithubParamters() then
                     trace "Building Github reports..."
                     let comment = genComment trace (settings, hits, errorHits, hitCounts, reportImg) 0
-                                        
+
                     if String.isNotEmpty settings.GithubPrId then
                         Github.sendPrComment settings trace comment
 

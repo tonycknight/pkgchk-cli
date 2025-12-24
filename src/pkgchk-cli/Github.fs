@@ -114,13 +114,14 @@ module Github =
         let prId = String.toInt settings.GithubPrId
         let repo = String.split '/' settings.GithubRepo
         let client = client settings.GithubToken
-        
+
         trace $"Posting {comment.title} PR comment to Github repo {repo}..."
-        
+
         let _ = (comment |> setPrComment trace client repo prId).Result
+
         $"{comment.title} PR report sent to Github."
-            |> Console.italic
-            |> CliCommands.console
+        |> Console.italic
+        |> CliCommands.console
 
     let sendCheck (settings: PackageGithubCommandSettings) trace isSuccess (comment: GithubComment) =
         let repo = String.split '/' settings.GithubRepo
@@ -132,5 +133,5 @@ module Github =
         (comment |> createCheck trace client repo commit isSuccess).Result |> ignore
 
         $"{comment.title} check sent to Github."
-            |> Console.italic
-            |> CliCommands.console
+        |> Console.italic
+        |> CliCommands.console
