@@ -174,7 +174,7 @@ module DotNetArgs =
     let scanOutdated = commandArgs false false true false
 
     let restoreArgs projectPath =
-        projectPath |> Io.fullPath |> sprintf "restore %s -nowarn:NU1510"
+        projectPath |> Io.fullPath |> sprintf "restore %s -nowarn:NU1510 -nowarn:NU1903"
 
     let scanArgs (context: ScaCommandContext) =
         let projPath = context.projectPath |> Io.fullPath
