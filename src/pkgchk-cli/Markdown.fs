@@ -102,21 +102,19 @@ module Markdown =
             | ScaHitKind.VulnerabilityTransitive
             | ScaHitKind.Vulnerability ->
                 sprintf
-                    "| %s | %s | %s: %s %s | [Advisory](%s) | "
+                    "| %s | %s | %s: %s | %s | "
                     (Rendering.formatHitKind hit.kind)
                     (formatSeverity hit.severity)
                     (pkgFramework hit)
                     (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
-                    hit.resolvedVersion
-                    hit.advisoryUri
+                    $"Advisory: [{hit.advisoryUri}]({hit.advisoryUri})"
             | ScaHitKind.Deprecated ->
                 sprintf
-                    "| %s | %s | %s: %s %s | %s | "
+                    "| %s | %s | %s: %s | %s | "
                     (Rendering.formatHitKind hit.kind)
                     (formatReasons hit.reasons)
                     (pkgFramework hit)
                     (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
-                    hit.resolvedVersion
                     (match (hit.suggestedReplacement, hit.alternativePackageId) with
                      | "", _ -> ""
                      | x, y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> sprintf "Use %s"
