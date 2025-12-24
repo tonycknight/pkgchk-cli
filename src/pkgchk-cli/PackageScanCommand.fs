@@ -146,24 +146,11 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 if settings.HasGithubParamters() then
                     trace "Building Github reports..."
                     let comment = genComment trace (settings, hits, errorHits, hitCounts, reportImg) 0
-
-                    let prId = String.toInt settings.GithubPrId
-                    let repo = String.split '/' settings.GithubRepo
-                    let client = Github.client settings.GithubToken
-                    let commit = settings.GithubCommit
-
+                                        
                     if String.isNotEmpty settings.GithubPrId then
-                        trace $"Posting {comment.title} PR comment to Github repo {repo}..."
-                        let _ = (comment |> Github.setPrComment trace client repo prId).Result
-
-                        $"{comment.title} report sent to Github."
-                        |> Console.italic
-                        |> CliCommands.console
+                        Github.sendPrComment settings trace comment
 
                     if String.isNotEmpty settings.GithubCommit then
-                        trace $"Posting {comment.title} build check to Github repo {repo}..."
+                        Github.sendCheck settings trace isSuccess comment
 
-                        (comment |> Github.createCheck trace client repo commit isSuccess).Result
-                        |> ignore
-
-                isSuccess |> CliCommands.returnCode
+                CliCommands.returnCode isSuccess
