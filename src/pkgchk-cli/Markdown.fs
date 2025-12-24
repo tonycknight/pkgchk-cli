@@ -38,15 +38,13 @@ module Markdown =
         |> sprintf "__Vulnerabilities found matching %s__"
 
     let footer =
+        let now = System.DateTime.UtcNow.ToString("F")
+
         seq {
             ""
             "---"
             ""
-
-            (System.DateTime.UtcNow.ToString("F")
-             |> sprintf
-                 "_Built on %s UTC with :heart: from [pkgchk-cli](https://github.com/tonycknight/pkgchk-cli) Thank you for using my software!_")
-
+            $"_Built on {now} UTC with :heart: from [{App.packageId.ToLower()}]({App.repo}) Thank you for using my software!_"
             ""
             "---"
         }

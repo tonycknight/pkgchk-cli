@@ -35,8 +35,8 @@
     <Compile Include="Configuration.fs" />
     <Compile Include="Rendering.fs" />
     <Compile Include="Console.fs" />
-    <Compile Include="Markdown.fs" />
     <Compile Include="App.fs" />
+    <Compile Include="Markdown.fs" />
     <Compile Include="Github.fs" />
     <Compile Include="PackageCommandSettings.fs" />
     <Compile Include="CliCommands.fs" />
