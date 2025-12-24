@@ -108,12 +108,13 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
                 if settings.HasGithubParamters() then
                     trace "Building Github reports..."
+                    let comment = genComment (settings, hits, reportImg)
+                    let isSuccess = isSuccessScan (config, hits)
+
                     let prId = String.toInt settings.GithubPrId
                     let repo = String.split '/' settings.GithubRepo
                     let client = Github.client settings.GithubToken
                     let commit = settings.GithubCommit
-
-                    let comment = genComment (settings, hits, reportImg)
 
                     if String.isNotEmpty settings.GithubPrId then
                         trace $"Posting {comment.title} PR comment to Github repo {repo}..."
@@ -125,8 +126,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
                     if String.isNotEmpty settings.GithubCommit then
                         trace $"Posting {comment.title} build check to Github repo {repo}..."
-                        let isSuccess = isSuccessScan (config, hits)
-
+                        
                         (comment |> Github.createCheck trace client repo commit isSuccess).Result
                         |> ignore
 
