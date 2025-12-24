@@ -78,23 +78,21 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
             let results = DotNet.scan ctx
 
+            trace "Analysing results..."
+            let hits = ScaModels.getHits results |> Config.filterPackages config
+            let hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
+            let isSuccess = isSuccessScan (config, hits)
             let errors = DotNet.scanErrors results
 
             if Seq.isEmpty errors |> not then
                 errors |> String.joinLines |> CliCommands.returnError
             else
-                trace "Analysing results..."
-
-                let hits = ScaModels.getHits results |> Config.filterPackages config
-
-                let hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
-
                 trace "Building display..."
 
                 renderables hits hitCounts |> CliCommands.renderTables
 
                 let reportImg =
-                    match isSuccessScan (config, hits) with
+                    match isSuccess with
                     | true -> settings.GoodImageUri
                     | false -> settings.BadImageUri
 
@@ -109,7 +107,6 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                 if settings.HasGithubParamters() then
                     trace "Building Github reports..."
                     let comment = genComment (settings, hits, reportImg)
-                    let isSuccess = isSuccessScan (config, hits)
 
                     let prId = String.toInt settings.GithubPrId
                     let repo = String.split '/' settings.GithubRepo
@@ -126,8 +123,8 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
                     if String.isNotEmpty settings.GithubCommit then
                         trace $"Posting {comment.title} build check to Github repo {repo}..."
-                        
+
                         (comment |> Github.createCheck trace client repo commit isSuccess).Result
                         |> ignore
 
-                (config, hits) |> isSuccessScan |> CliCommands.returnCode
+                isSuccess |> CliCommands.returnCode
