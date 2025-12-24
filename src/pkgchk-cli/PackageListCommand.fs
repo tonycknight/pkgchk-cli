@@ -50,8 +50,8 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                 hitCounts |> Console.hitSummaryTable
         }
 
-    let genComment (settings: PackageListCommandSettings, hits, reportImg) =
-        let markdown = (hits, reportImg) |> Markdown.generateUpgrades |> String.joinLines
+    let genComment (settings: PackageListCommandSettings, hits) =
+        let markdown = hits |> Markdown.generateList |> String.joinLines
 
         if markdown.Length < Github.maxCommentSize then
             GithubComment.create settings.GithubSummaryTitle markdown
@@ -95,7 +95,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
 
                 if settings.HasGithubParamters() then
                     trace "Building Github reports..."
-                    let comment = genComment (settings, hits, "")
+                    let comment = genComment (settings, hits)
 
                     if String.isNotEmpty settings.GithubPrId then
                         Github.sendPrComment settings trace comment
