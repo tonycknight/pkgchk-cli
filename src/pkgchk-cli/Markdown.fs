@@ -39,12 +39,12 @@ module Markdown =
 
     let footer =
         let now = System.DateTime.UtcNow.ToString("F")
-
+        
         seq {
             ""
             "---"
             ""
-            $"_Built on {now} UTC with :heart: from [{App.packageId.ToLower()}]({App.repo}) Thank you for using my software._"
+            $"_Built on {now} UTC with :heart: from [{App.packageId.ToLower()}]({App.repo}) Thank you for using my software._" |> colourise "#818589"
             ""
             "---"
         }
