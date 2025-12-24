@@ -14,7 +14,7 @@ module Markdown =
     let imgLink uri = $"![image]({uri})"
 
     let nugetLinkPkgVsn package version =
-        $"[{package}]({Rendering.nugetLink (package, version)})"
+        $"[{package} {version}]({Rendering.nugetLink (package, version)})"
 
     let nugetLinkPkgSuggestion package suggestion =
         let url = Rendering.nugetLink (package, "")
@@ -121,11 +121,13 @@ module Markdown =
             | ScaHitKind.Dependency
             | ScaHitKind.DependencyTransitive ->
                 sprintf
-                    "| %s |  | %s: %s %s |  | "
+                    "| %s |  | %s: %s | %s | "
                     (Rendering.formatHitKind hit.kind)
                     (pkgFramework hit)
                     (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
-                    hit.resolvedVersion
+                    (match hit.suggestedReplacement with
+                     | "" -> ""
+                     | vsn -> nugetLinkPkgVsn hit.packageId vsn |> sprintf "Upgrade to %s")
         }
 
     let formatHitGroup (hit: (string * seq<ScaHit>)) =
