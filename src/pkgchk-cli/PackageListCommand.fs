@@ -6,7 +6,7 @@ open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]
 type PackageListCommandSettings() =
-    inherit PackageCommandSettings()
+    inherit PackageGithubCommandSettings()
 
     [<CommandOption("-t|--transitive")>]
     [<Description("Toggle transitive package checks. true to include them, false to exclude.")>]
@@ -50,6 +50,14 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                 hitCounts |> Console.hitSummaryTable
         }
 
+    let genComment (settings: PackageListCommandSettings, hits) =
+        let markdown = hits |> Markdown.generateList |> String.joinLines
+
+        if markdown.Length < Github.maxCommentSize then
+            GithubComment.create settings.GithubSummaryTitle markdown
+        else
+            GithubComment.create settings.GithubSummaryTitle "_The report is too big for Github - Please check logs_"
+
     override _.Execute(context, settings) =
         let trace = CliCommands.trace settings.TraceLogging
         let config = config settings
@@ -84,5 +92,15 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                     |> Markdown.generateList
                     |> Io.writeFile ("pkgchk-dependencies.md" |> Io.composeFilePath settings.OutputDirectory)
                     |> CliCommands.renderReportLine
+
+                if settings.HasGithubParamters() then
+                    trace "Building Github reports..."
+                    let comment = genComment (settings, hits)
+
+                    if String.isNotEmpty settings.GithubPrId then
+                        Github.sendPrComment settings trace comment
+
+                    if String.isNotEmpty settings.GithubCommit then
+                        Github.sendCheck settings trace true comment
 
                 ReturnCodes.validationOk

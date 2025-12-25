@@ -37,9 +37,9 @@
     <Compile Include="Console.fs" />
     <Compile Include="App.fs" />
     <Compile Include="Markdown.fs" />
-    <Compile Include="Github.fs" />
     <Compile Include="PackageCommandSettings.fs" />
     <Compile Include="CliCommands.fs" />
+    <Compile Include="Github.fs" />
     <Compile Include="DotNet.fs" />
     <Compile Include="PackageScanCommand.fs" />
     <Compile Include="PackageListCommand.fs" />

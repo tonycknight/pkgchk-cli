@@ -1,6 +1,5 @@
 ﻿namespace pkgchk
 
-open System
 open System.ComponentModel
 open System.Diagnostics.CodeAnalysis
 open Spectre.Console.Cli
@@ -116,23 +115,22 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
             let results = DotNet.scan ctx
 
+            trace "Analysing results..."
             let errors = DotNet.scanErrors results
+            let hits = ScaModels.getHits results |> Config.filterPackages config
+            let errorHits = hits |> ScaModels.hitsByLevels config.severities
+            let hitCounts = errorHits |> ScaModels.hitCountSummary |> List.ofSeq
+            let isSuccess = isSuccessScan errorHits
 
             if Seq.isEmpty errors |> not then
                 errors |> String.joinLines |> CliCommands.returnError
             else
-                trace "Analysing results..."
-                let hits = ScaModels.getHits results |> Config.filterPackages config
-
-                let errorHits = hits |> ScaModels.hitsByLevels config.severities
-                let hitCounts = errorHits |> ScaModels.hitCountSummary |> List.ofSeq
-
                 trace "Building display..."
 
                 renderables config hits hitCounts errorHits |> CliCommands.renderTables
 
                 let reportImg =
-                    match isSuccessScan errorHits with
+                    match isSuccess with
                     | true -> settings.GoodImageUri
                     | false -> settings.BadImageUri
 
@@ -144,33 +142,14 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                     |> Io.writeFile ("pkgchk.md" |> Io.composeFilePath settings.OutputDirectory)
                     |> CliCommands.renderReportLine
 
-                if
-                    String.isNotEmpty settings.GithubToken
-                    && String.isNotEmpty settings.GithubRepo
-                    && (String.isNotEmpty settings.GithubPrId || String.isNotEmpty settings.GithubCommit)
-                then
+                if settings.HasGithubParamters() then
                     trace "Building Github reports..."
-                    let prId = String.toInt settings.GithubPrId
-                    let repo = String.split '/' settings.GithubRepo
-                    let client = Github.client settings.GithubToken
-                    let commit = settings.GithubCommit
-
                     let comment = genComment trace (settings, hits, errorHits, hitCounts, reportImg) 0
 
                     if String.isNotEmpty settings.GithubPrId then
-                        trace $"Posting {comment.title} PR comment to Github repo {repo}..."
-                        let _ = (comment |> Github.setPrComment trace client repo prId).Result
-
-                        $"{comment.title} report sent to Github."
-                        |> Console.italic
-                        |> CliCommands.console
+                        Github.sendPrComment settings trace comment
 
                     if String.isNotEmpty settings.GithubCommit then
-                        trace $"Posting {comment.title} build check to Github repo {repo}..."
-                        let isSuccess = isSuccessScan errorHits
+                        Github.sendCheck settings trace isSuccess comment
 
-                        (comment |> Github.createCheck trace client repo commit isSuccess).Result
-                        |> ignore
-
-
-                errorHits |> isSuccessScan |> CliCommands.returnCode
+                CliCommands.returnCode isSuccess
