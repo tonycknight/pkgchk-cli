@@ -46,8 +46,7 @@ module Markdown =
             ""
 
             $"_Built on {now} UTC with :heart: from [{App.packageId.ToLower()}]({App.repo}) Thank you for using my software._"
-            |> colourise "#818589"
-
+            
             ""
             "---"
         }
