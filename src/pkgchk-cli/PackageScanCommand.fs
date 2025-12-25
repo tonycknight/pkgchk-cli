@@ -96,6 +96,12 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 Console.noscanHeadlineTable ()
         }
 
+    override _.Validate (context: CommandContext, settings: PackageScanCommandSettings): Spectre.Console.ValidationResult = 
+        match settings.Validate() |> Array.ofSeq with
+        | [||] ->   base.Validate(context, settings)
+        | msgs ->   let msg = msgs |> String.join System.Environment.NewLine
+                    Spectre.Console.ValidationResult.Error msg
+
     override _.Execute(context, settings, cancellationToken) =
         let trace = CliCommands.trace settings.TraceLogging
 
@@ -105,9 +111,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
         if not config.noBanner then
             CliCommands.renderBanner nuget
-
-        settings.Validate()
-
+                    
         match DotNet.restore config settings.ProjectPath trace with
         | Choice2Of2 error -> error |> CliCommands.returnError
         | _ ->
