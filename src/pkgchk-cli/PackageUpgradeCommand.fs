@@ -61,12 +61,11 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                 pkgchk.Console.green "No upgrades found!" |> CliCommands.console
         }
 
-    override _.Validate (context: CommandContext, settings: PackageUpgradeCommandSettings): Spectre.Console.ValidationResult = 
-        match settings.Validate() |> Array.ofSeq with
-        | [||] ->   base.Validate(context, settings)
-        | msgs ->   let msg = msgs |> String.join System.Environment.NewLine
-                    Spectre.Console.ValidationResult.Error msg
-    
+    override _.Validate
+        (context: CommandContext, settings: PackageUpgradeCommandSettings)
+        : Spectre.Console.ValidationResult =
+        settings.Validate()
+
     override _.Execute(context, settings, cancellationToken) =
         let trace = CliCommands.trace settings.TraceLogging
         let config = config settings

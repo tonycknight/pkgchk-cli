@@ -90,23 +90,30 @@ type PackageGithubCommandSettings() =
         && String.isNotEmpty this.GithubRepo
         && (String.isNotEmpty this.GithubPrId || String.isNotEmpty this.GithubCommit)
 
-    member this.Validate() =
-        seq {
-            if String.isNotEmpty this.GithubPrId then
-                if String.isEmpty this.GithubToken then
-                    yield "Missing Github token."
+    override this.Validate() : Spectre.Console.ValidationResult =
+        let getErrors () =
+            seq {
+                if String.isNotEmpty this.GithubPrId then
+                    if String.isEmpty this.GithubToken then
+                        yield "Missing Github token."
 
-                if String.isEmpty this.GithubRepo then
-                    yield "Missing Github repository. Use the form <owner>/<name>."
+                    if String.isEmpty this.GithubRepo then
+                        yield "Missing Github repository. Use the form <owner>/<name>."
 
-                let repo = String.split '/' this.GithubRepo
+                    let repo = String.split '/' this.GithubRepo
 
-                if repo |> fst |> String.isEmpty then
-                    yield "The repository owner is missing. Use the form <owner>/<name>."
+                    if repo |> fst |> String.isEmpty then
+                        yield "The repository owner is missing. Use the form <owner>/<name>."
 
-                if repo |> snd |> String.isEmpty then
-                    yield "The repository name is missing. Use the form <owner>/<name>."
+                    if repo |> snd |> String.isEmpty then
+                        yield "The repository name is missing. Use the form <owner>/<name>."
 
-                if String.isInt this.GithubPrId |> not then
-                    yield "The PR ID must be an integer."
-        }
+                    if String.isInt this.GithubPrId |> not then
+                        yield "The PR ID must be an integer."
+            }
+
+        match getErrors () |> Array.ofSeq with
+        | [||] -> base.Validate()
+        | msgs ->
+            let msg = msgs |> String.join System.Environment.NewLine
+            Spectre.Console.ValidationResult.Error msg
