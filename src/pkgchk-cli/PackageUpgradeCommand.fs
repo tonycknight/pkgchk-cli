@@ -61,7 +61,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                 pkgchk.Console.green "No upgrades found!" |> CliCommands.console
         }
 
-    override _.Execute(context, settings) =
+    override _.Execute(context, settings, cancellationToken) =
         let trace = CliCommands.trace settings.TraceLogging
         let config = config settings
 

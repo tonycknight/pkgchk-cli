@@ -58,7 +58,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
         else
             GithubComment.create settings.GithubSummaryTitle "_The report is too big for Github - Please check logs_"
 
-    override _.Execute(context, settings) =
+    override _.Execute(context, settings, cancellationToken) =
         let trace = CliCommands.trace settings.TraceLogging
         let config = config settings
 

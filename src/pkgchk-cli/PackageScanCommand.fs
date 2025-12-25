@@ -96,7 +96,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 Console.noscanHeadlineTable ()
         }
 
-    override _.Execute(context, settings) =
+    override _.Execute(context, settings, cancellationToken) =
         let trace = CliCommands.trace settings.TraceLogging
 
         let settings = cleanSettings settings
