@@ -62,7 +62,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
         (context: CommandContext, settings: PackageListCommandSettings)
         : Spectre.Console.ValidationResult =
         settings.Validate()
-    
+
     override _.ExecuteAsync(context, settings, cancellationToken) =
         task {
             let trace = CliCommands.trace settings.TraceLogging
@@ -104,10 +104,10 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                         let comment = genComment (settings, hits)
 
                         if String.isNotEmpty settings.GithubPrId then
-                            Github.sendPrComment settings trace comment
+                            do! Github.sendPrComment settings trace comment
 
                         if String.isNotEmpty settings.GithubCommit then
-                            Github.sendCheck settings trace true comment
+                            do! Github.sendCheck settings trace true comment
 
                     return ReturnCodes.validationOk
         }

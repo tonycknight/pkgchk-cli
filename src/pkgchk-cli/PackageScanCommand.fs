@@ -151,10 +151,10 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                         let comment = genComment trace (settings, hits, errorHits, hitCounts, reportImg) 0
 
                         if String.isNotEmpty settings.GithubPrId then
-                            Github.sendPrComment settings trace comment
+                            do! Github.sendPrComment settings trace comment
 
                         if String.isNotEmpty settings.GithubCommit then
-                            Github.sendCheck settings trace isSuccess comment
+                            do! Github.sendCheck settings trace isSuccess comment
 
                     return CliCommands.returnCode isSuccess
         }
