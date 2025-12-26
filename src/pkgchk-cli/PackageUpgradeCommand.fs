@@ -61,14 +61,17 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                 pkgchk.Console.green "No upgrades found!" |> CliCommands.console
         }
 
-    override _.Execute(context, settings) =
+    override _.Validate
+        (context: CommandContext, settings: PackageUpgradeCommandSettings)
+        : Spectre.Console.ValidationResult =
+        settings.Validate()
+
+    override _.Execute(context, settings, cancellationToken) =
         let trace = CliCommands.trace settings.TraceLogging
         let config = config settings
 
         if not config.noBanner then
             CliCommands.renderBanner nuget
-
-        settings.Validate()
 
         match DotNet.restore config settings.ProjectPath trace with
         | Choice2Of2 error -> error |> CliCommands.returnError

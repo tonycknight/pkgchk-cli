@@ -15,7 +15,6 @@ updates:
       - ":robot: bot"
     ignore:
       - dependency-name: "FsUnit.xUnit"
-      - dependency-name: "Spectre.Console.Cli"
   - package-ecosystem: "github-actions"
     directory: "/.github/workflows"
     schedule:
