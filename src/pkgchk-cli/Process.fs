@@ -22,39 +22,42 @@ module Process =
 
     let run log (proc: Process) =
         try
-            let sw = System.Diagnostics.Stopwatch.StartNew()
-            let fmtOut = String.leading Int32.MaxValue >> String.escapeMarkup
+            try
+                let sw = System.Diagnostics.Stopwatch.StartNew()
+                let fmtOut = String.leading Int32.MaxValue >> String.escapeMarkup
 
-            log $"Running command:{Environment.NewLine}{proc.StartInfo.FileName} {proc.StartInfo.Arguments}"
+                log $"Running command:{Environment.NewLine}{proc.StartInfo.FileName} {proc.StartInfo.Arguments}"
 
-            if proc.Start() then
-                log "Getting response..."
-                let out = proc.StandardOutput.ReadToEnd()
-                let err = proc.StandardError.ReadToEnd()
-                proc.WaitForExit()
+                if proc.Start() then
+                    log "Getting response..."
+                    let out = proc.StandardOutput.ReadToEnd()
+                    let err = proc.StandardError.ReadToEnd()
+                    proc.WaitForExit()
 
-                sw.Stop()
-                log $"Duration: {sw.ElapsedMilliseconds:N2}ms"
-                log $"ExitCode: {proc.ExitCode}"
-                log "stdout:"
-                out |> fmtOut |> log
+                    sw.Stop()
+                    log $"Duration: {sw.ElapsedMilliseconds:N2}ms"
+                    log $"ExitCode: {proc.ExitCode}"
+                    log "stdout:"
+                    out |> fmtOut |> log
 
-                log "stderr:"
-                err |> fmtOut |> log
+                    log "stderr:"
+                    err |> fmtOut |> log
 
-                if proc.ExitCode <> 0 then
-                    log $"Non-zero exit code: {proc.ExitCode}"
+                    if proc.ExitCode <> 0 then
+                        log $"Non-zero exit code: {proc.ExitCode}"
 
-                    $"Exit code {proc.ExitCode} from {proc.StartInfo.FileName} {proc.StartInfo.Arguments}{Environment.NewLine}{fmtOut out}"
-                    |> Choice2Of2
+                        $"Exit code {proc.ExitCode} from {proc.StartInfo.FileName} {proc.StartInfo.Arguments}{Environment.NewLine}{fmtOut out}"
+                        |> Choice2Of2
 
-                else if (String.IsNullOrWhiteSpace(err)) then
-                    log "Successfully fetched response."
-                    Choice1Of2(out)
+                    else if (String.IsNullOrWhiteSpace(err)) then
+                        log "Successfully fetched response."
+                        Choice1Of2(out)
+                    else
+                        log "Error detected getting response."
+                        Choice2Of2(err)
                 else
-                    log "Error detected getting response."
-                    Choice2Of2(err)
-            else
-                Choice2Of2("Cannot start process")
-        with ex ->
-            Choice2Of2(ex.Message)
+                    Choice2Of2("Cannot start process")
+            with ex ->
+                Choice2Of2(ex.Message)
+        finally
+            proc.Dispose()
