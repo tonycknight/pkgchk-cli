@@ -19,13 +19,10 @@ module Io =
 
     let normalise (path: string) = System.IO.Path.GetFullPath(path)
 
-    let writeFile path (lines: seq<string>) =
-        if System.IO.File.Exists(path) then
-            System.IO.File.Delete(path)
-
+    let writeFile (path: string) (lines: seq<string>) =
         let dir = System.IO.Path.GetDirectoryName path
         System.IO.Directory.CreateDirectory dir |> ignore
-        System.IO.File.AppendAllLines(path, lines)
+        System.IO.File.WriteAllText(path, lines |> String.join Environment.NewLine)
         path
 
     let composeFilePath directory fileName =
