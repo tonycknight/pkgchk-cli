@@ -190,12 +190,6 @@ module DotNetArgs =
 
 module DotNet =
 
-    let private runProc logging proc =
-        try
-            proc |> Process.run logging
-        finally
-            proc.Dispose()
-
     let restore (config: ScanConfiguration) projectPath logging =
         if config.noRestore then
             Choice1Of2 false
@@ -210,13 +204,13 @@ module DotNet =
             projectPath
             |> DotNetArgs.restoreArgs
             |> Process.createProcess
-            |> runRestoreProcParse (runProc logging)
+            |> runRestoreProcParse (Process.run logging)
 
     let scan (context: ScaCommandContext) =
         DotNetArgs.scanArgs context
         |> Array.map (fun (args, parser) -> (Process.createProcess args, parser))
         |> Array.map (fun (proc, parser) ->
-            match proc |> (runProc context.trace) with
+            match proc |> (Process.run context.trace) with
             | Choice1Of2 json -> parser json
             | Choice2Of2 x -> Choice2Of2 x)
 

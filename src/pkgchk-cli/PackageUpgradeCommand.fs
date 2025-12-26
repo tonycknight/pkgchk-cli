@@ -15,7 +15,7 @@ type PackageUpgradeCommandSettings() =
 
 [<ExcludeFromCodeCoverage>]
 type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
-    inherit Command<PackageUpgradeCommandSettings>()
+    inherit AsyncCommand<PackageUpgradeCommandSettings>()
 
     let genComment (settings: PackageUpgradeCommandSettings, hits, reportImg) =
         let markdown = (hits, reportImg) |> Markdown.generateUpgrades |> String.joinLines
@@ -66,54 +66,56 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
         : Spectre.Console.ValidationResult =
         settings.Validate()
 
-    override _.Execute(context, settings, cancellationToken) =
-        let trace = CliCommands.trace settings.TraceLogging
-        let config = config settings
+    override _.ExecuteAsync(context, settings, cancellationToken) =
+        task {
+            let trace = CliCommands.trace settings.TraceLogging
+            let config = config settings
 
-        if not config.noBanner then
-            CliCommands.renderBanner nuget
+            if not config.noBanner then
+                CliCommands.renderBanner nuget
 
-        match DotNet.restore config settings.ProjectPath trace with
-        | Choice2Of2 error -> error |> CliCommands.returnError
-        | _ ->
-            let ctx = commandContext trace settings
+            match DotNet.restore config settings.ProjectPath trace with
+            | Choice2Of2 error -> return error |> CliCommands.returnError
+            | _ ->
+                let ctx = commandContext trace settings
 
-            let results = DotNet.scan ctx
+                let results = DotNet.scan ctx
 
-            trace "Analysing results..."
-            let hits = ScaModels.getHits results |> Config.filterPackages config
-            let hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
-            let isSuccess = isSuccessScan (config, hits)
-            let errors = DotNet.scanErrors results
+                trace "Analysing results..."
+                let hits = ScaModels.getHits results |> Config.filterPackages config
+                let hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
+                let isSuccess = isSuccessScan (config, hits)
+                let errors = DotNet.scanErrors results
 
-            if Seq.isEmpty errors |> not then
-                errors |> String.joinLines |> CliCommands.returnError
-            else
-                trace "Building display..."
+                if Seq.isEmpty errors |> not then
+                    return errors |> String.joinLines |> CliCommands.returnError
+                else
+                    trace "Building display..."
 
-                renderables hits hitCounts |> CliCommands.renderTables
+                    renderables hits hitCounts |> CliCommands.renderTables
 
-                let reportImg =
-                    match isSuccess with
-                    | true -> settings.GoodImageUri
-                    | false -> settings.BadImageUri
+                    let reportImg =
+                        match isSuccess with
+                        | true -> settings.GoodImageUri
+                        | false -> settings.BadImageUri
 
-                if settings.OutputDirectory <> "" then
-                    trace "Building reports..."
+                    if settings.OutputDirectory <> "" then
+                        trace "Building reports..."
 
-                    (hits, reportImg)
-                    |> Markdown.generateUpgrades
-                    |> Io.writeFile ("pkgchk-upgrades.md" |> Io.composeFilePath settings.OutputDirectory)
-                    |> CliCommands.renderReportLine
+                        (hits, reportImg)
+                        |> Markdown.generateUpgrades
+                        |> Io.writeFile ("pkgchk-upgrades.md" |> Io.composeFilePath settings.OutputDirectory)
+                        |> CliCommands.renderReportLine
 
-                if settings.HasGithubParamters() then
-                    trace "Building Github reports..."
-                    let comment = genComment (settings, hits, reportImg)
+                    if settings.HasGithubParamters() then
+                        trace "Building Github reports..."
+                        let comment = genComment (settings, hits, reportImg)
 
-                    if String.isNotEmpty settings.GithubPrId then
-                        Github.sendPrComment settings trace comment
+                        if String.isNotEmpty settings.GithubPrId then
+                            do! Github.sendPrComment settings trace comment
 
-                    if String.isNotEmpty settings.GithubCommit then
-                        Github.sendCheck settings trace isSuccess comment
+                        if String.isNotEmpty settings.GithubCommit then
+                            do! Github.sendCheck settings trace isSuccess comment
 
-                isSuccess |> CliCommands.returnCode
+                    return isSuccess |> CliCommands.returnCode
+        }

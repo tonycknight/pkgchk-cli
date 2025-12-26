@@ -15,7 +15,7 @@ type PackageListCommandSettings() =
 
 [<ExcludeFromCodeCoverage>]
 type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
-    inherit Command<PackageListCommandSettings>()
+    inherit AsyncCommand<PackageListCommandSettings>()
 
     let config (settings: PackageListCommandSettings) =
         match settings.ConfigFile with
@@ -63,49 +63,51 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
         : Spectre.Console.ValidationResult =
         settings.Validate()
 
-    override _.Execute(context, settings, cancellationToken) =
-        let trace = CliCommands.trace settings.TraceLogging
-        let config = config settings
+    override _.ExecuteAsync(context, settings, cancellationToken) =
+        task {
+            let trace = CliCommands.trace settings.TraceLogging
+            let config = config settings
 
-        if not config.noBanner then
-            CliCommands.renderBanner nuget
+            if not config.noBanner then
+                CliCommands.renderBanner nuget
 
-        match DotNet.restore config settings.ProjectPath trace with
-        | Choice2Of2 error -> error |> CliCommands.returnError
-        | _ ->
-            let ctx = commandContext trace settings config
+            match DotNet.restore config settings.ProjectPath trace with
+            | Choice2Of2 error -> return error |> CliCommands.returnError
+            | _ ->
+                let ctx = commandContext trace settings config
 
-            let results = DotNet.scan ctx
+                let results = DotNet.scan ctx
 
-            let errors = DotNet.scanErrors results
+                let errors = DotNet.scanErrors results
 
-            if Seq.isEmpty errors |> not then
-                errors |> String.joinLines |> CliCommands.returnError
-            else
-                trace "Analysing results..."
-                let hits = ScaModels.getHits results |> Config.filterPackages config
-                let hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
+                if Seq.isEmpty errors |> not then
+                    return errors |> String.joinLines |> CliCommands.returnError
+                else
+                    trace "Analysing results..."
+                    let hits = ScaModels.getHits results |> Config.filterPackages config
+                    let hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
 
-                trace "Building display..."
+                    trace "Building display..."
 
-                renderables hits hitCounts |> CliCommands.renderTables
+                    renderables hits hitCounts |> CliCommands.renderTables
 
-                if settings.OutputDirectory <> "" then
-                    trace "Building reports..."
+                    if settings.OutputDirectory <> "" then
+                        trace "Building reports..."
 
-                    hits
-                    |> Markdown.generateList
-                    |> Io.writeFile ("pkgchk-dependencies.md" |> Io.composeFilePath settings.OutputDirectory)
-                    |> CliCommands.renderReportLine
+                        hits
+                        |> Markdown.generateList
+                        |> Io.writeFile ("pkgchk-dependencies.md" |> Io.composeFilePath settings.OutputDirectory)
+                        |> CliCommands.renderReportLine
 
-                if settings.HasGithubParamters() then
-                    trace "Building Github reports..."
-                    let comment = genComment (settings, hits)
+                    if settings.HasGithubParamters() then
+                        trace "Building Github reports..."
+                        let comment = genComment (settings, hits)
 
-                    if String.isNotEmpty settings.GithubPrId then
-                        Github.sendPrComment settings trace comment
+                        if String.isNotEmpty settings.GithubPrId then
+                            do! Github.sendPrComment settings trace comment
 
-                    if String.isNotEmpty settings.GithubCommit then
-                        Github.sendCheck settings trace true comment
+                        if String.isNotEmpty settings.GithubCommit then
+                            do! Github.sendCheck settings trace true comment
 
-                ReturnCodes.validationOk
+                    return ReturnCodes.validationOk
+        }

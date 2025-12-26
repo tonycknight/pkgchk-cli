@@ -111,27 +111,31 @@ module Github =
         }
 
     let sendPrComment (settings: PackageGithubCommandSettings) trace (comment: GithubComment) =
-        let prId = String.toInt settings.GithubPrId
-        let repo = String.split '/' settings.GithubRepo
-        let client = client settings.GithubToken
+        task {
+            let prId = String.toInt settings.GithubPrId
+            let repo = String.split '/' settings.GithubRepo
+            let client = client settings.GithubToken
 
-        trace $"Posting {comment.title} PR comment to Github repo {repo}..."
+            trace $"Posting {comment.title} PR comment to Github repo {repo}..."
 
-        let _ = (comment |> setPrComment trace client repo prId).Result
+            let! _ = (comment |> setPrComment trace client repo prId)
 
-        $"{comment.title} PR report sent to Github."
-        |> Console.italic
-        |> CliCommands.console
+            $"{comment.title} PR report sent to Github."
+            |> Console.italic
+            |> CliCommands.console
+        }
 
     let sendCheck (settings: PackageGithubCommandSettings) trace isSuccess (comment: GithubComment) =
-        let repo = String.split '/' settings.GithubRepo
-        let client = client settings.GithubToken
-        let commit = settings.GithubCommit
+        task {
+            let repo = String.split '/' settings.GithubRepo
+            let client = client settings.GithubToken
+            let commit = settings.GithubCommit
 
-        trace $"Posting {comment.title} build check to Github repo {repo}..."
+            trace $"Posting {comment.title} build check to Github repo {repo}..."
 
-        (comment |> createCheck trace client repo commit isSuccess).Result |> ignore
+            let! _ = comment |> createCheck trace client repo commit isSuccess
 
-        $"{comment.title} check sent to Github."
-        |> Console.italic
-        |> CliCommands.console
+            $"{comment.title} check sent to Github."
+            |> Console.italic
+            |> CliCommands.console
+        }
