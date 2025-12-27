@@ -1,17 +1,7 @@
 ﻿namespace pkgchk
 
-open System.ComponentModel
 open System.Diagnostics.CodeAnalysis
 open Spectre.Console.Cli
-
-[<ExcludeFromCodeCoverage>]
-type PackageUpgradeCommandSettings() =
-    inherit PackageGithubCommandSettings()
-
-    [<CommandOption("--break-on-upgrades")>]
-    [<Description("Break on outstanding package upgrades.")>]
-    [<DefaultValue(false)>]
-    member val BreakOnUpgrades = false with get, set
 
 [<ExcludeFromCodeCoverage>]
 type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =

@@ -117,3 +117,45 @@ type PackageGithubCommandSettings() =
         | msgs ->
             let msg = msgs |> String.join System.Environment.NewLine
             Spectre.Console.ValidationResult.Error msg
+
+[<ExcludeFromCodeCoverage>]
+type PackageScanCommandSettings() =
+    inherit PackageGithubCommandSettings()
+
+    [<CommandOption("-v|--vulnerable")>]
+    [<Description("Toggle vulnerable package checks. true to include them, false to exclude.")>]
+    [<DefaultValue(true)>]
+    member val IncludeVulnerables = true with get, set
+
+    [<CommandOption("-t|--transitive")>]
+    [<Description("Toggle transitive package checks. true to include them, false to exclude.")>]
+    [<DefaultValue(true)>]
+    member val IncludeTransitives = true with get, set
+
+    [<CommandOption("-d|--deprecated")>]
+    [<Description("Check deprecated packagess. true to include, false to exclude.")>]
+    [<DefaultValue(false)>]
+    member val IncludeDeprecations = false with get, set
+
+    [<CommandOption("-s|--severity")>]
+    [<Description("Severity levels to scan for. Matches will return non-zero exit codes. Multiple levels can be specified.")>]
+    [<DefaultValue([| "High"; "Critical"; "Critical Bugs"; "Legacy" |])>]
+    member val SeverityLevels: string array = [||] with get, set
+
+[<ExcludeFromCodeCoverage>]
+type PackageListCommandSettings() =
+    inherit PackageGithubCommandSettings()
+
+    [<CommandOption("-t|--transitive")>]
+    [<Description("Toggle transitive package checks. true to include them, false to exclude.")>]
+    [<DefaultValue(true)>]
+    member val IncludeTransitives = true with get, set
+
+[<ExcludeFromCodeCoverage>]
+type PackageUpgradeCommandSettings() =
+    inherit PackageGithubCommandSettings()
+
+    [<CommandOption("--break-on-upgrades")>]
+    [<Description("Break on outstanding package upgrades.")>]
+    [<DefaultValue(false)>]
+    member val BreakOnUpgrades = false with get, set

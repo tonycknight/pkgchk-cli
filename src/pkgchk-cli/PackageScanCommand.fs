@@ -1,32 +1,7 @@
 ﻿namespace pkgchk
 
-open System.ComponentModel
 open System.Diagnostics.CodeAnalysis
 open Spectre.Console.Cli
-
-[<ExcludeFromCodeCoverage>]
-type PackageScanCommandSettings() =
-    inherit PackageGithubCommandSettings()
-
-    [<CommandOption("-v|--vulnerable")>]
-    [<Description("Toggle vulnerable package checks. true to include them, false to exclude.")>]
-    [<DefaultValue(true)>]
-    member val IncludeVulnerables = true with get, set
-
-    [<CommandOption("-t|--transitive")>]
-    [<Description("Toggle transitive package checks. true to include them, false to exclude.")>]
-    [<DefaultValue(true)>]
-    member val IncludeTransitives = true with get, set
-
-    [<CommandOption("-d|--deprecated")>]
-    [<Description("Check deprecated packagess. true to include, false to exclude.")>]
-    [<DefaultValue(false)>]
-    member val IncludeDeprecations = false with get, set
-
-    [<CommandOption("-s|--severity")>]
-    [<Description("Severity levels to scan for. Matches will return non-zero exit codes. Multiple levels can be specified.")>]
-    [<DefaultValue([| "High"; "Critical"; "Critical Bugs"; "Legacy" |])>]
-    member val SeverityLevels: string array = [||] with get, set
 
 [<ExcludeFromCodeCoverage>]
 type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =

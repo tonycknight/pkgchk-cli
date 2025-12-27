@@ -1,17 +1,7 @@
 ﻿namespace pkgchk
 
-open System.ComponentModel
 open System.Diagnostics.CodeAnalysis
 open Spectre.Console.Cli
-
-[<ExcludeFromCodeCoverage>]
-type PackageListCommandSettings() =
-    inherit PackageGithubCommandSettings()
-
-    [<CommandOption("-t|--transitive")>]
-    [<Description("Toggle transitive package checks. true to include them, false to exclude.")>]
-    [<DefaultValue(true)>]
-    member val IncludeTransitives = true with get, set
 
 [<ExcludeFromCodeCoverage>]
 type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
