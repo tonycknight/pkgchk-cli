@@ -32,6 +32,11 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
               breakOnDeprecations = false
               checkTransitives = false }
 
+    let appContext (settings: PackageUpgradeCommandSettings) = 
+        let context = Context.upgradesContext settings
+
+        { context with options = Context.loadApplyConfig context.options }
+
     let commandContext trace (settings: PackageUpgradeCommandSettings) =
         { ScaCommandContext.trace = trace
           projectPath = settings.ProjectPath
@@ -60,11 +65,12 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
         task {
             let trace = CliCommands.trace settings.TraceLogging
             let config = config settings
+            let context = appContext settings // TODO: replace config above
 
-            if config.noBanner.GetValueOrDefault() |> not then
+            if context.options.suppressBanner |> not then
                 CliCommands.renderBanner nuget
 
-            match DotNet.restore config settings.ProjectPath trace with
+            match DotNet.restore config context.options.projectPath trace with
             | Choice2Of2 error -> return error |> CliCommands.returnError
             | _ ->
                 let ctx = commandContext trace settings
@@ -72,7 +78,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                 let results = DotNet.scan ctx
 
                 trace "Analysing results..."
-                let hits = ScaModels.getHits results |> Config.filterPackages config
+                let hits = ScaModels.getHits results |> Context.filterPackages context.options |> List.ofSeq
                 let hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
                 let isSuccess = isSuccessScan (config, hits)
                 let errors = DotNet.scanErrors results

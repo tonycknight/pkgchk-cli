@@ -79,7 +79,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
                     trace "Analysing results..."
-                    let hits = ScaModels.getHits results |> Context.filterPackages context.options |> List.ofSeq // Config.filterPackages config
+                    let hits = ScaModels.getHits results |> Context.filterPackages context.options |> List.ofSeq 
                     let hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
 
                     trace "Building display..."
