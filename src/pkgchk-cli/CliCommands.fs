@@ -55,7 +55,7 @@ module CliCommands =
         | true -> ReturnCodes.validationOk
         | _ -> ReturnCodes.validationFailed
 
-    let githubContet (settings: PackageGithubCommandSettings) =
+    let githubContext (settings: PackageGithubCommandSettings) =
         { GithubContext.commit = settings.GithubCommit
           token = settings.GithubToken
           repo = settings.GithubRepo
@@ -78,3 +78,33 @@ module CliCommands =
           breakOnVulnerabilities = false
           breakOnDeprecations = false
           includeTransitives = false }
+
+    let scanContext (settings: PackageScanCommandSettings) =
+        let options = 
+            { optionsContext settings with 
+                severities = settings.SeverityLevels |> Array.filter String.isNotEmpty
+                breakOnVulnerabilities = settings.IncludeVulnerables
+                breakOnDeprecations = settings.IncludeDeprecations
+                includeTransitives = settings.IncludeTransitives }
+
+        { CommandContext.options = options
+          github = githubContext settings
+          report = reportContext settings }
+
+    let listContext (settings: PackageListCommandSettings) =
+        let options = 
+            { optionsContext settings with 
+                includeTransitives = settings.IncludeTransitives }
+
+        { CommandContext.options = options
+          github = githubContext settings
+          report = reportContext settings }
+
+    let upgradesContext (settings: PackageUpgradeCommandSettings) =
+        let options = 
+            { optionsContext settings with 
+                breakOnUpgrades = settings.BreakOnUpgrades }
+
+        { CommandContext.options = options
+          github = githubContext settings
+          report = reportContext settings }
