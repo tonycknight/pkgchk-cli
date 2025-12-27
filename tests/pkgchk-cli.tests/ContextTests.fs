@@ -130,8 +130,12 @@ module ContextTests =
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], MaxTest = 1000)>]
     let ``filterPackages empty sets includes package`` (context: pkgchk.OptionsContext, hit: pkgchk.ScaHit) =
         let hits = [ hit ]
-        let context = { context with excludedPackages = [||] ; includedPackages = [| |] }
-        
+
+        let context =
+            { context with
+                excludedPackages = [||]
+                includedPackages = [||] }
+
         let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
 
         r = hits
@@ -139,8 +143,12 @@ module ContextTests =
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], MaxTest = 1000)>]
     let ``filterPackages includes package`` (context: pkgchk.OptionsContext, hit: pkgchk.ScaHit) =
         let hits = [ hit ]
-        let context = { context with excludedPackages = [||] ; includedPackages = [| hit.packageId |] }
-        
+
+        let context =
+            { context with
+                excludedPackages = [||]
+                includedPackages = [| hit.packageId |] }
+
         let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
 
         r = hits
@@ -148,8 +156,12 @@ module ContextTests =
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], MaxTest = 1000)>]
     let ``filterPackages does not include package`` (context: pkgchk.OptionsContext, hit: pkgchk.ScaHit) =
         let hits = [ hit ]
-        let context = { context with excludedPackages = [||] ; includedPackages = [| (hit.packageId + hit.packageId) |] }
-        
+
+        let context =
+            { context with
+                excludedPackages = [||]
+                includedPackages = [| (hit.packageId + hit.packageId) |] }
+
         let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
 
         List.isEmpty r
@@ -157,8 +169,12 @@ module ContextTests =
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], MaxTest = 1000)>]
     let ``filterPackages excludes package`` (context: pkgchk.OptionsContext, hit: pkgchk.ScaHit) =
         let hits = [ hit ]
-        let context = { context with includedPackages = [||] ; excludedPackages = [| hit.packageId |] }
-        
+
+        let context =
+            { context with
+                includedPackages = [||]
+                excludedPackages = [| hit.packageId |] }
+
         let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
 
         List.isEmpty r
@@ -166,8 +182,12 @@ module ContextTests =
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], MaxTest = 1000)>]
     let ``filterPackages does not exclude package`` (context: pkgchk.OptionsContext, hit: pkgchk.ScaHit) =
         let hits = [ hit ]
-        let context = { context with includedPackages = [||] ; excludedPackages = [| (hit.packageId + hit.packageId) |] }
-        
+
+        let context =
+            { context with
+                includedPackages = [||]
+                excludedPackages = [| (hit.packageId + hit.packageId) |] }
+
         let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
 
         r = hits
@@ -175,8 +195,12 @@ module ContextTests =
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], MaxTest = 1000)>]
     let ``filterPackages excludes includes package`` (context: pkgchk.OptionsContext, hit: pkgchk.ScaHit) =
         let hits = [ hit ]
-        let context = { context with includedPackages = [| hit.packageId |] ; excludedPackages = [| hit.packageId |] }
-        
+
+        let context =
+            { context with
+                includedPackages = [| hit.packageId |]
+                excludedPackages = [| hit.packageId |] }
+
         let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
 
         r |> List.isEmpty
