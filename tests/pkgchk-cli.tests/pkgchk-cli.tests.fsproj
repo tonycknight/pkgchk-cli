@@ -21,6 +21,7 @@
     <Compile Include="ScaModelsTests.fs" />
     <Compile Include="ConsoleTests.fs" />
     <Compile Include="MarkdownTests.fs" />
+    <Compile Include="ContextTests.fs" />
     <Compile Include="GithubCommentTests.fs" />
     <Compile Include="GithubTests.fs" />
     <Compile Include="Program.fs" />

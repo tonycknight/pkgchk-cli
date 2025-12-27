@@ -94,6 +94,30 @@ module Context =
           github = githubContext settings
           report = reportContext settings }
 
+    let applyConfig (context: OptionsContext) (config: ScanConfiguration) =
+        let mutable result = context
+
+        if config.noBanner.HasValue then
+            result <- { context with suppressBanner = config.noBanner.Value }
+        if config.noRestore.HasValue then
+            result <- { result with suppressRestore = config.noRestore.Value }
+        if config.includedPackages |> Option.isNull |> not then 
+            result <- { result with includedPackages = config.includedPackages }
+        if config.excludedPackages |> Option.isNull |> not  then 
+            result <- { result with excludedPackages = config.excludedPackages }
+        if config.breakOnUpgrades.HasValue then
+            result <- { result with breakOnUpgrades = config.breakOnUpgrades.Value }
+        if config.severities |> Option.isNull  |> not then 
+            result <- { result with severities = config.severities }
+        if config.breakOnVulnerabilities.HasValue then
+            result <- { result with breakOnVulnerabilities = config.breakOnVulnerabilities.Value }
+        if config.breakOnDeprecations.HasValue then
+            result <- { result with breakOnDeprecations = config.breakOnDeprecations.Value }
+        if config.checkTransitives.HasValue then
+            result <- { result with includeTransitives = config.checkTransitives.Value }
+
+        result
+
     let listContext (settings: PackageListCommandSettings) =
         let options = 
             { optionsContext settings with 
