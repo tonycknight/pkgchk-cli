@@ -38,7 +38,7 @@ type ScaHitSummary =
       severity: string
       count: int }
 
-type ScaCommandContext =
+type ScaCommandContext = // TODO: redundant w ith OptionsContext?
     { trace: (string -> unit)
       projectPath: string
       includeVulnerabilities: bool

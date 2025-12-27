@@ -7,6 +7,7 @@ open Spectre.Console.Cli
 type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
     inherit AsyncCommand<PackageListCommandSettings>()
 
+    // TODO: redundant
     let config (settings: PackageListCommandSettings) =
         match settings.ConfigFile with
         | x when x <> "" -> x |> Io.fullPath |> Io.normalise |> Config.load
@@ -20,12 +21,17 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
               breakOnVulnerabilities = false
               breakOnDeprecations = false
               checkTransitives = settings.IncludeTransitives }
+                  
+    let appContext (settings: PackageListCommandSettings) = 
+        let context = Context.listContext settings
 
-    let commandContext trace (settings: PackageListCommandSettings) (config: ScanConfiguration) =
-        { ScaCommandContext.trace = trace
-          projectPath = settings.ProjectPath
+        { context with options = Context.loadApplyConfig context.options }
+
+    let scaContext trace (context: ApplicationContext) =
+        { ScaCommandContext.trace = trace 
+          projectPath = context.options.projectPath
           includeVulnerabilities = false
-          includeTransitives = config.checkTransitives.GetValueOrDefault()
+          includeTransitives = context.options.includeTransitives
           includeDeprecations = false
           includeDependencies = true
           includeOutdated = false }
@@ -57,16 +63,15 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
         task {
             let trace = CliCommands.trace settings.TraceLogging
             let config = config settings
+            let context = appContext settings // TODO: replace config above
 
-            if config.noBanner.GetValueOrDefault() |> not then
+            if context.options.suppressBanner |> not then
                 CliCommands.renderBanner nuget
 
-            match DotNet.restore config settings.ProjectPath trace with
+            match DotNet.restore config context.options.projectPath trace with
             | Choice2Of2 error -> return error |> CliCommands.returnError
             | _ ->
-                let ctx = commandContext trace settings config
-
-                let results = DotNet.scan ctx
+                let results = context |> scaContext trace |> DotNet.scan
 
                 let errors = DotNet.scanErrors results
 
@@ -74,7 +79,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
                     trace "Analysing results..."
-                    let hits = ScaModels.getHits results |> Config.filterPackages config
+                    let hits = ScaModels.getHits results |> Context.filterPackages context.options |> List.ofSeq // Config.filterPackages config
                     let hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
 
                     trace "Building display..."
