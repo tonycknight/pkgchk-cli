@@ -61,33 +61,32 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
 
     override _.ExecuteAsync(context, settings, cancellationToken) =
         task {
-            let trace = CliCommands.trace settings.TraceLogging
             let config = config settings
             let context = appContext settings // TODO: replace config above
 
             if context.options.suppressBanner |> not then
                 CliCommands.renderBanner nuget
 
-            match DotNet.restore config context.options.projectPath trace with
+            match DotNet.restore config context.options.projectPath context.services.trace with
             | Choice2Of2 error -> return error |> CliCommands.returnError
             | _ ->
-                let results = context |> scaContext trace |> DotNet.scan
+                let results = context |> scaContext context.services.trace |> DotNet.scan
 
                 let errors = DotNet.scanErrors results
 
                 if Seq.isEmpty errors |> not then
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
-                    trace "Analysing results..."
+                    context.services.trace "Analysing results..."
                     let hits = ScaModels.getHits results |> Context.filterPackages context.options |> List.ofSeq 
                     let hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
 
-                    trace "Building display..."
+                    context.services.trace "Building display..."
 
                     renderables hits hitCounts |> CliCommands.renderTables
 
                     if settings.OutputDirectory <> "" then
-                        trace "Building reports..."
+                        context.services.trace "Building reports..."
 
                         hits
                         |> Markdown.generateList
@@ -95,14 +94,14 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                         |> CliCommands.renderReportLine
 
                     if settings.HasGithubParamters() then
-                        trace "Building Github reports..."
+                        context.services.trace "Building Github reports..."
                         let comment = genComment (settings, hits)
 
                         if String.isNotEmpty settings.GithubPrId then
-                            do! Github.sendPrComment settings trace comment
+                            do! Github.sendPrComment settings context.services.trace comment
 
                         if String.isNotEmpty settings.GithubCommit then
-                            do! Github.sendCheck settings trace true comment
+                            do! Github.sendCheck settings context.services.trace true comment
 
                     return ReturnCodes.validationOk
         }
