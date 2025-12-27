@@ -31,9 +31,9 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
               breakOnDeprecations = false
               checkTransitives = settings.IncludeTransitives }
 
-    let commandContext trace (settings: PackageListCommandSettings) config =
+    let commandContext trace (settings: PackageListCommandSettings) (config: ScanConfiguration) =
         { ScaCommandContext.trace = trace
-          projectPath = settings.ProjectPath
+          projectPath = settings.ProjectPath          
           includeVulnerabilities = false
           includeTransitives = config.checkTransitives
           includeDeprecations = false

@@ -70,7 +70,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
               breakOnDeprecations = settings.IncludeDeprecations
               checkTransitives = settings.IncludeTransitives }
 
-    let commandContext trace (settings: PackageScanCommandSettings) config =
+    let commandContext trace (settings: PackageScanCommandSettings) (config: ScanConfiguration) =
         { ScaCommandContext.trace = trace
           projectPath = settings.ProjectPath
           includeVulnerabilities = config.breakOnVulnerabilities
@@ -79,7 +79,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
           includeDependencies = false
           includeOutdated = false }
 
-    let renderables config hits hitCounts errorHits =
+    let renderables (config: ScanConfiguration) hits hitCounts errorHits =
         seq {
             hits |> Console.hitsTable
             let mutable headlineSet = false
