@@ -27,10 +27,14 @@ type OptionsContext =
       breakOnDeprecations: bool
       includeTransitives: bool }
 
+type ServiceContext =
+    { trace: (string -> unit) }
+
 type ApplicationContext = // TODO: need a trace/collection of functions/properly named
     { options: OptionsContext
       report: ReportContext
-      github: GithubContext }
+      github: GithubContext 
+      services: ServiceContext }
 
 module Context =
     let githubContext (settings: PackageGithubCommandSettings) =
@@ -64,6 +68,15 @@ module Context =
           breakOnDeprecations = false
           includeTransitives = false }
 
+    let serviceContext (settings: PackageCommandSettings) =
+        { ServiceContext.trace = CliCommands.trace settings.TraceLogging }
+
+    let applicationContext (settings: PackageGithubCommandSettings) (options: OptionsContext) =
+        { ApplicationContext.options = options
+          github = githubContext settings
+          report = reportContext settings 
+          services = serviceContext settings }
+
     let scanContext (settings: PackageScanCommandSettings) =
         let options =
             { optionsContext settings with
@@ -72,27 +85,21 @@ module Context =
                 breakOnDeprecations = settings.IncludeDeprecations
                 includeTransitives = settings.IncludeTransitives }
         
-        { ApplicationContext.options = options
-          github = githubContext settings
-          report = reportContext settings }
-
+        options |> applicationContext settings
+        
     let listContext (settings: PackageListCommandSettings) =
         let options =
             { optionsContext settings with
                 includeTransitives = settings.IncludeTransitives }
 
-        { ApplicationContext.options = options
-          github = githubContext settings
-          report = reportContext settings }
+        options |> applicationContext settings
 
     let upgradesContext (settings: PackageUpgradeCommandSettings) =
         let options =
             { optionsContext settings with
                 breakOnUpgrades = settings.BreakOnUpgrades }
 
-        { ApplicationContext.options = options
-          github = githubContext settings
-          report = reportContext settings }
+        options |> applicationContext settings
 
     let applyConfig (context: OptionsContext) (config: ScanConfiguration) =
         let mutable result = context
