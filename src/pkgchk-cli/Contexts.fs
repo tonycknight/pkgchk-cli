@@ -27,11 +27,10 @@ type OptionsContext =
       breakOnDeprecations: bool
       includeTransitives: bool }
 
-type CommandContext =
+type ApplicationContext =
     { options: OptionsContext
       report: ReportContext
       github: GithubContext }
-
 
 module Context =
     let githubContext (settings: PackageGithubCommandSettings) =
@@ -72,8 +71,8 @@ module Context =
                 breakOnVulnerabilities = settings.IncludeVulnerables
                 breakOnDeprecations = settings.IncludeDeprecations
                 includeTransitives = settings.IncludeTransitives }
-
-        { CommandContext.options = options
+        
+        { ApplicationContext.options = options
           github = githubContext settings
           report = reportContext settings }
 
@@ -82,7 +81,7 @@ module Context =
             { optionsContext settings with
                 includeTransitives = settings.IncludeTransitives }
 
-        { CommandContext.options = options
+        { ApplicationContext.options = options
           github = githubContext settings
           report = reportContext settings }
 
@@ -91,7 +90,7 @@ module Context =
             { optionsContext settings with
                 breakOnUpgrades = settings.BreakOnUpgrades }
 
-        { CommandContext.options = options
+        { ApplicationContext.options = options
           github = githubContext settings
           report = reportContext settings }
 
