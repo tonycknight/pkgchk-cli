@@ -16,7 +16,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
             GithubComment.create settings.GithubSummaryTitle "_The report is too big for Github - Please check logs_"
 
     let isSuccessScan (settings: ScanConfiguration, hits: ScaHit list) =
-        hits |> List.isEmpty || (not settings.breakOnUpgrades)
+        hits |> List.isEmpty || (settings.breakOnUpgrades.GetValueOrDefault() |> not)
 
     let config (settings: PackageUpgradeCommandSettings) =
         match settings.ConfigFile with
@@ -61,7 +61,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
             let trace = CliCommands.trace settings.TraceLogging
             let config = config settings
 
-            if not config.noBanner then
+            if config.noBanner.GetValueOrDefault() |> not then
                 CliCommands.renderBanner nuget
 
             match DotNet.restore config settings.ProjectPath trace with

@@ -25,7 +25,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
         { ScaCommandContext.trace = trace
           projectPath = settings.ProjectPath          
           includeVulnerabilities = false
-          includeTransitives = config.checkTransitives
+          includeTransitives = config.checkTransitives.GetValueOrDefault()
           includeDeprecations = false
           includeDependencies = true
           includeOutdated = false }
@@ -58,7 +58,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
             let trace = CliCommands.trace settings.TraceLogging
             let config = config settings
 
-            if not config.noBanner then
+            if config.noBanner.GetValueOrDefault() |> not then
                 CliCommands.renderBanner nuget
 
             match DotNet.restore config settings.ProjectPath trace with

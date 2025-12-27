@@ -1,19 +1,20 @@
 ﻿namespace pkgchk
 
+open System
 open pkgchk.Combinators
 open YamlDotNet.Serialization
 
 [<CLIMutable>]
 type ScanConfiguration =
-    { noBanner: bool
-      noRestore: bool
+    { noBanner: Nullable<bool>
+      noRestore: Nullable<bool>
       includedPackages: string[]
       excludedPackages: string[]
-      breakOnUpgrades: bool
+      breakOnUpgrades: Nullable<bool>
       severities: string[]
-      breakOnVulnerabilities: bool
-      breakOnDeprecations: bool
-      checkTransitives: bool }
+      breakOnVulnerabilities: Nullable<bool>
+      breakOnDeprecations: Nullable<bool>
+      checkTransitives: Nullable<bool> }
 
 module Config =
     let private deserialiser = (new DeserializerBuilder()).Build()

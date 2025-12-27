@@ -48,9 +48,9 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
     let commandContext trace (settings: PackageScanCommandSettings) (config: ScanConfiguration) =
         { ScaCommandContext.trace = trace
           projectPath = settings.ProjectPath
-          includeVulnerabilities = config.breakOnVulnerabilities
-          includeTransitives = config.checkTransitives
-          includeDeprecations = config.breakOnDeprecations
+          includeVulnerabilities = config.breakOnVulnerabilities.GetValueOrDefault()
+          includeTransitives = config.checkTransitives.GetValueOrDefault()
+          includeDeprecations = config.breakOnDeprecations.GetValueOrDefault()
           includeDependencies = false
           includeOutdated = false }
 
@@ -59,7 +59,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
             hits |> Console.hitsTable
             let mutable headlineSet = false
 
-            if config.breakOnVulnerabilities || config.breakOnDeprecations then
+            if config.breakOnVulnerabilities.GetValueOrDefault() || config.breakOnDeprecations.GetValueOrDefault() then
                 errorHits |> Console.vulnerabilityHeadlineTable
                 headlineSet <- true
 
@@ -84,7 +84,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
             let config = config settings
 
-            if not config.noBanner then
+            if config.noBanner.GetValueOrDefault() |> not then
                 CliCommands.renderBanner nuget
 
             match DotNet.restore config settings.ProjectPath trace with

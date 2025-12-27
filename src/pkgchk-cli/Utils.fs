@@ -89,6 +89,8 @@ module Option =
         else
             value
 
+    let isNull<'a> (value: 'a) = obj.ReferenceEquals(value, null)
+
 module ReturnCodes =
 
     [<Literal>]

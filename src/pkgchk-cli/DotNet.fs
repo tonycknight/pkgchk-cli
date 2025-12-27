@@ -191,7 +191,7 @@ module DotNetArgs =
 module DotNet =
 
     let restore (config: ScanConfiguration) projectPath logging =
-        if config.noRestore then
+        if config.noRestore.GetValueOrDefault() then
             Choice1Of2 false
         else
             let runRestoreProcParse run proc =
