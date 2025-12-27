@@ -1,5 +1,7 @@
 ﻿namespace pkgchk
 
+open pkgchk.Combinators
+
 type GithubContext =
     { token: string
       repo: string
@@ -55,6 +57,7 @@ module CliCommands =
         | true -> ReturnCodes.validationOk
         | _ -> ReturnCodes.validationFailed
 
+module Context = 
     let githubContext (settings: PackageGithubCommandSettings) =
         { GithubContext.commit = settings.GithubCommit
           token = settings.GithubToken
@@ -108,3 +111,24 @@ module CliCommands =
         { CommandContext.options = options
           github = githubContext settings
           report = reportContext settings }
+
+    let filterPackages (context: OptionsContext) (hits: seq<pkgchk.ScaHit>) =
+        let inclusionMap =
+            context.includedPackages
+            |> HashSet.ofSeq System.StringComparer.InvariantCultureIgnoreCase
+
+        let exclusionMap =
+            context.excludedPackages
+            |> HashSet.ofSeq System.StringComparer.InvariantCultureIgnoreCase
+
+        let included (hit: ScaHit) =
+            match inclusionMap.Count with
+            | 0 -> true
+            | x -> inclusionMap.Contains hit.packageId
+
+        let excluded (hit: ScaHit) =
+            match exclusionMap.Count with
+            | 0 -> true
+            | x -> exclusionMap.Contains hit.packageId |> not
+
+        hits |> Seq.filter (included &&>> excluded)

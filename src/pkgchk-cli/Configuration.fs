@@ -28,6 +28,7 @@ module Config =
             excludedPackages = r.excludedPackages |> Option.nullDefault [||]
             severities = r.severities |> Option.nullDefault [||] }
 
+    // TODO: defunct...
     let filterPackages (config: ScanConfiguration) (hits: pkgchk.ScaHit list) =
         let inclusionMap =
             config.includedPackages
