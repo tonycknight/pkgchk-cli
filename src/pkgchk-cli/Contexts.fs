@@ -27,7 +27,7 @@ type OptionsContext =
       breakOnDeprecations: bool
       includeTransitives: bool }
 
-type ApplicationContext =
+type ApplicationContext = // TODO: need a trace/collection of functions/properly named
     { options: OptionsContext
       report: ReportContext
       github: GithubContext }

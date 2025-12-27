@@ -190,7 +190,7 @@ module DotNetArgs =
 
 module DotNet =
 
-    let restore (config: ScanConfiguration) projectPath logging =
+    let restore (config: ScanConfiguration) projectPath logging = // TODO: normalise to context...
         if config.noRestore.GetValueOrDefault() then
             Choice1Of2 false
         else
@@ -206,7 +206,7 @@ module DotNet =
             |> Process.createProcess
             |> runRestoreProcParse (Process.run logging)
 
-    let scan (context: ScaCommandContext) =
+    let scan (context: ScaCommandContext) = // TODO: normalise to context...
         DotNetArgs.scanArgs context
         |> Array.map (fun (args, parser) -> (Process.createProcess args, parser))
         |> Array.map (fun (proc, parser) ->

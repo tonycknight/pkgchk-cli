@@ -45,16 +45,21 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
               breakOnDeprecations = settings.IncludeDeprecations
               checkTransitives = settings.IncludeTransitives }
 
-    let commandContext trace (settings: PackageScanCommandSettings) (config: ScanConfiguration) =
+    let appContext (settings: PackageScanCommandSettings) = 
+        let context = Context.scanContext settings
+
+        { context with options = Context.loadApplyConfig context.options }
+
+    let commandContext trace (context: ApplicationContext) =
         { ScaCommandContext.trace = trace
-          projectPath = settings.ProjectPath
-          includeVulnerabilities = config.breakOnVulnerabilities.GetValueOrDefault()
-          includeTransitives = config.checkTransitives.GetValueOrDefault()
-          includeDeprecations = config.breakOnDeprecations.GetValueOrDefault()
+          projectPath = context.options.projectPath
+          includeVulnerabilities = context.options.breakOnVulnerabilities
+          includeTransitives = context.options.includeTransitives
+          includeDeprecations = context.options.breakOnDeprecations
           includeDependencies = false
           includeOutdated = false }
 
-    let renderables (config: ScanConfiguration) hits hitCounts errorHits =
+    let renderables (config: ScanConfiguration) hits hitCounts errorHits = // TODO: move to use context
         seq {
             hits |> Console.hitsTable
             let mutable headlineSet = false
@@ -86,21 +91,20 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
             let settings = cleanSettings settings
 
             let config = config settings
+            let context = appContext settings // TODO: replace config above
 
-            if config.noBanner.GetValueOrDefault() |> not then
+            if context.options.suppressBanner |> not then
                 CliCommands.renderBanner nuget
 
-            match DotNet.restore config settings.ProjectPath trace with
+            match DotNet.restore config context.options.projectPath trace with
             | Choice2Of2 error -> return error |> CliCommands.returnError
-            | _ ->
-                let ctx = commandContext trace settings config
-
-                let results = DotNet.scan ctx
+            | _ ->                
+                let results = context |> commandContext trace |> DotNet.scan
 
                 trace "Analysing results..."
                 let errors = DotNet.scanErrors results
-                let hits = ScaModels.getHits results |> Config.filterPackages config
-                let errorHits = hits |> ScaModels.hitsByLevels config.severities
+                let hits = ScaModels.getHits results |> Context.filterPackages context.options |> List.ofSeq
+                let errorHits = hits |> ScaModels.hitsByLevels context.options.severities
                 let hitCounts = errorHits |> ScaModels.hitCountSummary |> List.ofSeq
                 let isSuccess = isSuccessScan errorHits
 
@@ -119,7 +123,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                     if settings.OutputDirectory <> "" then
                         trace "Building reports..."
 
-                        (hits, errorHits, hitCounts, config.severities, reportImg)
+                        (hits, errorHits, hitCounts, context.options.severities, reportImg)
                         |> Markdown.generateScan
                         |> Io.writeFile ("pkgchk.md" |> Io.composeFilePath settings.OutputDirectory)
                         |> CliCommands.renderReportLine
