@@ -16,6 +16,7 @@ type ReportContext =
 
 type OptionsContext =
     { projectPath: string
+      configFile: string
       suppressBanner: bool
       suppressRestore: bool
       includedPackages: string[]
@@ -47,6 +48,7 @@ module Context =
 
     let optionsContext (settings: PackageGithubCommandSettings) =
         { OptionsContext.projectPath = settings.ProjectPath
+          configFile = settings.ConfigFile
           suppressBanner = settings.NoBanner
           suppressRestore = settings.NoRestore
           includedPackages =
@@ -142,6 +144,11 @@ module Context =
                     includeTransitives = config.checkTransitives.Value }
 
         result
+
+    let loadApplyConfig (context: OptionsContext) =
+        match context.configFile with
+        | x when x <> "" -> x |> Io.fullPath |> Io.normalise |> Config.load |> applyConfig context
+        | _ -> context
 
     let filterPackages (context: OptionsContext) (hits: seq<pkgchk.ScaHit>) =
         let inclusionMap =

@@ -26,6 +26,7 @@ module ContextTests =
         let r = pkgchk.Context.optionsContext settings
 
         r.projectPath = settings.ProjectPath
+        && r.configFile = settings.ConfigFile
         && r.suppressBanner = settings.NoBanner
         && r.suppressRestore = settings.NoRestore
         && r.includedPackages = settings.IncludedPackages
