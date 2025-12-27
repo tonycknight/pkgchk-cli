@@ -11,8 +11,8 @@ type GithubContext =
 
 type ReportContext =
     { reportDirectory: string
-      goodImageUri: string 
-      baddImageUri: string }
+      goodImageUri: string
+      badImageUri: string }
 
 type OptionsContext =
     { projectPath: string
@@ -27,7 +27,7 @@ type OptionsContext =
       includeTransitives: bool }
 
 type CommandContext =
-    { options: OptionsContext 
+    { options: OptionsContext
       report: ReportContext
       github: GithubContext }
 
@@ -57,7 +57,7 @@ module CliCommands =
         | true -> ReturnCodes.validationOk
         | _ -> ReturnCodes.validationFailed
 
-module Context = 
+module Context =
     let githubContext (settings: PackageGithubCommandSettings) =
         { GithubContext.commit = settings.GithubCommit
           token = settings.GithubToken
@@ -67,15 +67,21 @@ module Context =
 
     let reportContext (settings: PackageGithubCommandSettings) =
         { ReportContext.reportDirectory = settings.OutputDirectory
-          goodImageUri = settings.GoodImageUri 
-          baddImageUri = settings.BadImageUri }
+          goodImageUri = settings.GoodImageUri
+          badImageUri = settings.BadImageUri }
 
     let optionsContext (settings: PackageGithubCommandSettings) =
         { OptionsContext.projectPath = settings.ProjectPath
           suppressBanner = settings.NoBanner
           suppressRestore = settings.NoRestore
-          includedPackages = settings.IncludedPackages |> Option.nullDefault [||] |> Array.filter String.isNotEmpty
-          excludedPackages = settings.ExcludedPackages |> Option.nullDefault [||] |> Array.filter String.isNotEmpty
+          includedPackages =
+            settings.IncludedPackages
+            |> Option.nullDefault [||]
+            |> Array.filter String.isNotEmpty
+          excludedPackages =
+            settings.ExcludedPackages
+            |> Option.nullDefault [||]
+            |> Array.filter String.isNotEmpty
           breakOnUpgrades = false
           severities = [||]
           breakOnVulnerabilities = false
@@ -83,8 +89,8 @@ module Context =
           includeTransitives = false }
 
     let scanContext (settings: PackageScanCommandSettings) =
-        let options = 
-            { optionsContext settings with 
+        let options =
+            { optionsContext settings with
                 severities = settings.SeverityLevels |> Array.filter String.isNotEmpty
                 breakOnVulnerabilities = settings.IncludeVulnerables
                 breakOnDeprecations = settings.IncludeDeprecations
@@ -94,33 +100,9 @@ module Context =
           github = githubContext settings
           report = reportContext settings }
 
-    let applyConfig (context: OptionsContext) (config: ScanConfiguration) =
-        let mutable result = context
-
-        if config.noBanner.HasValue then
-            result <- { context with suppressBanner = config.noBanner.Value }
-        if config.noRestore.HasValue then
-            result <- { result with suppressRestore = config.noRestore.Value }
-        if config.includedPackages |> Option.isNull |> not then 
-            result <- { result with includedPackages = config.includedPackages }
-        if config.excludedPackages |> Option.isNull |> not  then 
-            result <- { result with excludedPackages = config.excludedPackages }
-        if config.breakOnUpgrades.HasValue then
-            result <- { result with breakOnUpgrades = config.breakOnUpgrades.Value }
-        if config.severities |> Option.isNull  |> not then 
-            result <- { result with severities = config.severities }
-        if config.breakOnVulnerabilities.HasValue then
-            result <- { result with breakOnVulnerabilities = config.breakOnVulnerabilities.Value }
-        if config.breakOnDeprecations.HasValue then
-            result <- { result with breakOnDeprecations = config.breakOnDeprecations.Value }
-        if config.checkTransitives.HasValue then
-            result <- { result with includeTransitives = config.checkTransitives.Value }
-
-        result
-
     let listContext (settings: PackageListCommandSettings) =
-        let options = 
-            { optionsContext settings with 
+        let options =
+            { optionsContext settings with
                 includeTransitives = settings.IncludeTransitives }
 
         { CommandContext.options = options
@@ -128,13 +110,63 @@ module Context =
           report = reportContext settings }
 
     let upgradesContext (settings: PackageUpgradeCommandSettings) =
-        let options = 
-            { optionsContext settings with 
+        let options =
+            { optionsContext settings with
                 breakOnUpgrades = settings.BreakOnUpgrades }
 
         { CommandContext.options = options
           github = githubContext settings
           report = reportContext settings }
+
+    let applyConfig (context: OptionsContext) (config: ScanConfiguration) =
+        let mutable result = context
+
+        if config.noBanner.HasValue then
+            result <-
+                { context with
+                    suppressBanner = config.noBanner.Value }
+
+        if config.noRestore.HasValue then
+            result <-
+                { result with
+                    suppressRestore = config.noRestore.Value }
+
+        if config.includedPackages |> Option.isNull |> not then
+            result <-
+                { result with
+                    includedPackages = config.includedPackages }
+
+        if config.excludedPackages |> Option.isNull |> not then
+            result <-
+                { result with
+                    excludedPackages = config.excludedPackages }
+
+        if config.breakOnUpgrades.HasValue then
+            result <-
+                { result with
+                    breakOnUpgrades = config.breakOnUpgrades.Value }
+
+        if config.severities |> Option.isNull |> not then
+            result <-
+                { result with
+                    severities = config.severities }
+
+        if config.breakOnVulnerabilities.HasValue then
+            result <-
+                { result with
+                    breakOnVulnerabilities = config.breakOnVulnerabilities.Value }
+
+        if config.breakOnDeprecations.HasValue then
+            result <-
+                { result with
+                    breakOnDeprecations = config.breakOnDeprecations.Value }
+
+        if config.checkTransitives.HasValue then
+            result <-
+                { result with
+                    includeTransitives = config.checkTransitives.Value }
+
+        result
 
     let filterPackages (context: OptionsContext) (hits: seq<pkgchk.ScaHit>) =
         let inclusionMap =

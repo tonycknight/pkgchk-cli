@@ -23,7 +23,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
 
     let commandContext trace (settings: PackageListCommandSettings) (config: ScanConfiguration) =
         { ScaCommandContext.trace = trace
-          projectPath = settings.ProjectPath          
+          projectPath = settings.ProjectPath
           includeVulnerabilities = false
           includeTransitives = config.checkTransitives.GetValueOrDefault()
           includeDeprecations = false

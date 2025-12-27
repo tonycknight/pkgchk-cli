@@ -59,7 +59,10 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
             hits |> Console.hitsTable
             let mutable headlineSet = false
 
-            if config.breakOnVulnerabilities.GetValueOrDefault() || config.breakOnDeprecations.GetValueOrDefault() then
+            if
+                config.breakOnVulnerabilities.GetValueOrDefault()
+                || config.breakOnDeprecations.GetValueOrDefault()
+            then
                 errorHits |> Console.vulnerabilityHeadlineTable
                 headlineSet <- true
 
