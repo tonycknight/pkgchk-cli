@@ -203,6 +203,8 @@ module DotNet =
         if context.options.suppressRestore then
             Choice1Of2 false
         else
+            context.services.trace "Restoring packages..."
+
             let runRestoreProcParse run proc =
                 proc
                 |> run
@@ -216,6 +218,8 @@ module DotNet =
             |> runRestoreProcParse (Process.run context.services.trace)
 
     let scan (context: DotNetScanContext) =
+        context.trace "Scanning..."
+
         DotNetArgs.scanArgs context
         |> Array.map (fun (args, parser) -> (Process.createProcess args, parser))
         |> Array.map (fun (proc, parser) ->
