@@ -7,13 +7,13 @@ open YamlDotNet.Serialization
 type ScanConfiguration =
     { noBanner: Nullable<bool>
       noRestore: Nullable<bool>
-      includedPackages: string[]
-      excludedPackages: string[]
+      includePackages: string[]
+      excludePackages: string[]
       breakOnUpgrades: Nullable<bool>
       severities: string[]
       scanVulnerabilities: Nullable<bool>
       scanDeprecations: Nullable<bool>
-      checkTransitives: Nullable<bool> }
+      scanTransitives: Nullable<bool> }
 
 module Config =
     let private deserialiser = (new DeserializerBuilder()).Build()

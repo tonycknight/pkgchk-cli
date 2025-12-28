@@ -29,13 +29,13 @@ module ContextTests =
         && r.configFile = settings.ConfigFile
         && r.suppressBanner = settings.NoBanner
         && r.suppressRestore = settings.NoRestore
-        && r.includedPackages = settings.IncludedPackages
-        && r.excludedPackages = settings.ExcludedPackages
+        && r.includePackages = settings.IncludedPackages
+        && r.excludePackages = settings.ExcludedPackages
         && r.breakOnUpgrades = false
         && r.severities = [||]
         && r.scanVulnerabilities = false
         && r.scanDeprecations = false
-        && r.includeTransitives = false
+        && r.scanTransitives = false
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], MaxTest = 1000)>]
     let ``scanContext maps properties`` (settings: pkgchk.PackageScanCommandSettings) =
@@ -44,7 +44,7 @@ module ContextTests =
         r.options.severities = (settings.SeverityLevels |> Array.filter pkgchk.String.isNotEmpty)
         && r.options.scanVulnerabilities = settings.IncludeVulnerables
         && r.options.scanDeprecations = settings.IncludeDeprecations
-        && r.options.includeTransitives = settings.IncludeTransitives
+        && r.options.scanTransitives = settings.IncludeTransitives
         && r.github = (pkgchk.Context.githubContext settings)
         && r.report = (pkgchk.Context.reportContext settings)
 
@@ -52,7 +52,7 @@ module ContextTests =
     let ``listContext maps properties`` (settings: pkgchk.PackageListCommandSettings) =
         let r = pkgchk.Context.listContext settings
 
-        r.options.includeTransitives = settings.IncludeTransitives
+        r.options.scanTransitives = settings.IncludeTransitives
         && r.github = (pkgchk.Context.githubContext settings)
         && r.report = (pkgchk.Context.reportContext settings)
 
@@ -83,14 +83,14 @@ module ContextTests =
         let projectPath = (r.projectPath = context.projectPath)
 
         let includedPackages =
-            r.includedPackages = (match config.includedPackages with
-                                  | null -> context.includedPackages
-                                  | x -> config.includedPackages)
+            r.includePackages = (match config.includePackages with
+                                  | null -> context.includePackages
+                                  | x -> config.includePackages)
 
         let excludedPackages =
-            r.excludedPackages = (match config.excludedPackages with
-                                  | null -> context.excludedPackages
-                                  | x -> config.excludedPackages)
+            r.excludePackages = (match config.excludePackages with
+                                  | null -> context.excludePackages
+                                  | x -> config.excludePackages)
 
         let breakOnUpgrades =
             r.breakOnUpgrades = (match config.breakOnUpgrades.HasValue with
@@ -113,9 +113,9 @@ module ContextTests =
                                      | false -> context.scanDeprecations)
 
         let includeTransitives =
-            r.includeTransitives = (match config.checkTransitives.HasValue with
-                                    | true -> config.checkTransitives.Value
-                                    | false -> context.includeTransitives)
+            r.scanTransitives = (match config.scanTransitives.HasValue with
+                                    | true -> config.scanTransitives.Value
+                                    | false -> context.scanTransitives)
 
         suppressBanner
         && suppressRestore
@@ -134,8 +134,8 @@ module ContextTests =
 
         let context =
             { context with
-                excludedPackages = [||]
-                includedPackages = [||] }
+                excludePackages = [||]
+                includePackages = [||] }
 
         let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
 
@@ -147,8 +147,8 @@ module ContextTests =
 
         let context =
             { context with
-                excludedPackages = [||]
-                includedPackages = [| hit.packageId |] }
+                excludePackages = [||]
+                includePackages = [| hit.packageId |] }
 
         let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
 
@@ -160,8 +160,8 @@ module ContextTests =
 
         let context =
             { context with
-                excludedPackages = [||]
-                includedPackages = [| (hit.packageId + hit.packageId) |] }
+                excludePackages = [||]
+                includePackages = [| (hit.packageId + hit.packageId) |] }
 
         let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
 
@@ -173,8 +173,8 @@ module ContextTests =
 
         let context =
             { context with
-                includedPackages = [||]
-                excludedPackages = [| hit.packageId |] }
+                includePackages = [||]
+                excludePackages = [| hit.packageId |] }
 
         let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
 
@@ -186,8 +186,8 @@ module ContextTests =
 
         let context =
             { context with
-                includedPackages = [||]
-                excludedPackages = [| (hit.packageId + hit.packageId) |] }
+                includePackages = [||]
+                excludePackages = [| (hit.packageId + hit.packageId) |] }
 
         let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
 
@@ -199,8 +199,8 @@ module ContextTests =
 
         let context =
             { context with
-                includedPackages = [| hit.packageId |]
-                excludedPackages = [| hit.packageId |] }
+                includePackages = [| hit.packageId |]
+                excludePackages = [| hit.packageId |] }
 
         let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
 

@@ -19,13 +19,13 @@ type OptionsContext =
       configFile: string
       suppressBanner: bool
       suppressRestore: bool
-      includedPackages: string[]
-      excludedPackages: string[]
+      includePackages: string[]
+      excludePackages: string[]
       breakOnUpgrades: bool
       severities: string[]
       scanVulnerabilities: bool
       scanDeprecations: bool
-      includeTransitives: bool }
+      scanTransitives: bool }
 
 type ServiceContext = { trace: (string -> unit) }
 
@@ -53,11 +53,11 @@ module Context =
           configFile = settings.ConfigFile
           suppressBanner = settings.NoBanner
           suppressRestore = settings.NoRestore
-          includedPackages =
+          includePackages =
             settings.IncludedPackages
             |> Option.nullDefault [||]
             |> Array.filter String.isNotEmpty
-          excludedPackages =
+          excludePackages =
             settings.ExcludedPackages
             |> Option.nullDefault [||]
             |> Array.filter String.isNotEmpty
@@ -65,7 +65,7 @@ module Context =
           severities = [||]
           scanVulnerabilities = false
           scanDeprecations = false
-          includeTransitives = false }
+          scanTransitives = false }
 
     let serviceContext (settings: PackageCommandSettings) =
         { ServiceContext.trace = CliCommands.trace settings.TraceLogging }
@@ -82,14 +82,14 @@ module Context =
                 severities = settings.SeverityLevels |> Array.filter String.isNotEmpty
                 scanVulnerabilities = settings.IncludeVulnerables
                 scanDeprecations = settings.IncludeDeprecations
-                includeTransitives = settings.IncludeTransitives }
+                scanTransitives = settings.IncludeTransitives }
 
         options |> applicationContext settings
 
     let listContext (settings: PackageListCommandSettings) =
         let options =
             { optionsContext settings with
-                includeTransitives = settings.IncludeTransitives }
+                scanTransitives = settings.IncludeTransitives }
 
         options |> applicationContext settings
 
@@ -113,15 +113,15 @@ module Context =
                 { result with
                     suppressRestore = config.noRestore.Value }
 
-        if config.includedPackages |> Option.isNull |> not then
+        if config.includePackages |> Option.isNull |> not then
             result <-
                 { result with
-                    includedPackages = config.includedPackages }
+                    includePackages = config.includePackages }
 
-        if config.excludedPackages |> Option.isNull |> not then
+        if config.excludePackages |> Option.isNull |> not then
             result <-
                 { result with
-                    excludedPackages = config.excludedPackages }
+                    excludePackages = config.excludePackages }
 
         if config.breakOnUpgrades.HasValue then
             result <-
@@ -143,10 +143,10 @@ module Context =
                 { result with
                     scanDeprecations = config.scanDeprecations.Value }
 
-        if config.checkTransitives.HasValue then
+        if config.scanTransitives.HasValue then
             result <-
                 { result with
-                    includeTransitives = config.checkTransitives.Value }
+                    scanTransitives = config.scanTransitives.Value }
 
         result
 
@@ -167,11 +167,11 @@ module Context =
 
     let filterPackages (context: OptionsContext) (hits: seq<pkgchk.ScaHit>) =
         let inclusionMap =
-            context.includedPackages
+            context.includePackages
             |> HashSet.ofSeq System.StringComparer.InvariantCultureIgnoreCase
 
         let exclusionMap =
-            context.excludedPackages
+            context.excludePackages
             |> HashSet.ofSeq System.StringComparer.InvariantCultureIgnoreCase
 
         let included (hit: ScaHit) =

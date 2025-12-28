@@ -157,13 +157,13 @@ Acceptable formats are YAML:
 | - | - | - | 
 | `noBanner` | To hide the command line's banner. | |
 | `noRestore` | Equivalent to the `--no-restore` parameter. | |
-| `excludedPackages` | An array of package names to exclude, e.g. `excludedPackages: [ Ignored.Package ]` | 
-| `includedPackages` | An array of package names to include, e.g. `excludedPackages: [ Important.Package ]` | 
+| `excludePackages` | An array of package names to exclude, e.g. `excludedPackages: [ Ignored.Package ]` | 
+| `includePackages` | An array of package names to include, e.g. `excludedPackages: [ Important.Package ]` | 
 | `breakOnUpgrades` | For the `upgrades` command, to return a non-zero return code if package upgrades are found. |
 | `severities` | For the `scan` command, an array of severities, equivalent to the command's `--severity` parameters. | 
 | `scanVulnerabilities` | For the `scan` command, equivalent to the commandss `--vulnerable` parametrer. |
 | `scanDeprecations` | For the `scan` command, equivalent to the command's `--deprecated` parameter. |
-| `checkTransitives` | Equivalent to the `--transitive` parameter. |
+| `scanTransitives` | Equivalent to the `--transitive` parameter. |
 
 ## Integration within Github actions
 
