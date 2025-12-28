@@ -88,10 +88,10 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                         let comment = genComment (settings, hits)
 
                         if String.isNotEmpty context.github.prId then
-                            do! Github.sendPrComment settings context.services.trace comment
+                            do! Github.sendPrComment context comment
 
                         if String.isNotEmpty context.github.commit then
-                            do! Github.sendCheck settings context.services.trace true comment
+                            do! Github.sendCheck context true comment
 
                     return ReturnCodes.validationOk
         }

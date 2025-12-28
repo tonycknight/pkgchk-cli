@@ -7,13 +7,13 @@ open Spectre.Console.Cli
 type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
     inherit AsyncCommand<PackageUpgradeCommandSettings>()
 
-    let genComment (settings: PackageUpgradeCommandSettings, hits, reportImg) =
+    let genComment (context: ApplicationContext, hits, reportImg) =
         let markdown = (hits, reportImg) |> Markdown.generateUpgrades |> String.joinLines
 
         if markdown.Length < Github.maxCommentSize then
-            GithubComment.create settings.GithubSummaryTitle markdown
+            GithubComment.create context.github.summaryTitle markdown
         else
-            GithubComment.create settings.GithubSummaryTitle "_The report is too big for Github - Please check logs_"
+            GithubComment.create context.github.summaryTitle "_The report is too big for Github - Please check logs_"
 
     let isSuccessScan (context: ApplicationContext, hits: ScaHit list) =
         hits |> List.isEmpty || (context.options.breakOnUpgrades |> not)
@@ -90,13 +90,13 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
                     if settings.HasGithubParamters() then
                         context.services.trace "Building Github reports..."
-                        let comment = genComment (settings, hits, reportImg)
+                        let comment = genComment (context, hits, reportImg)
 
                         if String.isNotEmpty context.github.prId then
-                            do! Github.sendPrComment settings context.services.trace comment
+                            do! Github.sendPrComment context comment
 
                         if String.isNotEmpty context.github.commit then
-                            do! Github.sendCheck settings context.services.trace isSuccess comment
+                            do! Github.sendCheck context isSuccess comment
 
                     return isSuccess |> CliCommands.returnCode
         }
