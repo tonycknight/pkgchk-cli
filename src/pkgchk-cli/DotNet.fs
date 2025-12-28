@@ -24,7 +24,7 @@ module DotNetParsing =
             |> Array.ofSeq
         with
         | [||] -> ex.Message
-        | xs -> xs |> String.join Environment.NewLine
+        | xs -> xs |> String.joinLines
 
     let parseVulnerabilities json =
 
