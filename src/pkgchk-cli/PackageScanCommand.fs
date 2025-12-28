@@ -111,8 +111,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                     if Context.hasGithubParameters context then
                         context.services.trace "Building Github reports..."
 
-                        let comment =
-                            genComment (context, hits, errorHits, hitCounts, reportImg) 0
+                        let comment = genComment (context, hits, errorHits, hitCounts, reportImg) 0
 
                         if String.isNotEmpty context.github.prId then
                             do! Github.sendPrComment context comment
