@@ -84,12 +84,7 @@ type PackageGithubCommandSettings() =
     [<Description("URI of an image for failed scans.")>]
     [<DefaultValue("")>]
     member val BadImageUri = "" with get, set
-
-    member this.HasGithubParamters() =
-        String.isNotEmpty this.GithubToken
-        && String.isNotEmpty this.GithubRepo
-        && (String.isNotEmpty this.GithubPrId || String.isNotEmpty this.GithubCommit)
-
+        
     override this.Validate() : Spectre.Console.ValidationResult =
         let getErrors () =
             seq {

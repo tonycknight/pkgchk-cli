@@ -32,13 +32,13 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                 hitCounts |> Console.hitSummaryTable
         }
 
-    let genComment (settings: PackageListCommandSettings, hits) =
+    let genComment (context: ApplicationContext, hits) =
         let markdown = hits |> Markdown.generateList |> String.joinLines
 
         if markdown.Length < Github.maxCommentSize then
-            GithubComment.create settings.GithubSummaryTitle markdown
+            GithubComment.create context.github.summaryTitle markdown
         else
-            GithubComment.create settings.GithubSummaryTitle "_The report is too big for Github - Please check logs_"
+            GithubComment.create context.github.summaryTitle "_The report is too big for Github - Please check logs_"
 
     override _.Validate
         (context: CommandContext, settings: PackageListCommandSettings)
@@ -83,9 +83,9 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                         |> Io.writeFile ("pkgchk-dependencies.md" |> Io.composeFilePath context.report.reportDirectory)
                         |> CliCommands.renderReportLine
 
-                    if settings.HasGithubParamters() then
+                    if Context.hasGithubParameters context then
                         context.services.trace "Building Github reports..."
-                        let comment = genComment (settings, hits)
+                        let comment = genComment (context, hits)
 
                         if String.isNotEmpty context.github.prId then
                             do! Github.sendPrComment context comment

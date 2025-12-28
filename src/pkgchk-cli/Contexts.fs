@@ -155,6 +155,11 @@ module Context =
         | x when x <> "" -> x |> Io.fullPath |> Io.normalise |> Config.load |> applyConfig context
         | _ -> context
 
+    let hasGithubParameters (context: ApplicationContext) =
+        String.isNotEmpty context.github.token
+        && String.isNotEmpty context.github.repo
+        && (String.isNotEmpty context.github.prId || String.isNotEmpty context.github.commit)
+
     let reportImage ok (context: ApplicationContext) =
         match ok with
         | true -> context.report.goodImageUri

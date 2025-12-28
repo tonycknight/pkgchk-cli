@@ -88,7 +88,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                         |> Io.writeFile ("pkgchk-upgrades.md" |> Io.composeFilePath context.report.reportDirectory)
                         |> CliCommands.renderReportLine
 
-                    if settings.HasGithubParamters() then
+                    if Context.hasGithubParameters context then
                         context.services.trace "Building Github reports..."
                         let comment = genComment (context, hits, reportImg)
 

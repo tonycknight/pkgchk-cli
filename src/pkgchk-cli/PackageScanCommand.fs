@@ -106,7 +106,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                         |> Io.writeFile ("pkgchk.md" |> Io.composeFilePath context.report.reportDirectory)
                         |> CliCommands.renderReportLine
 
-                    if settings.HasGithubParamters() then
+                    if Context.hasGithubParameters context then
                         context.services.trace "Building Github reports..."
 
                         let comment =
