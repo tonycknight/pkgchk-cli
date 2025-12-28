@@ -22,18 +22,26 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
           includeDependencies = true
           includeOutdated = false }
 
-    let consoleTable hits hitCounts =
+    let results (context: ApplicationContext) (hits: seq<ScaHit>) =
+        let hits = hits |> Context.filterPackages context.options |> List.ofSeq
+
+        { ApplicationScanResults.hits = hits
+          errorHits = []
+          hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
+          isGoodScan = true }
+
+    let consoleTable (results: ApplicationScanResults) =
         seq {
-            match hits with
+            match results.hits with
             | [] -> Console.noscanHeadlineTable ()
             | hits -> hits |> Console.hitsTable
 
-            if hitCounts |> List.isEmpty |> not then
-                hitCounts |> Console.hitSummaryTable
+            if results.hitCounts |> List.isEmpty |> not then
+                results.hitCounts |> Console.hitSummaryTable
         }
 
-    let genComment (context: ApplicationContext, hits) =
-        let markdown = hits |> Markdown.generateList |> String.joinLines
+    let genComment (context: ApplicationContext, results: ApplicationScanResults) =
+        let markdown = results.hits |> Markdown.generateList |> String.joinLines
 
         if markdown.Length < Github.maxCommentSize then
             GithubComment.create context.github.summaryTitle markdown
@@ -63,29 +71,23 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                 if Seq.isEmpty errors |> not then
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
-
-                    let hits =
-                        DotNet.getHits scanResults
-                        |> Context.filterPackages context.options
-                        |> List.ofSeq
-
-                    let hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
-
+                    let results = scanResults |> DotNet.getHits |> results context
+                    
                     context.services.trace "Building display..."
 
-                    consoleTable hits hitCounts |> CliCommands.renderTables
+                    consoleTable results |> CliCommands.renderTables
 
                     if context.report.reportDirectory <> "" then
                         context.services.trace "Building reports..."
 
-                        hits
+                        results.hits
                         |> Markdown.generateList
                         |> Io.writeFile ("pkgchk-dependencies.md" |> Io.composeFilePath context.report.reportDirectory)
                         |> CliCommands.renderReportLine
 
                     if Context.hasGithubParameters context then
                         context.services.trace "Building Github reports..."
-                        let comment = genComment (context, hits)
+                        let comment = genComment (context, results)
 
                         if String.isNotEmpty context.github.prId then
                             do! Github.sendPrComment context comment
