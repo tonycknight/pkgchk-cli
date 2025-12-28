@@ -46,7 +46,7 @@ module Markdown =
             ""
 
             $"_Built on {now} UTC by [{App.packageId.ToLower()}]({App.repo}) Thank you for using my software._"
-            |> colourise "#818589"
+            |> colourise Rendering.grey
 
             ""
             "---"
@@ -153,9 +153,9 @@ module Markdown =
         |> Seq.sortBy fst
         |> Seq.collect formatHitGroup
 
-    let generateScan (hits, errorHits, countSummary, severities, imageUri) =
+    let generateScan (hits, countSummary, severities, imageUri) =
         seq {
-            yield! titleScan errorHits
+            yield! titleScan countSummary
 
             if String.isNotEmpty imageUri then
                 yield imgLink imageUri

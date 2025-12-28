@@ -45,13 +45,6 @@ module String =
     let trim (value: string) = value.Trim()
 
     [<DebuggerStepThrough>]
-    let indent length = new String(' ', length)
-
-    [<DebuggerStepThrough>]
-    let nullToEmpty (value: string) =
-        if obj.ReferenceEquals(value, null) then "" else value
-
-    [<DebuggerStepThrough>]
     let defaultValue (defaultValue: string) (value: string) =
         if isNotEmpty value then value else defaultValue
 
@@ -88,6 +81,8 @@ module Option =
             defaultValue
         else
             value
+
+    let isNull<'a> (value: 'a) = obj.ReferenceEquals(value, null)
 
 module ReturnCodes =
 

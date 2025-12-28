@@ -1,62 +1,51 @@
 ﻿namespace pkgchk
 
-open System.ComponentModel
 open System.Diagnostics.CodeAnalysis
 open Spectre.Console.Cli
-
-[<ExcludeFromCodeCoverage>]
-type PackageListCommandSettings() =
-    inherit PackageGithubCommandSettings()
-
-    [<CommandOption("-t|--transitive")>]
-    [<Description("Toggle transitive package checks. true to include them, false to exclude.")>]
-    [<DefaultValue(true)>]
-    member val IncludeTransitives = true with get, set
 
 [<ExcludeFromCodeCoverage>]
 type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
     inherit AsyncCommand<PackageListCommandSettings>()
 
-    let config (settings: PackageListCommandSettings) =
-        match settings.ConfigFile with
-        | x when x <> "" -> x |> Io.fullPath |> Io.normalise |> Config.load
-        | _ ->
-            { pkgchk.ScanConfiguration.includedPackages = settings.IncludedPackages
-              excludedPackages = settings.ExcludedPackages
-              breakOnUpgrades = false
-              noBanner = settings.NoBanner
-              noRestore = settings.NoRestore
-              severities = [||]
-              breakOnVulnerabilities = false
-              breakOnDeprecations = false
-              checkTransitives = settings.IncludeTransitives }
+    let appContext (settings: PackageListCommandSettings) =
+        let context = Context.listContext settings
 
-    let commandContext trace (settings: PackageListCommandSettings) config =
-        { ScaCommandContext.trace = trace
-          projectPath = settings.ProjectPath
+        { context with
+            options = Context.loadApplyConfig context.options }
+
+    let dotnetContext (context: ApplicationContext) =
+        { DotNetScanContext.services = context.services
+          projectPath = context.options.projectPath
           includeVulnerabilities = false
-          includeTransitives = config.checkTransitives
+          includeTransitives = context.options.scanTransitives
           includeDeprecations = false
           includeDependencies = true
           includeOutdated = false }
 
-    let renderables hits hitCounts =
+    let results (context: ApplicationContext) (hits: seq<ScaHit>) =
+        let hits = hits |> Context.filterPackages context.options |> List.ofSeq
+
+        { ApplicationScanResults.hits = hits
+          hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
+          isGoodScan = true }
+
+    let consoleTable (results: ApplicationScanResults) =
         seq {
-            match hits with
+            match results.hits with
             | [] -> Console.noscanHeadlineTable ()
             | hits -> hits |> Console.hitsTable
 
-            if hitCounts |> List.isEmpty |> not then
-                hitCounts |> Console.hitSummaryTable
+            if results.hitCounts |> List.isEmpty |> not then
+                results.hitCounts |> Console.hitSummaryTable
         }
 
-    let genComment (settings: PackageListCommandSettings, hits) =
-        let markdown = hits |> Markdown.generateList |> String.joinLines
+    let genComment (context: ApplicationContext, results: ApplicationScanResults) =
+        let markdown = results.hits |> Markdown.generateList |> String.joinLines
 
         if markdown.Length < Github.maxCommentSize then
-            GithubComment.create settings.GithubSummaryTitle markdown
+            GithubComment.create context.github.summaryTitle markdown
         else
-            GithubComment.create settings.GithubSummaryTitle "_The report is too big for Github - Please check logs_"
+            GithubComment.create context.github.summaryTitle "_The report is too big for Github - Please check logs_"
 
     override _.Validate
         (context: CommandContext, settings: PackageListCommandSettings)
@@ -65,49 +54,45 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
 
     override _.ExecuteAsync(context, settings, cancellationToken) =
         task {
-            let trace = CliCommands.trace settings.TraceLogging
-            let config = config settings
+            let context = appContext settings
 
-            if not config.noBanner then
+            if context.options.suppressBanner |> not then
                 CliCommands.renderBanner nuget
 
-            match DotNet.restore config settings.ProjectPath trace with
+            match DotNet.restore context with
             | Choice2Of2 error -> return error |> CliCommands.returnError
             | _ ->
-                let ctx = commandContext trace settings config
+                let scanResults = context |> dotnetContext |> DotNet.scan
 
-                let results = DotNet.scan ctx
-
-                let errors = DotNet.scanErrors results
+                context.services.trace "Analysing results..."
+                let errors = DotNet.getErrors scanResults
 
                 if Seq.isEmpty errors |> not then
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
-                    trace "Analysing results..."
-                    let hits = ScaModels.getHits results |> Config.filterPackages config
-                    let hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
+                    let results = scanResults |> DotNet.getHits |> results context
 
-                    trace "Building display..."
+                    context.services.trace "Building display..."
 
-                    renderables hits hitCounts |> CliCommands.renderTables
+                    consoleTable results |> CliCommands.renderTables
 
-                    if settings.OutputDirectory <> "" then
-                        trace "Building reports..."
+                    if context.report.reportDirectory <> "" then
+                        context.services.trace "Building reports..."
 
-                        hits
+                        results.hits
                         |> Markdown.generateList
-                        |> Io.writeFile ("pkgchk-dependencies.md" |> Io.composeFilePath settings.OutputDirectory)
+                        |> Io.writeFile ("pkgchk-dependencies.md" |> Io.composeFilePath context.report.reportDirectory)
                         |> CliCommands.renderReportLine
 
-                    if settings.HasGithubParamters() then
-                        trace "Building Github reports..."
-                        let comment = genComment (settings, hits)
+                    if Context.hasGithubParameters context then
+                        context.services.trace "Building Github reports..."
+                        let comment = genComment (context, results)
 
-                        if String.isNotEmpty settings.GithubPrId then
-                            do! Github.sendPrComment settings trace comment
+                        if String.isNotEmpty context.github.prId then
+                            do! Github.sendPrComment context comment
 
-                        if String.isNotEmpty settings.GithubCommit then
-                            do! Github.sendCheck settings trace true comment
+                        if String.isNotEmpty context.github.commit then
+                            do! Github.sendCheck context true comment
 
                     return ReturnCodes.validationOk
         }

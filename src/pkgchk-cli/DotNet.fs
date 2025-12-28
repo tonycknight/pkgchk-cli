@@ -6,6 +6,15 @@ open FSharp.Data
 type ScaVulnerabilityData = JsonProvider<"ScaVulnerabilitySample.json">
 type ScaPackageTreeData = JsonProvider<"PackageDependencyTreeSample.json">
 
+type DotNetScanContext =
+    { services: ServiceContext
+      projectPath: string
+      includeVulnerabilities: bool
+      includeTransitives: bool
+      includeDeprecations: bool
+      includeDependencies: bool
+      includeOutdated: bool }
+
 module DotNetParsing =
 
     let parseError (parseable: string) (ex: Exception) =
@@ -15,7 +24,7 @@ module DotNetParsing =
             |> Array.ofSeq
         with
         | [||] -> ex.Message
-        | xs -> xs |> String.join Environment.NewLine
+        | xs -> xs |> String.joinLines
 
     let parseVulnerabilities json =
 
@@ -176,7 +185,7 @@ module DotNetArgs =
     let restoreArgs projectPath =
         projectPath |> Io.fullPath |> sprintf "restore %s -nowarn:NU1510 -nowarn:NU1903"
 
-    let scanArgs (context: ScaCommandContext) =
+    let scanArgs (context: DotNetScanContext) =
         let projPath = context.projectPath |> Io.fullPath
 
         [| if context.includeVulnerabilities then
@@ -190,10 +199,12 @@ module DotNetArgs =
 
 module DotNet =
 
-    let restore (config: ScanConfiguration) projectPath logging =
-        if config.noRestore then
+    let restore (context: ApplicationContext) =
+        if context.options.suppressRestore then
             Choice1Of2 false
         else
+            context.services.trace "Restoring packages..."
+
             let runRestoreProcParse run proc =
                 proc
                 |> run
@@ -201,23 +212,45 @@ module DotNet =
                 | Choice2Of2 error -> Choice2Of2 error
                 | _ -> Choice1Of2 true)
 
-            projectPath
+            context.options.projectPath
             |> DotNetArgs.restoreArgs
             |> Process.createProcess
-            |> runRestoreProcParse (Process.run logging)
+            |> runRestoreProcParse (Process.run context.services.trace)
 
-    let scan (context: ScaCommandContext) =
+    let scan (context: DotNetScanContext) =
+        context.services.trace "Scanning..."
+
         DotNetArgs.scanArgs context
         |> Array.map (fun (args, parser) -> (Process.createProcess args, parser))
         |> Array.map (fun (proc, parser) ->
-            match proc |> (Process.run context.trace) with
+            match proc |> (Process.run context.services.trace) with
             | Choice1Of2 json -> parser json
             | Choice2Of2 x -> Choice2Of2 x)
 
-    let scanErrors procResults =
+    let getErrors procResults =
         procResults
         |> Seq.map (function
             | Choice2Of2 x -> x
             | _ -> "")
         |> Seq.filter String.isNotEmpty
         |> Seq.distinct
+
+    let private liftHits procResults =
+        procResults
+        |> Seq.collect (function
+            | Choice1Of2 xs -> xs
+            | _ -> [])
+        |> List.ofSeq
+
+    let private sortHits (hits: seq<ScaHit>) =
+        hits
+        |> Seq.sortBy (fun h ->
+            ((match h.kind with
+              | ScaHitKind.Vulnerability -> 0
+              | ScaHitKind.Dependency -> 1
+              | ScaHitKind.VulnerabilityTransitive -> 2
+              | ScaHitKind.Deprecated -> 3
+              | ScaHitKind.DependencyTransitive -> 4),
+             h.packageId))
+
+    let getHits x = x |> liftHits |> sortHits |> List.ofSeq

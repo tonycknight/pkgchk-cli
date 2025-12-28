@@ -22,7 +22,7 @@ module Io =
     let writeFile (path: string) (lines: seq<string>) =
         let dir = System.IO.Path.GetDirectoryName path
         System.IO.Directory.CreateDirectory dir |> ignore
-        System.IO.File.WriteAllText(path, lines |> String.join Environment.NewLine)
+        System.IO.File.WriteAllText(path, lines |> String.joinLines)
         path
 
     let composeFilePath directory fileName =

@@ -1,100 +1,66 @@
 ﻿namespace pkgchk
 
-open System.ComponentModel
 open System.Diagnostics.CodeAnalysis
 open Spectre.Console.Cli
-
-[<ExcludeFromCodeCoverage>]
-type PackageScanCommandSettings() =
-    inherit PackageGithubCommandSettings()
-
-    [<CommandOption("-v|--vulnerable")>]
-    [<Description("Toggle vulnerable package checks. true to include them, false to exclude.")>]
-    [<DefaultValue(true)>]
-    member val IncludeVulnerables = true with get, set
-
-    [<CommandOption("-t|--transitive")>]
-    [<Description("Toggle transitive package checks. true to include them, false to exclude.")>]
-    [<DefaultValue(true)>]
-    member val IncludeTransitives = true with get, set
-
-    [<CommandOption("-d|--deprecated")>]
-    [<Description("Check deprecated packagess. true to include, false to exclude.")>]
-    [<DefaultValue(false)>]
-    member val IncludeDeprecations = false with get, set
-
-    [<CommandOption("-s|--severity")>]
-    [<Description("Severity levels to scan for. Matches will return non-zero exit codes. Multiple levels can be specified.")>]
-    [<DefaultValue([| "High"; "Critical"; "Critical Bugs"; "Legacy" |])>]
-    member val SeverityLevels: string array = [||] with get, set
 
 [<ExcludeFromCodeCoverage>]
 type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
     inherit AsyncCommand<PackageScanCommandSettings>()
 
-    let rec genComment trace (settings: PackageScanCommandSettings, hits, errorHits, hitCounts, imageUri) attempt =
-        let markdown =
-            (hits, errorHits, hitCounts, settings.SeverityLevels, imageUri)
-            |> Markdown.generateScan
-            |> String.joinLines
+    let genReport (context: ApplicationContext, (results: ApplicationScanResults), imageUri) =
+        (results.hits, results.hitCounts, context.options.severities, imageUri)
+        |> Markdown.generateScan
 
-        let summaryTitle = settings.GithubSummaryTitle
+    let genComment (context: ApplicationContext, (results: ApplicationScanResults), imageUri) =
+
+        let markdown = (context, results, imageUri) |> genReport |> String.joinLines
 
         if markdown.Length < Github.maxCommentSize then
-            GithubComment.create summaryTitle markdown
+            GithubComment.create context.github.summaryTitle markdown
         else
-            trace $"Shrinking Github output as too large (attempt #{attempt + 1})..."
+            GithubComment.create context.github.summaryTitle "_The report is too big for Github - Please check logs_"
 
-            if attempt >= 1 then
-                GithubComment.create summaryTitle "_The report is too big for Github - Please check logs_"
-            else
-                genComment trace (settings, [], errorHits, hitCounts, imageUri) (attempt + 1)
+    let appContext (settings: PackageScanCommandSettings) =
 
-    let isSuccessScan (hits: ScaHit list) = hits |> List.isEmpty
+        let context = Context.scanContext settings
 
-    let cleanSettings (settings: PackageScanCommandSettings) =
-        settings.SeverityLevels <- settings.SeverityLevels |> Array.filter String.isNotEmpty
-        settings
+        { context with
+            options = Context.loadApplyConfig context.options }
 
-    let config (settings: PackageScanCommandSettings) =
-        match settings.ConfigFile with
-        | x when x <> "" -> x |> Io.fullPath |> Io.normalise |> Config.load
-        | _ ->
-            { pkgchk.ScanConfiguration.includedPackages = settings.IncludedPackages
-              excludedPackages = settings.ExcludedPackages
-              breakOnUpgrades = false
-              noBanner = settings.NoBanner
-              noRestore = settings.NoRestore
-              severities = settings.SeverityLevels
-              breakOnVulnerabilities = settings.IncludeVulnerables
-              breakOnDeprecations = settings.IncludeDeprecations
-              checkTransitives = settings.IncludeTransitives }
-
-    let commandContext trace (settings: PackageScanCommandSettings) config =
-        { ScaCommandContext.trace = trace
-          projectPath = settings.ProjectPath
-          includeVulnerabilities = config.breakOnVulnerabilities
-          includeTransitives = config.checkTransitives
-          includeDeprecations = config.breakOnDeprecations
+    let dotnetContext (context: ApplicationContext) =
+        { DotNetScanContext.services = context.services
+          projectPath = context.options.projectPath
+          includeVulnerabilities = context.options.scanVulnerabilities
+          includeTransitives = context.options.scanTransitives
+          includeDeprecations = context.options.scanDeprecations
           includeDependencies = false
           includeOutdated = false }
 
-    let renderables config hits hitCounts errorHits =
+    let consoleTable (context: ApplicationContext) (results: ApplicationScanResults) =
         seq {
-            hits |> Console.hitsTable
+            results.hits |> Console.hitsTable
             let mutable headlineSet = false
 
-            if config.breakOnVulnerabilities || config.breakOnDeprecations then
-                errorHits |> Console.vulnerabilityHeadlineTable
+            if context.options.scanVulnerabilities || context.options.scanDeprecations then
+                results.hitCounts |> Console.vulnerabilityHeadlineTable
                 headlineSet <- true
 
-            if hitCounts |> List.isEmpty |> not then
-                config.severities |> Console.severitySettingsTable
-                hitCounts |> Console.hitSummaryTable
+            if results.hitCounts |> List.isEmpty |> not then
+                context.options.severities |> Console.severitySettingsTable
+                results.hitCounts |> Console.hitSummaryTable
 
             else if (not headlineSet) then
                 Console.noscanHeadlineTable ()
         }
+
+    let results (context: ApplicationContext) (hits: seq<ScaHit>) =
+        let hits = hits |> Context.filterPackages context.options |> List.ofSeq
+
+        let errorHits = hits |> ScaModels.hitsByLevels context.options.severities
+
+        { ApplicationScanResults.hits = hits
+          hitCounts = errorHits |> ScaModels.hitCountSummary |> List.ofSeq
+          isGoodScan = errorHits |> List.isEmpty }
 
     override _.Validate
         (context: CommandContext, settings: PackageScanCommandSettings)
@@ -103,58 +69,48 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
     override _.ExecuteAsync(context, settings, cancellationToken) =
         task {
-            let trace = CliCommands.trace settings.TraceLogging
+            let context = appContext settings
 
-            let settings = cleanSettings settings
-
-            let config = config settings
-
-            if not config.noBanner then
+            if context.options.suppressBanner |> not then
                 CliCommands.renderBanner nuget
 
-            match DotNet.restore config settings.ProjectPath trace with
+            match DotNet.restore context with
             | Choice2Of2 error -> return error |> CliCommands.returnError
             | _ ->
-                let ctx = commandContext trace settings config
+                let scanResults = context |> dotnetContext |> DotNet.scan
 
-                let results = DotNet.scan ctx
-
-                trace "Analysing results..."
-                let errors = DotNet.scanErrors results
-                let hits = ScaModels.getHits results |> Config.filterPackages config
-                let errorHits = hits |> ScaModels.hitsByLevels config.severities
-                let hitCounts = errorHits |> ScaModels.hitCountSummary |> List.ofSeq
-                let isSuccess = isSuccessScan errorHits
+                context.services.trace "Analysing results..."
+                let errors = DotNet.getErrors scanResults
 
                 if Seq.isEmpty errors |> not then
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
-                    trace "Building display..."
+                    let results = DotNet.getHits scanResults |> results context
 
-                    renderables config hits hitCounts errorHits |> CliCommands.renderTables
+                    context.services.trace "Building display..."
 
-                    let reportImg =
-                        match isSuccess with
-                        | true -> settings.GoodImageUri
-                        | false -> settings.BadImageUri
+                    consoleTable context results |> CliCommands.renderTables
 
-                    if settings.OutputDirectory <> "" then
-                        trace "Building reports..."
+                    let reportImg = context |> Context.reportImage results.isGoodScan
 
-                        (hits, errorHits, hitCounts, config.severities, reportImg)
-                        |> Markdown.generateScan
-                        |> Io.writeFile ("pkgchk.md" |> Io.composeFilePath settings.OutputDirectory)
+                    if context.report.reportDirectory <> "" then
+                        context.services.trace "Building reports..."
+
+                        (context, results, reportImg)
+                        |> genReport
+                        |> Io.writeFile ("pkgchk.md" |> Io.composeFilePath context.report.reportDirectory)
                         |> CliCommands.renderReportLine
 
-                    if settings.HasGithubParamters() then
-                        trace "Building Github reports..."
-                        let comment = genComment trace (settings, hits, errorHits, hitCounts, reportImg) 0
+                    if Context.hasGithubParameters context then
+                        context.services.trace "Building Github reports..."
 
-                        if String.isNotEmpty settings.GithubPrId then
-                            do! Github.sendPrComment settings trace comment
+                        let comment = genComment (context, results, reportImg)
 
-                        if String.isNotEmpty settings.GithubCommit then
-                            do! Github.sendCheck settings trace isSuccess comment
+                        if String.isNotEmpty context.github.prId then
+                            do! Github.sendPrComment context comment
 
-                    return CliCommands.returnCode isSuccess
+                        if String.isNotEmpty context.github.commit then
+                            do! Github.sendCheck context results.isGoodScan comment
+
+                    return CliCommands.returnCode results.isGoodScan
         }

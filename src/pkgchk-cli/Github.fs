@@ -63,7 +63,7 @@ module Github =
 
             let (commentTitle, commentBody) = constructComment comment
 
-            // As there's no concret mechanism in Octokit to affinitise comments, we must use titles as the discriminator.
+            // As there's no concrete mechanism in Octokit to affinitise comments, we must use titles as the discriminator.
             let! comments = getIssueComments client (owner, repo) prId
 
             $"Found {comments |> Seq.length} comments." |> trace
@@ -110,26 +110,27 @@ module Github =
             $"Created check for commit {run.HeadSha}, url: {run.Url}." |> trace
         }
 
-    let sendPrComment (settings: PackageGithubCommandSettings) trace (comment: GithubComment) =
+    let sendPrComment (context: ApplicationContext) (comment: GithubComment) =
         task {
-            let prId = String.toInt settings.GithubPrId
-            let repo = String.split '/' settings.GithubRepo
-            let client = client settings.GithubToken
+            let prId = String.toInt context.github.prId
+            let repo = String.split '/' context.github.repo
+            let client = client context.github.token
 
-            trace $"Posting {comment.title} PR comment to Github repo {repo}..."
+            context.services.trace $"Posting {comment.title} PR comment to Github repo {repo}..."
 
-            let! _ = (comment |> setPrComment trace client repo prId)
+            let! _ = (comment |> setPrComment context.services.trace client repo prId)
 
             $"{comment.title} PR report sent to Github."
             |> Console.italic
             |> CliCommands.console
         }
 
-    let sendCheck (settings: PackageGithubCommandSettings) trace isSuccess (comment: GithubComment) =
+    let sendCheck (context: ApplicationContext) isSuccess (comment: GithubComment) =
         task {
-            let repo = String.split '/' settings.GithubRepo
-            let client = client settings.GithubToken
-            let commit = settings.GithubCommit
+            let trace = context.services.trace
+            let repo = String.split '/' context.github.repo
+            let client = client context.github.token
+            let commit = context.github.commit
 
             trace $"Posting {comment.title} build check to Github repo {repo}..."
 

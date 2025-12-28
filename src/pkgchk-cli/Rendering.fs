@@ -21,7 +21,7 @@ module Rendering =
     let yellow = "yellow"
 
     [<Literal>]
-    let orange = "##f57a51"
+    let orange = "#f57a51"
 
     [<Literal>]
     let cornflowerblue = "#6495ed"
@@ -50,16 +50,17 @@ module Rendering =
 
     let reasonColour =
         function
-        | "Critical Bugs" -> "red"
-        | "Legacy" -> "yellow"
-        | _ -> "cyan"
+        | "Critical Bugs" -> red
+        | "Legacy" -> yellow
+        | _ -> cyan
 
     let severityColour =
         function
-        | "High" -> "red"
-        | "Critical" -> "red"
-        | "Moderate" -> "#d75f00"
-        | _ -> "yellow"
+        | "High" -> red
+        | "Critical" -> red
+        | "Critical Bugs" -> red
+        | "Moderate" -> orange
+        | _ -> yellow
 
     let severityStyle =
         function
