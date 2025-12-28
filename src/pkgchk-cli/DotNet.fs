@@ -7,7 +7,7 @@ type ScaVulnerabilityData = JsonProvider<"ScaVulnerabilitySample.json">
 type ScaPackageTreeData = JsonProvider<"PackageDependencyTreeSample.json">
 
 type DotNetScanContext =
-    { trace: (string -> unit)
+    { services: ServiceContext
       projectPath: string
       includeVulnerabilities: bool
       includeTransitives: bool
@@ -218,12 +218,12 @@ module DotNet =
             |> runRestoreProcParse (Process.run context.services.trace)
 
     let scan (context: DotNetScanContext) =
-        context.trace "Scanning..."
+        context.services.trace "Scanning..."
 
         DotNetArgs.scanArgs context
         |> Array.map (fun (args, parser) -> (Process.createProcess args, parser))
         |> Array.map (fun (proc, parser) ->
-            match proc |> (Process.run context.trace) with
+            match proc |> (Process.run context.services.trace) with
             | Choice1Of2 json -> parser json
             | Choice2Of2 x -> Choice2Of2 x)
 

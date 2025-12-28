@@ -23,7 +23,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
             options = Context.loadApplyConfig context.options }
 
     let dotnetContext (context: ApplicationContext) =
-        { DotNetScanContext.trace = context.services.trace
+        { DotNetScanContext.services = context.services
           projectPath = context.options.projectPath
           includeVulnerabilities = false
           includeTransitives = false
