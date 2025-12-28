@@ -8,8 +8,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
     inherit AsyncCommand<PackageScanCommandSettings>()
 
     let genComment (context: ApplicationContext, (results: ApplicationScanResults), imageUri) =
-        // TODO: generateScan only uses errorHits to determine if it's empty or not...
-        // but it's generated as those hits that match severity levels. All hits, regardless of severity, are rendered.
+
         let markdown =
             (results.hits, results.errorHits, results.hitCounts, context.options.severities, imageUri)
             |> Markdown.generateScan
