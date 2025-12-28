@@ -26,25 +26,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 genComment trace (settings, [], errorHits, hitCounts, imageUri) (attempt + 1)
 
     let isSuccessScan (hits: ScaHit list) = hits |> List.isEmpty
-
-    let cleanSettings (settings: PackageScanCommandSettings) =
-        settings.SeverityLevels <- settings.SeverityLevels |> Array.filter String.isNotEmpty
-        settings
-
-    let config (settings: PackageScanCommandSettings) =
-        match settings.ConfigFile with
-        | x when x <> "" -> x |> Io.fullPath |> Io.normalise |> Config.load
-        | _ ->
-            { pkgchk.ScanConfiguration.includedPackages = settings.IncludedPackages
-              excludedPackages = settings.ExcludedPackages
-              breakOnUpgrades = false
-              noBanner = settings.NoBanner
-              noRestore = settings.NoRestore
-              severities = settings.SeverityLevels
-              breakOnVulnerabilities = settings.IncludeVulnerables
-              breakOnDeprecations = settings.IncludeDeprecations
-              checkTransitives = settings.IncludeTransitives }
-
+        
     let appContext (settings: PackageScanCommandSettings) = 
         
         let context = Context.scanContext settings
@@ -60,20 +42,20 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
           includeDependencies = false
           includeOutdated = false }
 
-    let renderables (config: ScanConfiguration) hits hitCounts errorHits = // TODO: move to use context
+    let renderables (context: ApplicationContext) hits hitCounts errorHits =
         seq {
             hits |> Console.hitsTable
             let mutable headlineSet = false
 
             if
-                config.breakOnVulnerabilities.GetValueOrDefault()
-                || config.breakOnDeprecations.GetValueOrDefault()
+                context.options.breakOnVulnerabilities
+                || context.options.breakOnDeprecations
             then
                 errorHits |> Console.vulnerabilityHeadlineTable
                 headlineSet <- true
 
             if hitCounts |> List.isEmpty |> not then
-                config.severities |> Console.severitySettingsTable
+                context.options.severities |> Console.severitySettingsTable
                 hitCounts |> Console.hitSummaryTable
 
             else if (not headlineSet) then
@@ -87,10 +69,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
     override _.ExecuteAsync(context, settings, cancellationToken) =
         task {
-            let settings = cleanSettings settings // TODO: hang tight
-
-            let config = config settings
-            let context = appContext settings // TODO: replace config above
+            let context = appContext settings
 
             if context.options.suppressBanner |> not then
                 CliCommands.renderBanner nuget
@@ -112,7 +91,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 else
                     context.services.trace "Building display..."
 
-                    renderables config hits hitCounts errorHits |> CliCommands.renderTables
+                    renderables context hits hitCounts errorHits |> CliCommands.renderTables
 
                     let reportImg =
                         match isSuccess with
