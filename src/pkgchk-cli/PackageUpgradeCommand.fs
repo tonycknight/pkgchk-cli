@@ -15,22 +15,8 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
         else
             GithubComment.create settings.GithubSummaryTitle "_The report is too big for Github - Please check logs_"
 
-    let isSuccessScan (settings: ScanConfiguration, hits: ScaHit list) =
-        hits |> List.isEmpty || (settings.breakOnUpgrades.GetValueOrDefault() |> not)
-
-    let config (settings: PackageUpgradeCommandSettings) =
-        match settings.ConfigFile with
-        | x when x <> "" -> x |> Io.fullPath |> Io.normalise |> Config.load
-        | _ ->
-            { pkgchk.ScanConfiguration.includedPackages = settings.IncludedPackages
-              excludedPackages = settings.ExcludedPackages
-              breakOnUpgrades = settings.BreakOnUpgrades
-              noBanner = settings.NoBanner
-              noRestore = settings.NoRestore
-              severities = [||]
-              breakOnVulnerabilities = false
-              breakOnDeprecations = false
-              checkTransitives = false }
+    let isSuccessScan (context: ApplicationContext, hits: ScaHit list) =
+        hits |> List.isEmpty || (context.options.breakOnUpgrades |> not)
 
     let appContext (settings: PackageUpgradeCommandSettings) = 
         let context = Context.upgradesContext settings
@@ -63,8 +49,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
     override _.ExecuteAsync(context, settings, cancellationToken) =
         task {
-            let config = config settings
-            let context = appContext settings // TODO: replace config above
+            let context = appContext settings
 
             if context.options.suppressBanner |> not then
                 CliCommands.renderBanner nuget
@@ -77,7 +62,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                 context.services.trace "Analysing results..."
                 let hits = ScaModels.getHits results |> Context.filterPackages context.options |> List.ofSeq
                 let hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
-                let isSuccess = isSuccessScan (config, hits)
+                let isSuccess = isSuccessScan (context, hits)
                 let errors = DotNet.scanErrors results
 
                 if Seq.isEmpty errors |> not then
