@@ -23,8 +23,8 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
         { context with options = Context.loadApplyConfig context.options }
 
-    let commandContext trace (context: ApplicationContext) =
-        { DotNetContext.trace = trace
+    let dotnetContext (context: ApplicationContext) =
+        { DotNetScanContext.trace = context.services.trace
           projectPath = context.options.projectPath
           includeVulnerabilities = false
           includeTransitives = false
@@ -57,7 +57,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
             match DotNet.restore context with
             | Choice2Of2 error -> return error |> CliCommands.returnError
             | _ ->
-                let results = context |> commandContext context.services.trace |> DotNet.scan
+                let results = context |> dotnetContext |> DotNet.scan
 
                 context.services.trace "Analysing results..."
                 let hits = ScaModels.getHits results |> Context.filterPackages context.options |> List.ofSeq

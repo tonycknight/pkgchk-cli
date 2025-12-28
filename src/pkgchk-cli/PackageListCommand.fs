@@ -12,8 +12,8 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
 
         { context with options = Context.loadApplyConfig context.options }
 
-    let scaContext trace (context: ApplicationContext) =
-        { DotNetContext.trace = trace 
+    let dotnetContext (context: ApplicationContext) =
+        { DotNetScanContext.trace = context.services.trace 
           projectPath = context.options.projectPath
           includeVulnerabilities = false
           includeTransitives = context.options.includeTransitives
@@ -54,7 +54,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
             match DotNet.restore context with
             | Choice2Of2 error -> return error |> CliCommands.returnError
             | _ ->
-                let results = context |> scaContext context.services.trace |> DotNet.scan
+                let results = context |> dotnetContext |> DotNet.scan
 
                 let errors = DotNet.scanErrors results
 

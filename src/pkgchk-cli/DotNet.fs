@@ -6,7 +6,7 @@ open FSharp.Data
 type ScaVulnerabilityData = JsonProvider<"ScaVulnerabilitySample.json">
 type ScaPackageTreeData = JsonProvider<"PackageDependencyTreeSample.json">
 
-type DotNetContext =
+type DotNetScanContext =
     { trace: (string -> unit)
       projectPath: string
       includeVulnerabilities: bool
@@ -185,7 +185,7 @@ module DotNetArgs =
     let restoreArgs projectPath =
         projectPath |> Io.fullPath |> sprintf "restore %s -nowarn:NU1510 -nowarn:NU1903"
 
-    let scanArgs (context: DotNetContext) =
+    let scanArgs (context: DotNetScanContext) =
         let projPath = context.projectPath |> Io.fullPath
 
         [| if context.includeVulnerabilities then
@@ -215,7 +215,7 @@ module DotNet =
             |> Process.createProcess
             |> runRestoreProcParse (Process.run context.services.trace)
 
-    let scan (context: DotNetContext) = 
+    let scan (context: DotNetScanContext) = 
         DotNetArgs.scanArgs context
         |> Array.map (fun (args, parser) -> (Process.createProcess args, parser))
         |> Array.map (fun (proc, parser) ->
