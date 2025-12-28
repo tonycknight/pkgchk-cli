@@ -16,9 +16,6 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
         else
             GithubComment.create context.github.summaryTitle "_The report is too big for Github - Please check logs_"
 
-    let isSuccessScan (context: ApplicationContext, hits: ScaHit list) =
-        hits |> List.isEmpty || (context.options.breakOnUpgrades |> not)
-
     let appContext (settings: PackageUpgradeCommandSettings) =
         let context = Context.upgradesContext settings
 
@@ -49,7 +46,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
         { ApplicationScanResults.hits = hits
           hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
-          isGoodScan = isSuccessScan (context, hits) }
+          isGoodScan = hits |> List.isEmpty || (context.options.breakOnUpgrades |> not) }
 
     override _.Validate
         (context: CommandContext, settings: PackageUpgradeCommandSettings)
