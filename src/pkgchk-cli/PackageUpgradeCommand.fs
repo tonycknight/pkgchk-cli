@@ -58,20 +58,22 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
             match DotNet.restore context with
             | Choice2Of2 error -> return error |> CliCommands.returnError
             | _ ->
-                let results = context |> dotnetContext |> DotNet.scan
+                let scanResults = context |> dotnetContext |> DotNet.scan
 
                 context.services.trace "Analysing results..."
-
-                let hits =
-                    DotNet.getHits results |> Context.filterPackages context.options |> List.ofSeq
-
-                let hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
-                let isSuccess = isSuccessScan (context, hits)
-                let errors = DotNet.getErrors results
+                let errors = DotNet.getErrors scanResults
 
                 if Seq.isEmpty errors |> not then
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
+
+                    let hits =
+                        DotNet.getHits scanResults
+                        |> Context.filterPackages context.options
+                        |> List.ofSeq
+
+                    let hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
+                    let isSuccess = isSuccessScan (context, hits)
                     context.services.trace "Building display..."
 
                     renderables hits hitCounts |> CliCommands.renderTables

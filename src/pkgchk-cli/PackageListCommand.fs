@@ -55,17 +55,19 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
             match DotNet.restore context with
             | Choice2Of2 error -> return error |> CliCommands.returnError
             | _ ->
-                let results = context |> dotnetContext |> DotNet.scan
+                let scanResults = context |> dotnetContext |> DotNet.scan
 
-                let errors = DotNet.getErrors results
+                context.services.trace "Analysing results..."
+                let errors = DotNet.getErrors scanResults
 
                 if Seq.isEmpty errors |> not then
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
-                    context.services.trace "Analysing results..."
 
                     let hits =
-                        DotNet.getHits results |> Context.filterPackages context.options |> List.ofSeq
+                        DotNet.getHits scanResults
+                        |> Context.filterPackages context.options
+                        |> List.ofSeq
 
                     let hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
 

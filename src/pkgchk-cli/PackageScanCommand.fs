@@ -75,21 +75,23 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
             match DotNet.restore context with
             | Choice2Of2 error -> return error |> CliCommands.returnError
             | _ ->
-                let results = context |> dotnetContext |> DotNet.scan
+                let scanResults = context |> dotnetContext |> DotNet.scan
 
                 context.services.trace "Analysing results..."
-                let errors = DotNet.getErrors results
-
-                let hits =
-                    DotNet.getHits results |> Context.filterPackages context.options |> List.ofSeq
-
-                let errorHits = hits |> ScaModels.hitsByLevels context.options.severities
-                let hitCounts = errorHits |> ScaModels.hitCountSummary |> List.ofSeq
-                let isSuccess = isSuccessScan errorHits
+                let errors = DotNet.getErrors scanResults
 
                 if Seq.isEmpty errors |> not then
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
+                    let hits =
+                        DotNet.getHits scanResults
+                        |> Context.filterPackages context.options
+                        |> List.ofSeq
+
+                    let errorHits = hits |> ScaModels.hitsByLevels context.options.severities
+                    let hitCounts = errorHits |> ScaModels.hitCountSummary |> List.ofSeq
+                    let isSuccess = isSuccessScan errorHits
+
                     context.services.trace "Building display..."
 
                     renderables context hits hitCounts errorHits |> CliCommands.renderTables
