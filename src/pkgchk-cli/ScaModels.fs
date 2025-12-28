@@ -38,6 +38,13 @@ type ScaHitSummary =
       severity: string
       count: int }
 
+type ApplicationScanResults =
+    { hits: ScaHit list
+      errorHits: ScaHit list
+      hitCounts: ScaHitSummary list
+      isGoodScan: bool }
+
+
 module ScaModels =
 
     let hitsByLevels levels (hits: ScaHit list) =

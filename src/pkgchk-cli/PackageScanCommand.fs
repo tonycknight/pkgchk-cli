@@ -7,25 +7,18 @@ open Spectre.Console.Cli
 type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
     inherit AsyncCommand<PackageScanCommandSettings>()
 
-    let rec genComment (context: ApplicationContext, hits, errorHits, hitCounts, imageUri) attempt =
-        let trace = context.services.trace
+    let genComment (context: ApplicationContext, (results: ApplicationScanResults), imageUri) =
 
         let markdown =
-            (hits, errorHits, hitCounts, context.options.severities, imageUri)
+            (results.hits, results.errorHits, results.hitCounts, context.options.severities, imageUri)
             |> Markdown.generateScan
             |> String.joinLines
 
-        let summaryTitle = context.github.summaryTitle
-
         if markdown.Length < Github.maxCommentSize then
-            GithubComment.create summaryTitle markdown
+            GithubComment.create context.github.summaryTitle markdown
         else
-            trace $"Shrinking Github output as too large (attempt #{attempt + 1})..."
+            GithubComment.create context.github.summaryTitle "_The report is too big for Github - Please check logs_"
 
-            if attempt >= 1 then
-                GithubComment.create summaryTitle "_The report is too big for Github - Please check logs_"
-            else
-                genComment (context, [], errorHits, hitCounts, imageUri) (attempt + 1)
 
     let isSuccessScan (hits: ScaHit list) = hits |> List.isEmpty
 
@@ -45,22 +38,32 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
           includeDependencies = false
           includeOutdated = false }
 
-    let consoleTable (context: ApplicationContext) hits hitCounts errorHits =
+    let consoleTable (context: ApplicationContext) (results: ApplicationScanResults) =
         seq {
-            hits |> Console.hitsTable
+            results.hits |> Console.hitsTable
             let mutable headlineSet = false
 
             if context.options.breakOnVulnerabilities || context.options.breakOnDeprecations then
-                errorHits |> Console.vulnerabilityHeadlineTable
+                results.errorHits |> Console.vulnerabilityHeadlineTable
                 headlineSet <- true
 
-            if hitCounts |> List.isEmpty |> not then
+            if results.hitCounts |> List.isEmpty |> not then
                 context.options.severities |> Console.severitySettingsTable
-                hitCounts |> Console.hitSummaryTable
+                results.hitCounts |> Console.hitSummaryTable
 
             else if (not headlineSet) then
                 Console.noscanHeadlineTable ()
         }
+
+    let results (context: ApplicationContext) (hits: seq<ScaHit>) =
+        let hits = hits |> Context.filterPackages context.options |> List.ofSeq
+
+        let errorHits = hits |> ScaModels.hitsByLevels context.options.severities
+
+        { ApplicationScanResults.hits = hits
+          errorHits = errorHits
+          hitCounts = errorHits |> ScaModels.hitCountSummary |> List.ofSeq
+          isGoodScan = isSuccessScan errorHits }
 
     override _.Validate
         (context: CommandContext, settings: PackageScanCommandSettings)
@@ -85,25 +88,18 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 if Seq.isEmpty errors |> not then
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
-                    let hits =
-                        DotNet.getHits scanResults
-                        |> Context.filterPackages context.options
-                        |> List.ofSeq
-
-                    let errorHits = hits |> ScaModels.hitsByLevels context.options.severities
-                    let hitCounts = errorHits |> ScaModels.hitCountSummary |> List.ofSeq
-                    let isSuccess = isSuccessScan errorHits
+                    let results = DotNet.getHits scanResults |> results context
 
                     context.services.trace "Building display..."
 
-                    consoleTable context hits hitCounts errorHits |> CliCommands.renderTables
+                    consoleTable context results |> CliCommands.renderTables
 
-                    let reportImg = context |> Context.reportImage isSuccess
+                    let reportImg = context |> Context.reportImage results.isGoodScan
 
                     if context.report.reportDirectory <> "" then
                         context.services.trace "Building reports..."
 
-                        (hits, errorHits, hitCounts, context.options.severities, reportImg)
+                        (results.hits, results.errorHits, results.hitCounts, context.options.severities, reportImg)
                         |> Markdown.generateScan
                         |> Io.writeFile ("pkgchk.md" |> Io.composeFilePath context.report.reportDirectory)
                         |> CliCommands.renderReportLine
@@ -111,13 +107,13 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                     if Context.hasGithubParameters context then
                         context.services.trace "Building Github reports..."
 
-                        let comment = genComment (context, hits, errorHits, hitCounts, reportImg) 0
+                        let comment = genComment (context, results, reportImg)
 
                         if String.isNotEmpty context.github.prId then
                             do! Github.sendPrComment context comment
 
                         if String.isNotEmpty context.github.commit then
-                            do! Github.sendCheck context isSuccess comment
+                            do! Github.sendCheck context results.isGoodScan comment
 
-                    return CliCommands.returnCode isSuccess
+                    return CliCommands.returnCode results.isGoodScan
         }
