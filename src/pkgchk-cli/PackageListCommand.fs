@@ -6,14 +6,15 @@ open Spectre.Console.Cli
 [<ExcludeFromCodeCoverage>]
 type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
     inherit AsyncCommand<PackageListCommandSettings>()
-                  
-    let appContext (settings: PackageListCommandSettings) = 
+
+    let appContext (settings: PackageListCommandSettings) =
         let context = Context.listContext settings
 
-        { context with options = Context.loadApplyConfig context.options }
+        { context with
+            options = Context.loadApplyConfig context.options }
 
     let dotnetContext (context: ApplicationContext) =
-        { DotNetScanContext.trace = context.services.trace 
+        { DotNetScanContext.trace = context.services.trace
           projectPath = context.options.projectPath
           includeVulnerabilities = false
           includeTransitives = context.options.includeTransitives
@@ -62,7 +63,12 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
                     context.services.trace "Analysing results..."
-                    let hits = ScaModels.getHits results |> Context.filterPackages context.options |> List.ofSeq 
+
+                    let hits =
+                        ScaModels.getHits results
+                        |> Context.filterPackages context.options
+                        |> List.ofSeq
+
                     let hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
 
                     context.services.trace "Building display..."

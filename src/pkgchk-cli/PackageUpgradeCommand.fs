@@ -18,10 +18,11 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
     let isSuccessScan (context: ApplicationContext, hits: ScaHit list) =
         hits |> List.isEmpty || (context.options.breakOnUpgrades |> not)
 
-    let appContext (settings: PackageUpgradeCommandSettings) = 
+    let appContext (settings: PackageUpgradeCommandSettings) =
         let context = Context.upgradesContext settings
 
-        { context with options = Context.loadApplyConfig context.options }
+        { context with
+            options = Context.loadApplyConfig context.options }
 
     let dotnetContext (context: ApplicationContext) =
         { DotNetScanContext.trace = context.services.trace
@@ -60,7 +61,12 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                 let results = context |> dotnetContext |> DotNet.scan
 
                 context.services.trace "Analysing results..."
-                let hits = ScaModels.getHits results |> Context.filterPackages context.options |> List.ofSeq
+
+                let hits =
+                    ScaModels.getHits results
+                    |> Context.filterPackages context.options
+                    |> List.ofSeq
+
                 let hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
                 let isSuccess = isSuccessScan (context, hits)
                 let errors = DotNet.scanErrors results

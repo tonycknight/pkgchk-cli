@@ -27,13 +27,12 @@ type OptionsContext =
       breakOnDeprecations: bool
       includeTransitives: bool }
 
-type ServiceContext =
-    { trace: (string -> unit) }
+type ServiceContext = { trace: (string -> unit) }
 
 type ApplicationContext =
     { options: OptionsContext
       report: ReportContext
-      github: GithubContext 
+      github: GithubContext
       services: ServiceContext }
 
 module Context =
@@ -74,7 +73,7 @@ module Context =
     let applicationContext (settings: PackageGithubCommandSettings) (options: OptionsContext) =
         { ApplicationContext.options = options
           github = githubContext settings
-          report = reportContext settings 
+          report = reportContext settings
           services = serviceContext settings }
 
     let scanContext (settings: PackageScanCommandSettings) =
@@ -84,9 +83,9 @@ module Context =
                 breakOnVulnerabilities = settings.IncludeVulnerables
                 breakOnDeprecations = settings.IncludeDeprecations
                 includeTransitives = settings.IncludeTransitives }
-        
+
         options |> applicationContext settings
-        
+
     let listContext (settings: PackageListCommandSettings) =
         let options =
             { optionsContext settings with

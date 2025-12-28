@@ -26,12 +26,13 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 genComment trace (settings, [], errorHits, hitCounts, imageUri) (attempt + 1)
 
     let isSuccessScan (hits: ScaHit list) = hits |> List.isEmpty
-        
-    let appContext (settings: PackageScanCommandSettings) = 
-        
+
+    let appContext (settings: PackageScanCommandSettings) =
+
         let context = Context.scanContext settings
 
-        { context with options = Context.loadApplyConfig context.options }
+        { context with
+            options = Context.loadApplyConfig context.options }
 
     let dotnetContext (context: ApplicationContext) =
         { DotNetScanContext.trace = context.services.trace
@@ -47,10 +48,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
             hits |> Console.hitsTable
             let mutable headlineSet = false
 
-            if
-                context.options.breakOnVulnerabilities
-                || context.options.breakOnDeprecations
-            then
+            if context.options.breakOnVulnerabilities || context.options.breakOnDeprecations then
                 errorHits |> Console.vulnerabilityHeadlineTable
                 headlineSet <- true
 
@@ -76,12 +74,17 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
             match DotNet.restore context with
             | Choice2Of2 error -> return error |> CliCommands.returnError
-            | _ ->                
+            | _ ->
                 let results = context |> dotnetContext |> DotNet.scan
 
                 context.services.trace "Analysing results..."
                 let errors = DotNet.scanErrors results
-                let hits = ScaModels.getHits results |> Context.filterPackages context.options |> List.ofSeq
+
+                let hits =
+                    ScaModels.getHits results
+                    |> Context.filterPackages context.options
+                    |> List.ofSeq
+
                 let errorHits = hits |> ScaModels.hitsByLevels context.options.severities
                 let hitCounts = errorHits |> ScaModels.hitCountSummary |> List.ofSeq
                 let isSuccess = isSuccessScan errorHits
@@ -108,7 +111,9 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
                     if settings.HasGithubParamters() then
                         context.services.trace "Building Github reports..."
-                        let comment = genComment context.services.trace (settings, hits, errorHits, hitCounts, reportImg) 0
+
+                        let comment =
+                            genComment context.services.trace (settings, hits, errorHits, hitCounts, reportImg) 0
 
                         if String.isNotEmpty context.github.prId then
                             do! Github.sendPrComment settings context.services.trace comment

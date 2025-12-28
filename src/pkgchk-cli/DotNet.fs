@@ -215,7 +215,7 @@ module DotNet =
             |> Process.createProcess
             |> runRestoreProcParse (Process.run context.services.trace)
 
-    let scan (context: DotNetScanContext) = 
+    let scan (context: DotNetScanContext) =
         DotNetArgs.scanArgs context
         |> Array.map (fun (args, parser) -> (Process.createProcess args, parser))
         |> Array.map (fun (proc, parser) ->
