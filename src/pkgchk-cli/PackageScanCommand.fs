@@ -8,7 +8,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
     inherit AsyncCommand<PackageScanCommandSettings>()
 
     let genReport (context: ApplicationContext, (results: ApplicationScanResults), imageUri) =
-        (results.hits, results.errorHits, results.hitCounts, context.options.severities, imageUri)
+        (results.hits, results.hitCounts, context.options.severities, imageUri)
         |> Markdown.generateScan
 
     let genComment (context: ApplicationContext, (results: ApplicationScanResults), imageUri) =
@@ -42,7 +42,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
             let mutable headlineSet = false
 
             if context.options.scanVulnerabilities || context.options.scanDeprecations then
-                results.errorHits |> Console.vulnerabilityHeadlineTable
+                results.hitCounts |> Console.vulnerabilityHeadlineTable
                 headlineSet <- true
 
             if results.hitCounts |> List.isEmpty |> not then
@@ -59,9 +59,8 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
         let errorHits = hits |> ScaModels.hitsByLevels context.options.severities
 
         { ApplicationScanResults.hits = hits
-          errorHits = errorHits
           hitCounts = errorHits |> ScaModels.hitCountSummary |> List.ofSeq
-          isGoodScan = errorHits |> List.isEmpty}
+          isGoodScan = errorHits |> List.isEmpty }
 
     override _.Validate
         (context: CommandContext, settings: PackageScanCommandSettings)

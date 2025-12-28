@@ -40,7 +40,6 @@ type ScaHitSummary =
 
 type ApplicationScanResults =
     { hits: ScaHit list
-      errorHits: ScaHit list
       hitCounts: ScaHitSummary list
       isGoodScan: bool }
 

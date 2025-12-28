@@ -26,7 +26,6 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
         let hits = hits |> Context.filterPackages context.options |> List.ofSeq
 
         { ApplicationScanResults.hits = hits
-          errorHits = []
           hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
           isGoodScan = true }
 

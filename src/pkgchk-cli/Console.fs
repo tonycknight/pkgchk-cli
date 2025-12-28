@@ -159,10 +159,10 @@ module Console =
 
         table
 
-    let vulnerabilityHeadlineTable errorHits =
+    let vulnerabilityHeadlineTable hits =
         let table = table () |> tableColumn ""
 
-        let title = errorHits |> vulnerabilitySummaryTitle |> Array.ofSeq
+        let title = hits |> vulnerabilitySummaryTitle |> Array.ofSeq
 
         table.AddRow title
 
