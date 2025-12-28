@@ -7,8 +7,8 @@ open Spectre.Console.Cli
 type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
     inherit AsyncCommand<PackageUpgradeCommandSettings>()
 
-    let genComment (context: ApplicationContext, hits, reportImg) =
-        let markdown = (hits, reportImg) |> Markdown.generateUpgrades |> String.joinLines
+    let genComment (context: ApplicationContext, (results: ApplicationScanResults), reportImg) =
+        let markdown = (results.hits, reportImg) |> Markdown.generateUpgrades |> String.joinLines
 
         if markdown.Length < Github.maxCommentSize then
             GithubComment.create context.github.summaryTitle markdown
@@ -33,15 +33,23 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
           includeDependencies = false
           includeOutdated = true }
 
-    let consoleTable hits hitCounts =
+    let consoleTable (results: ApplicationScanResults) =
         seq {
-            hits |> Console.hitsTable
+            results.hits |> Console.hitsTable
 
-            if hitCounts |> List.isEmpty |> not then
-                hitCounts |> Console.hitSummaryTable
+            if results.hitCounts |> List.isEmpty |> not then
+                results.hitCounts |> Console.hitSummaryTable
             else
                 pkgchk.Console.green "No upgrades found!" |> CliCommands.console
         }
+
+    let results (context: ApplicationContext) (hits: seq<ScaHit>) =
+        let hits = hits |> Context.filterPackages context.options |> List.ofSeq
+
+        { ApplicationScanResults.hits = hits
+          errorHits = []
+          hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
+          isGoodScan = isSuccessScan (context, hits) }
 
     override _.Validate
         (context: CommandContext, settings: PackageUpgradeCommandSettings)
@@ -67,36 +75,30 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
 
-                    let hits =
-                        DotNet.getHits scanResults
-                        |> Context.filterPackages context.options
-                        |> List.ofSeq
-
-                    let hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
-                    let isSuccess = isSuccessScan (context, hits)
-
+                    let results = DotNet.getHits scanResults |> results context
+                        
                     context.services.trace "Building display..."
-                    consoleTable hits hitCounts |> CliCommands.renderTables
+                    results |> consoleTable |> CliCommands.renderTables
 
-                    let reportImg = context |> Context.reportImage isSuccess
+                    let reportImg = context |> Context.reportImage results.isGoodScan
 
                     if context.report.reportDirectory <> "" then
                         context.services.trace "Building reports..."
 
-                        (hits, reportImg)
+                        (results.hits, reportImg)
                         |> Markdown.generateUpgrades
                         |> Io.writeFile ("pkgchk-upgrades.md" |> Io.composeFilePath context.report.reportDirectory)
                         |> CliCommands.renderReportLine
 
                     if Context.hasGithubParameters context then
                         context.services.trace "Building Github reports..."
-                        let comment = genComment (context, hits, reportImg)
+                        let comment = genComment (context, results, reportImg)
 
                         if String.isNotEmpty context.github.prId then
                             do! Github.sendPrComment context comment
 
                         if String.isNotEmpty context.github.commit then
-                            do! Github.sendCheck context isSuccess comment
+                            do! Github.sendCheck context results.isGoodScan comment
 
-                    return isSuccess |> CliCommands.returnCode
+                    return results.isGoodScan |> CliCommands.returnCode
         }
