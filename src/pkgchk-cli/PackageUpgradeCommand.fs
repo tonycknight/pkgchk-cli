@@ -89,25 +89,25 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
                     let reportImg =
                         match isSuccess with
-                        | true -> settings.GoodImageUri
-                        | false -> settings.BadImageUri
+                        | true -> context.report.goodImageUri
+                        | false -> context.report.badImageUri
 
-                    if settings.OutputDirectory <> "" then
+                    if context.report.reportDirectory <> "" then
                         context.services.trace "Building reports..."
 
                         (hits, reportImg)
                         |> Markdown.generateUpgrades
-                        |> Io.writeFile ("pkgchk-upgrades.md" |> Io.composeFilePath settings.OutputDirectory)
+                        |> Io.writeFile ("pkgchk-upgrades.md" |> Io.composeFilePath context.report.reportDirectory)
                         |> CliCommands.renderReportLine
 
                     if settings.HasGithubParamters() then
                         context.services.trace "Building Github reports..."
                         let comment = genComment (settings, hits, reportImg)
 
-                        if String.isNotEmpty settings.GithubPrId then
+                        if String.isNotEmpty context.github.prId then
                             do! Github.sendPrComment settings context.services.trace comment
 
-                        if String.isNotEmpty settings.GithubCommit then
+                        if String.isNotEmpty context.github.commit then
                             do! Github.sendCheck settings context.services.trace isSuccess comment
 
                     return isSuccess |> CliCommands.returnCode

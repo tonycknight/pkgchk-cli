@@ -85,22 +85,22 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
 
                     renderables hits hitCounts |> CliCommands.renderTables
 
-                    if settings.OutputDirectory <> "" then
+                    if context.report.reportDirectory <> "" then
                         context.services.trace "Building reports..."
 
                         hits
                         |> Markdown.generateList
-                        |> Io.writeFile ("pkgchk-dependencies.md" |> Io.composeFilePath settings.OutputDirectory)
+                        |> Io.writeFile ("pkgchk-dependencies.md" |> Io.composeFilePath context.report.reportDirectory)
                         |> CliCommands.renderReportLine
 
                     if settings.HasGithubParamters() then
                         context.services.trace "Building Github reports..."
                         let comment = genComment (settings, hits)
 
-                        if String.isNotEmpty settings.GithubPrId then
+                        if String.isNotEmpty context.github.prId then
                             do! Github.sendPrComment settings context.services.trace comment
 
-                        if String.isNotEmpty settings.GithubCommit then
+                        if String.isNotEmpty context.github.commit then
                             do! Github.sendCheck settings context.services.trace true comment
 
                     return ReturnCodes.validationOk
