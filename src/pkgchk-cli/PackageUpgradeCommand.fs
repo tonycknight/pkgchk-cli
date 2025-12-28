@@ -69,7 +69,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
                 let hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
                 let isSuccess = isSuccessScan (context, hits)
-                let errors = DotNet.scanErrors results
+                let errors = DotNet.getErrors results
 
                 if Seq.isEmpty errors |> not then
                     return errors |> String.joinLines |> CliCommands.returnError

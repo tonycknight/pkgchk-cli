@@ -57,7 +57,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
             | _ ->
                 let results = context |> dotnetContext |> DotNet.scan
 
-                let errors = DotNet.scanErrors results
+                let errors = DotNet.getErrors results
 
                 if Seq.isEmpty errors |> not then
                     return errors |> String.joinLines |> CliCommands.returnError

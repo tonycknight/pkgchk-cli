@@ -223,7 +223,7 @@ module DotNet =
             | Choice1Of2 json -> parser json
             | Choice2Of2 x -> Choice2Of2 x)
 
-    let scanErrors procResults =
+    let getErrors procResults =
         procResults
         |> Seq.map (function
             | Choice2Of2 x -> x

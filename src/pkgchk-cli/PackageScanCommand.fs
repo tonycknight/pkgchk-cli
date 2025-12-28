@@ -78,7 +78,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 let results = context |> dotnetContext |> DotNet.scan
 
                 context.services.trace "Analysing results..."
-                let errors = DotNet.scanErrors results
+                let errors = DotNet.getErrors results
 
                 let hits =
                     ScaModels.getHits results
