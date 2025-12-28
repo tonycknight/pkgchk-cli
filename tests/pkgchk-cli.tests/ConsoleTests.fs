@@ -26,7 +26,7 @@ module ConsoleTests =
     [<InlineData("Unknown", "yellow")>]
     [<InlineData("High", "red")>]
     [<InlineData("Critical", "italic red")>]
-    [<InlineData("Moderate", "#d75f00")>]
+    [<InlineData("Moderate", "#f57a51")>]
     let ``formatSeverity returns colouration`` value expected =
         let r = colouriseSeverity value
 

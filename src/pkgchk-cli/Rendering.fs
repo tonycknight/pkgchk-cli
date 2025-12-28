@@ -21,7 +21,7 @@ module Rendering =
     let yellow = "yellow"
 
     [<Literal>]
-    let orange = "##f57a51"
+    let orange = "#f57a51"
 
     [<Literal>]
     let cornflowerblue = "#6495ed"
