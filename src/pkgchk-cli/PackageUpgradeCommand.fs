@@ -8,7 +8,8 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
     inherit AsyncCommand<PackageUpgradeCommandSettings>()
 
     let genComment (context: ApplicationContext, (results: ApplicationScanResults), reportImg) =
-        let markdown = (results.hits, reportImg) |> Markdown.generateUpgrades |> String.joinLines
+        let markdown =
+            (results.hits, reportImg) |> Markdown.generateUpgrades |> String.joinLines
 
         if markdown.Length < Github.maxCommentSize then
             GithubComment.create context.github.summaryTitle markdown
@@ -76,7 +77,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                 else
 
                     let results = DotNet.getHits scanResults |> results context
-                        
+
                     context.services.trace "Building display..."
                     results |> consoleTable |> CliCommands.renderTables
 

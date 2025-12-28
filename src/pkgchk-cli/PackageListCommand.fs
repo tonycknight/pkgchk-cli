@@ -72,7 +72,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
                     let results = scanResults |> DotNet.getHits |> results context
-                    
+
                     context.services.trace "Building display..."
 
                     consoleTable results |> CliCommands.renderTables
