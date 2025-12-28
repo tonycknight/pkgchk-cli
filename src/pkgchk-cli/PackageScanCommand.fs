@@ -7,13 +7,15 @@ open Spectre.Console.Cli
 type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
     inherit AsyncCommand<PackageScanCommandSettings>()
 
-    let rec genComment trace (settings: PackageScanCommandSettings, hits, errorHits, hitCounts, imageUri) attempt =
+    let rec genComment (context: ApplicationContext, hits, errorHits, hitCounts, imageUri) attempt =
+        let trace = context.services.trace
+
         let markdown =
-            (hits, errorHits, hitCounts, settings.SeverityLevels, imageUri)
+            (hits, errorHits, hitCounts, context.options.severities, imageUri)
             |> Markdown.generateScan
             |> String.joinLines
 
-        let summaryTitle = settings.GithubSummaryTitle
+        let summaryTitle = context.github.summaryTitle
 
         if markdown.Length < Github.maxCommentSize then
             GithubComment.create summaryTitle markdown
@@ -23,7 +25,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
             if attempt >= 1 then
                 GithubComment.create summaryTitle "_The report is too big for Github - Please check logs_"
             else
-                genComment trace (settings, [], errorHits, hitCounts, imageUri) (attempt + 1)
+                genComment (context, [], errorHits, hitCounts, imageUri) (attempt + 1)
 
     let isSuccessScan (hits: ScaHit list) = hits |> List.isEmpty
 
@@ -110,7 +112,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                         context.services.trace "Building Github reports..."
 
                         let comment =
-                            genComment context.services.trace (settings, hits, errorHits, hitCounts, reportImg) 0
+                            genComment (context, hits, errorHits, hitCounts, reportImg) 0
 
                         if String.isNotEmpty context.github.prId then
                             do! Github.sendPrComment context comment
