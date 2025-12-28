@@ -21,9 +21,5 @@ module Config =
     let load (path: string) =
         use reader = new System.IO.StreamReader(path)
         let content = reader.ReadToEnd()
-        let r = deserialiser.Deserialize<ScanConfiguration>(content)
-
-        { r with
-            includedPackages = r.includedPackages |> Option.nullDefault [||]
-            excludedPackages = r.excludedPackages |> Option.nullDefault [||]
-            severities = r.severities |> Option.nullDefault [||] }
+        deserialiser.Deserialize<ScanConfiguration>(content)
+        
