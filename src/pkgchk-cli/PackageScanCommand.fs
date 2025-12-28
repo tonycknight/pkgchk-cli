@@ -20,9 +20,6 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
         else
             GithubComment.create context.github.summaryTitle "_The report is too big for Github - Please check logs_"
 
-
-    let isSuccessScan (hits: ScaHit list) = hits |> List.isEmpty
-
     let appContext (settings: PackageScanCommandSettings) =
 
         let context = Context.scanContext settings
@@ -64,7 +61,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
         { ApplicationScanResults.hits = hits
           errorHits = errorHits
           hitCounts = errorHits |> ScaModels.hitCountSummary |> List.ofSeq
-          isGoodScan = isSuccessScan errorHits }
+          isGoodScan = errorHits |> List.isEmpty}
 
     override _.Validate
         (context: CommandContext, settings: PackageScanCommandSettings)
