@@ -65,9 +65,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                     context.services.trace "Analysing results..."
 
                     let hits =
-                        ScaModels.getHits results
-                        |> Context.filterPackages context.options
-                        |> List.ofSeq
+                        DotNet.getHits results |> Context.filterPackages context.options |> List.ofSeq
 
                     let hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
 

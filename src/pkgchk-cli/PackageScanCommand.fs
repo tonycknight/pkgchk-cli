@@ -81,9 +81,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 let errors = DotNet.getErrors results
 
                 let hits =
-                    ScaModels.getHits results
-                    |> Context.filterPackages context.options
-                    |> List.ofSeq
+                    DotNet.getHits results |> Context.filterPackages context.options |> List.ofSeq
 
                 let errorHits = hits |> ScaModels.hitsByLevels context.options.severities
                 let hitCounts = errorHits |> ScaModels.hitCountSummary |> List.ofSeq
