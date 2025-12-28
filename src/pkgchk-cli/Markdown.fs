@@ -46,7 +46,7 @@ module Markdown =
             ""
 
             $"_Built on {now} UTC by [{App.packageId.ToLower()}]({App.repo}) Thank you for using my software._"
-            |> colourise "#818589"
+            |> colourise Rendering.grey
 
             ""
             "---"

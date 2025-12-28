@@ -1,6 +1,5 @@
 ﻿namespace pkgchk
 
-open System
 open Spectre.Console
 
 module Console =
