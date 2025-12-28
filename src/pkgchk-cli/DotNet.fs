@@ -190,8 +190,8 @@ module DotNetArgs =
 
 module DotNet =
 
-    let restore (config: ScanConfiguration) projectPath logging = // TODO: normalise to context...
-        if config.noRestore.GetValueOrDefault() then
+    let restore (context: ApplicationContext) =
+        if context.options.suppressRestore then
             Choice1Of2 false
         else
             let runRestoreProcParse run proc =
@@ -201,10 +201,10 @@ module DotNet =
                 | Choice2Of2 error -> Choice2Of2 error
                 | _ -> Choice1Of2 true)
 
-            projectPath
+            context.options.projectPath
             |> DotNetArgs.restoreArgs
             |> Process.createProcess
-            |> runRestoreProcParse (Process.run logging)
+            |> runRestoreProcParse (Process.run context.services.trace)
 
     let scan (context: ScaCommandContext) = // TODO: normalise to context...
         DotNetArgs.scanArgs context

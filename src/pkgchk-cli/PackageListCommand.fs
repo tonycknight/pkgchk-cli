@@ -67,7 +67,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
             if context.options.suppressBanner |> not then
                 CliCommands.renderBanner nuget
 
-            match DotNet.restore config context.options.projectPath context.services.trace with
+            match DotNet.restore context with
             | Choice2Of2 error -> return error |> CliCommands.returnError
             | _ ->
                 let results = context |> scaContext context.services.trace |> DotNet.scan
