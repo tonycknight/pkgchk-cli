@@ -30,7 +30,7 @@ type OptionsContext =
 type ServiceContext =
     { trace: (string -> unit) }
 
-type ApplicationContext = // TODO: need a trace/collection of functions/properly named
+type ApplicationContext =
     { options: OptionsContext
       report: ReportContext
       github: GithubContext 

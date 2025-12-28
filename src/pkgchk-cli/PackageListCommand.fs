@@ -6,21 +6,6 @@ open Spectre.Console.Cli
 [<ExcludeFromCodeCoverage>]
 type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
     inherit AsyncCommand<PackageListCommandSettings>()
-
-    // TODO: redundant
-    let config (settings: PackageListCommandSettings) =
-        match settings.ConfigFile with
-        | x when x <> "" -> x |> Io.fullPath |> Io.normalise |> Config.load
-        | _ ->
-            { pkgchk.ScanConfiguration.includedPackages = settings.IncludedPackages
-              excludedPackages = settings.ExcludedPackages
-              breakOnUpgrades = false
-              noBanner = settings.NoBanner
-              noRestore = settings.NoRestore
-              severities = [||]
-              breakOnVulnerabilities = false
-              breakOnDeprecations = false
-              checkTransitives = settings.IncludeTransitives }
                   
     let appContext (settings: PackageListCommandSettings) = 
         let context = Context.listContext settings
@@ -61,8 +46,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
 
     override _.ExecuteAsync(context, settings, cancellationToken) =
         task {
-            let config = config settings
-            let context = appContext settings // TODO: replace config above
+            let context = appContext settings
 
             if context.options.suppressBanner |> not then
                 CliCommands.renderBanner nuget
