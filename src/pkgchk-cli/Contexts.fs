@@ -23,8 +23,8 @@ type OptionsContext =
       excludedPackages: string[]
       breakOnUpgrades: bool
       severities: string[]
-      breakOnVulnerabilities: bool
-      breakOnDeprecations: bool
+      scanVulnerabilities: bool
+      scanDeprecations: bool
       includeTransitives: bool }
 
 type ServiceContext = { trace: (string -> unit) }
@@ -63,8 +63,8 @@ module Context =
             |> Array.filter String.isNotEmpty
           breakOnUpgrades = false
           severities = [||]
-          breakOnVulnerabilities = false
-          breakOnDeprecations = false
+          scanVulnerabilities = false
+          scanDeprecations = false
           includeTransitives = false }
 
     let serviceContext (settings: PackageCommandSettings) =
@@ -80,8 +80,8 @@ module Context =
         let options =
             { optionsContext settings with
                 severities = settings.SeverityLevels |> Array.filter String.isNotEmpty
-                breakOnVulnerabilities = settings.IncludeVulnerables
-                breakOnDeprecations = settings.IncludeDeprecations
+                scanVulnerabilities = settings.IncludeVulnerables
+                scanDeprecations = settings.IncludeDeprecations
                 includeTransitives = settings.IncludeTransitives }
 
         options |> applicationContext settings
@@ -133,15 +133,15 @@ module Context =
                 { result with
                     severities = config.severities }
 
-        if config.breakOnVulnerabilities.HasValue then
+        if config.scanVulnerabilities.HasValue then
             result <-
                 { result with
-                    breakOnVulnerabilities = config.breakOnVulnerabilities.Value }
+                    scanVulnerabilities = config.scanVulnerabilities.Value }
 
-        if config.breakOnDeprecations.HasValue then
+        if config.scanDeprecations.HasValue then
             result <-
                 { result with
-                    breakOnDeprecations = config.breakOnDeprecations.Value }
+                    scanDeprecations = config.scanDeprecations.Value }
 
         if config.checkTransitives.HasValue then
             result <-

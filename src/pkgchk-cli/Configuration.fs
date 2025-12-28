@@ -11,8 +11,8 @@ type ScanConfiguration =
       excludedPackages: string[]
       breakOnUpgrades: Nullable<bool>
       severities: string[]
-      breakOnVulnerabilities: Nullable<bool>
-      breakOnDeprecations: Nullable<bool>
+      scanVulnerabilities: Nullable<bool>
+      scanDeprecations: Nullable<bool>
       checkTransitives: Nullable<bool> }
 
 module Config =

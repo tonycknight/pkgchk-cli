@@ -161,8 +161,8 @@ Acceptable formats are YAML:
 | `includedPackages` | An array of package names to include, e.g. `excludedPackages: [ Important.Package ]` | 
 | `breakOnUpgrades` | For the `upgrades` command, to return a non-zero return code if package upgrades are found. |
 | `severities` | For the `scan` command, an array of severities, equivalent to the command's `--severity` parameters. | 
-| `breakOnVulnerabilities` | For the `scan` command, equivalent to the commandss `--vulnerable` parametrer. |
-| `breakOnDeprecations` | For the `scan` command, equivalent to the command's `--deprecated` parameter. |
+| `scanVulnerabilities` | For the `scan` command, equivalent to the commandss `--vulnerable` parametrer. |
+| `scanDeprecations` | For the `scan` command, equivalent to the command's `--deprecated` parameter. |
 | `checkTransitives` | Equivalent to the `--transitive` parameter. |
 
 ## Integration within Github actions

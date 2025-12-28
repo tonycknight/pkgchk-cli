@@ -33,9 +33,9 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
     let dotnetContext (context: ApplicationContext) =
         { DotNetScanContext.trace = context.services.trace
           projectPath = context.options.projectPath
-          includeVulnerabilities = context.options.breakOnVulnerabilities
+          includeVulnerabilities = context.options.scanVulnerabilities
           includeTransitives = context.options.includeTransitives
-          includeDeprecations = context.options.breakOnDeprecations
+          includeDeprecations = context.options.scanDeprecations
           includeDependencies = false
           includeOutdated = false }
 
@@ -44,7 +44,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
             results.hits |> Console.hitsTable
             let mutable headlineSet = false
 
-            if context.options.breakOnVulnerabilities || context.options.breakOnDeprecations then
+            if context.options.scanVulnerabilities || context.options.scanDeprecations then
                 results.errorHits |> Console.vulnerabilityHeadlineTable
                 headlineSet <- true
 

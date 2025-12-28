@@ -33,8 +33,8 @@ module ContextTests =
         && r.excludedPackages = settings.ExcludedPackages
         && r.breakOnUpgrades = false
         && r.severities = [||]
-        && r.breakOnVulnerabilities = false
-        && r.breakOnDeprecations = false
+        && r.scanVulnerabilities = false
+        && r.scanDeprecations = false
         && r.includeTransitives = false
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], MaxTest = 1000)>]
@@ -42,8 +42,8 @@ module ContextTests =
         let r = pkgchk.Context.scanContext settings
 
         r.options.severities = (settings.SeverityLevels |> Array.filter pkgchk.String.isNotEmpty)
-        && r.options.breakOnVulnerabilities = settings.IncludeVulnerables
-        && r.options.breakOnDeprecations = settings.IncludeDeprecations
+        && r.options.scanVulnerabilities = settings.IncludeVulnerables
+        && r.options.scanDeprecations = settings.IncludeDeprecations
         && r.options.includeTransitives = settings.IncludeTransitives
         && r.github = (pkgchk.Context.githubContext settings)
         && r.report = (pkgchk.Context.reportContext settings)
@@ -102,15 +102,15 @@ module ContextTests =
                             | null -> context.severities
                             | x -> config.severities)
 
-        let breakOnVulnerabilities =
-            r.breakOnVulnerabilities = (match config.breakOnVulnerabilities.HasValue with
-                                        | true -> config.breakOnVulnerabilities.Value
-                                        | false -> context.breakOnVulnerabilities)
+        let scanVulnerabilities =
+            r.scanVulnerabilities = (match config.scanVulnerabilities.HasValue with
+                                        | true -> config.scanVulnerabilities.Value
+                                        | false -> context.scanVulnerabilities)
 
-        let breakOnDeprecations =
-            r.breakOnDeprecations = (match config.breakOnDeprecations.HasValue with
-                                     | true -> config.breakOnDeprecations.Value
-                                     | false -> context.breakOnDeprecations)
+        let scanDeprecations =
+            r.scanDeprecations = (match config.scanDeprecations.HasValue with
+                                     | true -> config.scanDeprecations.Value
+                                     | false -> context.scanDeprecations)
 
         let includeTransitives =
             r.includeTransitives = (match config.checkTransitives.HasValue with
@@ -124,8 +124,8 @@ module ContextTests =
         && excludedPackages
         && breakOnUpgrades
         && severities
-        && breakOnVulnerabilities
-        && breakOnDeprecations
+        && scanVulnerabilities
+        && scanDeprecations
         && includeTransitives
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], MaxTest = 1000)>]
