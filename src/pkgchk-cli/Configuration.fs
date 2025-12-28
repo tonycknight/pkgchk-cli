@@ -22,4 +22,3 @@ module Config =
         use reader = new System.IO.StreamReader(path)
         let content = reader.ReadToEnd()
         deserialiser.Deserialize<ScanConfiguration>(content)
-        

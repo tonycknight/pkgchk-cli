@@ -84,13 +84,13 @@ module ContextTests =
 
         let includedPackages =
             r.includePackages = (match config.includePackages with
-                                  | null -> context.includePackages
-                                  | x -> config.includePackages)
+                                 | null -> context.includePackages
+                                 | x -> config.includePackages)
 
         let excludedPackages =
             r.excludePackages = (match config.excludePackages with
-                                  | null -> context.excludePackages
-                                  | x -> config.excludePackages)
+                                 | null -> context.excludePackages
+                                 | x -> config.excludePackages)
 
         let breakOnUpgrades =
             r.breakOnUpgrades = (match config.breakOnUpgrades.HasValue with
@@ -104,18 +104,18 @@ module ContextTests =
 
         let scanVulnerabilities =
             r.scanVulnerabilities = (match config.scanVulnerabilities.HasValue with
-                                        | true -> config.scanVulnerabilities.Value
-                                        | false -> context.scanVulnerabilities)
+                                     | true -> config.scanVulnerabilities.Value
+                                     | false -> context.scanVulnerabilities)
 
         let scanDeprecations =
             r.scanDeprecations = (match config.scanDeprecations.HasValue with
-                                     | true -> config.scanDeprecations.Value
-                                     | false -> context.scanDeprecations)
+                                  | true -> config.scanDeprecations.Value
+                                  | false -> context.scanDeprecations)
 
         let includeTransitives =
             r.scanTransitives = (match config.scanTransitives.HasValue with
-                                    | true -> config.scanTransitives.Value
-                                    | false -> context.scanTransitives)
+                                 | true -> config.scanTransitives.Value
+                                 | false -> context.scanTransitives)
 
         suppressBanner
         && suppressRestore
