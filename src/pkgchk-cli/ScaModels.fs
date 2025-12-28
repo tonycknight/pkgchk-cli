@@ -38,15 +38,6 @@ type ScaHitSummary =
       severity: string
       count: int }
 
-type ScaCommandContext = // TODO: redundant w ith OptionsContext?
-    { trace: (string -> unit)
-      projectPath: string
-      includeVulnerabilities: bool
-      includeTransitives: bool
-      includeDeprecations: bool
-      includeDependencies: bool
-      includeOutdated: bool }
-
 module ScaModels =
 
     let hitsByLevels levels (hits: ScaHit list) =

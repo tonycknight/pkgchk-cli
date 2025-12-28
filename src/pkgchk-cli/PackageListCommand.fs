@@ -13,7 +13,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
         { context with options = Context.loadApplyConfig context.options }
 
     let scaContext trace (context: ApplicationContext) =
-        { ScaCommandContext.trace = trace 
+        { DotNetContext.trace = trace 
           projectPath = context.options.projectPath
           includeVulnerabilities = false
           includeTransitives = context.options.includeTransitives

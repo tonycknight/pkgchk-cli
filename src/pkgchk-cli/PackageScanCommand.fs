@@ -34,7 +34,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
         { context with options = Context.loadApplyConfig context.options }
 
     let commandContext trace (context: ApplicationContext) =
-        { ScaCommandContext.trace = trace
+        { DotNetContext.trace = trace
           projectPath = context.options.projectPath
           includeVulnerabilities = context.options.breakOnVulnerabilities
           includeTransitives = context.options.includeTransitives
