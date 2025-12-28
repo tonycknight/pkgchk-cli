@@ -33,7 +33,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
           includeDependencies = false
           includeOutdated = true }
 
-    let renderables hits hitCounts =
+    let consoleTable hits hitCounts =
         seq {
             hits |> Console.hitsTable
 
@@ -74,14 +74,11 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
                     let hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
                     let isSuccess = isSuccessScan (context, hits)
+
                     context.services.trace "Building display..."
+                    consoleTable hits hitCounts |> CliCommands.renderTables
 
-                    renderables hits hitCounts |> CliCommands.renderTables
-
-                    let reportImg =
-                        match isSuccess with
-                        | true -> context.report.goodImageUri
-                        | false -> context.report.badImageUri
+                    let reportImg = context |> Context.reportImage isSuccess
 
                     if context.report.reportDirectory <> "" then
                         context.services.trace "Building reports..."

@@ -43,7 +43,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
           includeDependencies = false
           includeOutdated = false }
 
-    let renderables (context: ApplicationContext) hits hitCounts errorHits =
+    let consoleTable (context: ApplicationContext) hits hitCounts errorHits =
         seq {
             hits |> Console.hitsTable
             let mutable headlineSet = false
@@ -94,12 +94,9 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
                     context.services.trace "Building display..."
 
-                    renderables context hits hitCounts errorHits |> CliCommands.renderTables
+                    consoleTable context hits hitCounts errorHits |> CliCommands.renderTables
 
-                    let reportImg =
-                        match isSuccess with
-                        | true -> context.report.goodImageUri
-                        | false -> context.report.badImageUri
+                    let reportImg = context |> Context.reportImage isSuccess
 
                     if context.report.reportDirectory <> "" then
                         context.services.trace "Building reports..."

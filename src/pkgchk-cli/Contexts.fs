@@ -155,6 +155,11 @@ module Context =
         | x when x <> "" -> x |> Io.fullPath |> Io.normalise |> Config.load |> applyConfig context
         | _ -> context
 
+    let reportImage ok (context: ApplicationContext) =
+        match ok with
+        | true -> context.report.goodImageUri
+        | false -> context.report.badImageUri
+
     let filterPackages (context: OptionsContext) (hits: seq<pkgchk.ScaHit>) =
         let inclusionMap =
             context.includedPackages

@@ -22,7 +22,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
           includeDependencies = true
           includeOutdated = false }
 
-    let renderables hits hitCounts =
+    let consoleTable hits hitCounts =
         seq {
             match hits with
             | [] -> Console.noscanHeadlineTable ()
@@ -73,7 +73,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
 
                     context.services.trace "Building display..."
 
-                    renderables hits hitCounts |> CliCommands.renderTables
+                    consoleTable hits hitCounts |> CliCommands.renderTables
 
                     if context.report.reportDirectory <> "" then
                         context.services.trace "Building reports..."
