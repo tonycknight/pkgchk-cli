@@ -23,16 +23,20 @@ module ReportGeneration =
         seq { jsonSerialise results.hits }
 
     let reports (context: ReportGenerationContext) =
-        let directory = Io.composeFilePath context.app.report.reportDirectory
-        let writeFile name = Io.writeFile (name |> directory)
+        let required fmt =
+            context.app.report.formats |> Seq.contains fmt
 
-        let required format =
-            context.app.report.formats |> Seq.contains format
+        let write name =
+            let directory = Io.composeFilePath context.app.report.reportDirectory
+            Io.writeFile (name |> directory)
 
-        [ if context.app.report.formats |> Seq.isEmpty || required ReportFormat.Markdown then
-              let (n, f) = context.genMarkdown
-              (context.app, context.results, context.imageUri) |> f |> writeFile $"{n}.md"
+        let reports =
+            [ if required ReportFormat.Markdown then
+                  (fst context.genMarkdown, snd context.genMarkdown, "md")
 
-          if required ReportFormat.Json then
-              let (n, f) = context.genJson
-              (context.app, context.results, context.imageUri) |> f |> writeFile $"{n}.json" ]
+              if required ReportFormat.Json then
+                  (fst context.genMarkdown, snd context.genJson, "json") ]
+
+        reports
+        |> List.map (fun (name, gen, ext) ->
+            (context.app, context.results, context.imageUri) |> gen |> write $"{name}.{ext}")

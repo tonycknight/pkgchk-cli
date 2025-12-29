@@ -12,12 +12,14 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
         |> Markdown.generateScan
 
     let genReports (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
+        let name = "pkgchk"
+
         let ctx =
             { ReportGenerationContext.app = context
               results = results
               imageUri = imageUri
-              genMarkdown = ("pkgchk", genMarkdownReport)
-              genJson = ("pkgchk", ReportGeneration.jsonReport) }
+              genMarkdown = (name, genMarkdownReport)
+              genJson = (name, ReportGeneration.jsonReport) }
 
         ReportGeneration.reports ctx
 
