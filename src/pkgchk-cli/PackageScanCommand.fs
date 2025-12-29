@@ -16,8 +16,8 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
             { ReportGenerationContext.app = context
               results = results
               imageUri = imageUri
-              genMarkdown = ("pkgchk.md", genMarkdownReport)
-              genJson = ("pkgchk.json", ReportGeneration.jsonReport) }
+              genMarkdown = ("pkgchk", genMarkdownReport)
+              genJson = ("pkgchk", ReportGeneration.jsonReport) }
 
         ReportGeneration.reports ctx
 

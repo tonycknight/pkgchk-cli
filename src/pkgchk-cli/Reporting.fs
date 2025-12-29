@@ -26,13 +26,13 @@ module ReportGeneration =
         let directory = Io.composeFilePath context.app.report.reportDirectory
         let writeFile name = Io.writeFile (name |> directory)
 
-        [ if
-              context.app.report.formats |> Seq.isEmpty
-              || context.app.report.formats |> Seq.contains ReportFormat.Markdown
-          then
-              let (n, f) = context.genMarkdown
-              (context.app, context.results, context.imageUri) |> f |> writeFile n
+        let required format =
+            context.app.report.formats |> Seq.contains format
 
-          if context.app.report.formats |> Seq.contains ReportFormat.Json then
+        [ if context.app.report.formats |> Seq.isEmpty || required ReportFormat.Markdown then
+              let (n, f) = context.genMarkdown
+              (context.app, context.results, context.imageUri) |> f |> writeFile $"{n}.md"
+
+          if required ReportFormat.Json then
               let (n, f) = context.genJson
-              (context.app, context.results, context.imageUri) |> f |> writeFile n ]
+              (context.app, context.results, context.imageUri) |> f |> writeFile $"{n}.json" ]

@@ -15,8 +15,8 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
             { ReportGenerationContext.app = context
               results = results
               imageUri = imageUri
-              genMarkdown = ("pkgchk-dependencies.md", genMarkdownReport)
-              genJson = ("pkgchk-dependencies.json", ReportGeneration.jsonReport) }
+              genMarkdown = ("pkgchk-dependencies", genMarkdownReport)
+              genJson = ("pkgchk-dependencies", ReportGeneration.jsonReport) }
 
         ReportGeneration.reports ctx
 
