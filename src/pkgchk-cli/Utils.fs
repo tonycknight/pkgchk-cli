@@ -75,6 +75,9 @@ module String =
         | [| x; y |] -> (x, y)
         | _ -> ("", value)
 
+    [<DebuggerStepThrough>]
+    let toLower (value: string) = value.ToLowerInvariant()
+
 module Option =
     let nullDefault<'a> (defaultValue: 'a) (value: 'a) =
         if obj.ReferenceEquals(value, null) then
