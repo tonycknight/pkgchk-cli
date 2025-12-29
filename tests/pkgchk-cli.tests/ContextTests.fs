@@ -18,7 +18,7 @@ module ContextTests =
         let r = pkgchk.Context.reportContext settings
 
         r.badImageUri = settings.BadImageUri
-        && r.reportFormats = settings.ReportFormats
+        && r.formats = settings.ReportFormats
         && r.goodImageUri = settings.GoodImageUri
         && r.reportDirectory = settings.OutputDirectory
 
