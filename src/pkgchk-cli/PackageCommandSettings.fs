@@ -48,8 +48,8 @@ type PackageCommandSettings() =
 
     [<CommandOption("-f|--format")>]
     [<Description("Report formats. Multiple formats can be specified.")>]
-    [<DefaultValue([| "Markdown"; "Json" |])>]
-    member val ReportFormats: string[] = [||] with get, set
+    [<DefaultValue([| ReportFormat.Markdown; ReportFormat.Json |])>]
+    member val ReportFormats: ReportFormat[] = [||] with get, set
 
 [<ExcludeFromCodeCoverage>]
 type PackageGithubCommandSettings() =

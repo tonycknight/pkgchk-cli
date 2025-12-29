@@ -43,6 +43,9 @@ type ApplicationScanResults =
       hitCounts: ScaHitSummary list
       isGoodScan: bool }
 
+type ReportFormat = 
+    | Markdown = 0
+    | Json = 1
 
 module ScaModels =
 
