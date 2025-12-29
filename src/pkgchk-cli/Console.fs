@@ -52,19 +52,24 @@ module Console =
         $"[link={url}]{package} {suggestion}[/]"
 
     let hitFramework =
-        let mutable lastFramework = ""
-        let mutable lastColour = ""
+        
+        let last = new System.Collections.Concurrent.ConcurrentDictionary<string, (string * string)>(System.StringComparer.InvariantCultureIgnoreCase)
+        last.[""] <- ("", "")
+
+        let switchColour value = 
+            match value with
+            | Rendering.cornflowerblue -> Rendering.lightcornflowerblue
+            | _ -> Rendering.cornflowerblue
 
         fun (hit: ScaHit) ->
-            if String.toLower hit.framework <> lastFramework then
-                lastFramework <- String.toLower hit.framework
+            let t = last.[""]
+            let mutable colour = snd t
 
-                lastColour <-
-                    match lastColour with
-                    | Rendering.cornflowerblue -> Rendering.lightcornflowerblue
-                    | _ -> Rendering.cornflowerblue
+            if String.toLower hit.framework <> fst t then                                
+                colour <- switchColour colour                    
+                last.[""] <- (String.toLower hit.framework, colour)                
 
-            hit.framework |> markup lastColour
+            hit.framework |> markup colour
 
     let vulnerabilitySummaryTitle hits =
         match hits with
