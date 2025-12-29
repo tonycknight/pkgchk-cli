@@ -51,7 +51,15 @@ module Console =
         let url = $"{Rendering.nugetPrefix}/{package}"
         $"[link={url}]{package} {suggestion}[/]"
 
-    let hitFramework (hit: ScaHit) = hit.framework |> blue
+    let hitFramework (hit: ScaHit) =
+
+        let f =
+            match hit.framework.ToLowerInvariant() with
+            | "net8.0" -> markup "#4475ed"
+            | "net9.0" -> markup "#5485ed"
+            | _ -> markup Rendering.cornflowerblue
+
+        hit.framework |> f
 
     let vulnerabilitySummaryTitle hits =
         match hits with
