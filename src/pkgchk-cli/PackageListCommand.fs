@@ -82,7 +82,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                         results.hits
                         |> Markdown.generateList
                         |> Io.writeFile ("pkgchk-dependencies.md" |> Io.composeFilePath context.report.reportDirectory)
-                        |> CliCommands.renderReportLine
+                        |> List.singleton |> CliCommands.renderReportLines
 
                     if Context.hasGithubParameters context then
                         context.services.trace "Building Github reports..."

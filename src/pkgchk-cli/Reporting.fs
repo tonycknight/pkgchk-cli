@@ -20,7 +20,7 @@ module ReportGeneration =
         let directory = Io.composeFilePath context.app.report.reportDirectory
         let writeFile name = Io.writeFile (name |> directory)
 
-        [|
+        [
             if context.app.report.formats |> Seq.isEmpty 
                 || context.app.report.formats |> Seq.contains ReportFormat.Markdown then
                 let (n,f) = context.genMarkdown                
@@ -29,5 +29,5 @@ module ReportGeneration =
             if context.app.report.formats |> Seq.contains ReportFormat.Json then
                 let (n,f) = context.genJson
                 (context.app, context.results, context.imageUri) |> f |> writeFile n
-        |]
+        ]
 

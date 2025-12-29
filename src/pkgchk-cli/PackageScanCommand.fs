@@ -107,10 +107,8 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                         context.services.trace "Building reports..."
 
                         (context, results, reportImg)
-                        //|> genMarkdownReport
-                        //|> Io.writeFile ("pkgchk.md" |> Io.composeFilePath context.report.reportDirectory)
                         |> genReports
-                        |> Array.iter CliCommands.renderReportLine
+                        |> CliCommands.renderReportLines
 
                     if Context.hasGithubParameters context then
                         context.services.trace "Building Github reports..."

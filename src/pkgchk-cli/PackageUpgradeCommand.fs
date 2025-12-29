@@ -85,7 +85,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                         (results.hits, reportImg)
                         |> Markdown.generateUpgrades
                         |> Io.writeFile ("pkgchk-upgrades.md" |> Io.composeFilePath context.report.reportDirectory)
-                        |> CliCommands.renderReportLine
+                        |> List.singleton |> CliCommands.renderReportLines
 
                     if Context.hasGithubParameters context then
                         context.services.trace "Building Github reports..."
