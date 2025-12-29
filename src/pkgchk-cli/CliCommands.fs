@@ -17,6 +17,7 @@ module CliCommands =
     let renderBanner (nuget: Tk.Nuget.INugetClient) = nuget |> App.banner |> console
 
     let renderReportLine reportFile =
+        // TODO: transform to a sequence input & block
         $"{System.Environment.NewLine}Report file [link={reportFile}]{reportFile}[/] built."
         |> Console.italic
         |> console

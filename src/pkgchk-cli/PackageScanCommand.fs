@@ -7,13 +7,30 @@ open Spectre.Console.Cli
 type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
     inherit AsyncCommand<PackageScanCommandSettings>()
 
-    let genReport (context: ApplicationContext, (results: ApplicationScanResults), imageUri) =
+    let genMarkdownReport (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
         (results.hits, results.hitCounts, context.options.severities, imageUri)
         |> Markdown.generateScan
 
+    let  genJsonReport (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
+        // TODO: F# cases do not translate well
+        [ Newtonsoft.Json.JsonConvert.SerializeObject results.hits ]
+        
+    let genReports (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
+        let directory = Io.composeFilePath context.report.reportDirectory
+        let writeFile name = Io.writeFile (name |> directory)
+
+        [|
+            if context.report.formats |> Seq.isEmpty 
+                || context.report.formats |> Seq.contains ReportFormat.Markdown then
+                (context, results, imageUri) |> genMarkdownReport |> writeFile "pkgchk.md"
+
+            if context.report.formats |> Seq.contains ReportFormat.Json then
+                (context, results, imageUri) |> genJsonReport |> writeFile "pkgchk.json"
+        |]
+
     let genComment (context: ApplicationContext, (results: ApplicationScanResults), imageUri) =
 
-        let markdown = (context, results, imageUri) |> genReport |> String.joinLines
+        let markdown = (context, results, imageUri) |> genMarkdownReport |> String.joinLines
 
         if markdown.Length < Github.maxCommentSize then
             GithubComment.create context.github.summaryTitle markdown
@@ -97,9 +114,10 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                         context.services.trace "Building reports..."
 
                         (context, results, reportImg)
-                        |> genReport
-                        |> Io.writeFile ("pkgchk.md" |> Io.composeFilePath context.report.reportDirectory)
-                        |> CliCommands.renderReportLine
+                        //|> genMarkdownReport
+                        //|> Io.writeFile ("pkgchk.md" |> Io.composeFilePath context.report.reportDirectory)
+                        |> genReports
+                        |> Array.iter CliCommands.renderReportLine
 
                     if Context.hasGithubParameters context then
                         context.services.trace "Building Github reports..."
