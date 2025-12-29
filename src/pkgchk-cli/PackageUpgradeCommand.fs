@@ -11,14 +11,13 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
         (results.hits, imageUri) |> Markdown.generateUpgrades
 
     let genReports (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
-        let name = "pkgchk-upgrades"
-
         let ctx =
             { ReportGenerationContext.app = context
               results = results
+              reportName = "pkgchk-upgrades"
               imageUri = imageUri
-              genMarkdown = (name, genMarkdownReport)
-              genJson = (name, ReportGeneration.jsonReport) }
+              genMarkdown = genMarkdownReport
+              genJson = ReportGeneration.jsonReport }
 
         ReportGeneration.reports ctx
 

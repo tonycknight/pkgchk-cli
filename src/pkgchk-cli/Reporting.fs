@@ -5,9 +5,10 @@ type ReportFunc = (ApplicationContext * ApplicationScanResults * string) -> stri
 type ReportGenerationContext =
     { app: ApplicationContext
       results: ApplicationScanResults
+      reportName: string
       imageUri: string
-      genMarkdown: (string * ReportFunc)
-      genJson: (string * ReportFunc) }
+      genMarkdown: ReportFunc
+      genJson: ReportFunc }
 
 module ReportGeneration =
     open Newtonsoft.Json
@@ -38,5 +39,7 @@ module ReportGeneration =
                   (context.genJson, "json") ]
 
         reports
-        |> List.map (fun ((name, gen), ext) ->
-            (context.app, context.results, context.imageUri) |> gen |> write $"{name}.{ext}")
+        |> List.map (fun (gen, ext) ->
+            (context.app, context.results, context.imageUri)
+            |> gen
+            |> write $"{context.reportName}.{ext}")

@@ -11,14 +11,13 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
         results.hits |> Markdown.generateList
 
     let genReports (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
-        let name = "pkgchk-dependencies"
-
         let ctx =
             { ReportGenerationContext.app = context
               results = results
+              reportName = "pkgchk-dependencies"
               imageUri = imageUri
-              genMarkdown = (name, genMarkdownReport)
-              genJson = (name, ReportGeneration.jsonReport) }
+              genMarkdown = genMarkdownReport
+              genJson = ReportGeneration.jsonReport }
 
         ReportGeneration.reports ctx
 
