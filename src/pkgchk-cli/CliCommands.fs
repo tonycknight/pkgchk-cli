@@ -16,8 +16,13 @@ module CliCommands =
 
     let renderBanner (nuget: Tk.Nuget.INugetClient) = nuget |> App.banner |> console
 
-    let renderReportLine reportFile =
-        $"{System.Environment.NewLine}Report file [link={reportFile}]{reportFile}[/] built."
+    let renderReportLines (reportFiles: string list) =
+        let msg =
+            reportFiles
+            |> List.map (fun f -> $"[link={f}]{f}[/]")
+            |> String.joinPretty ", " " & "
+
+        $"{System.Environment.NewLine}Report file(s) {msg} built."
         |> Console.italic
         |> console
 

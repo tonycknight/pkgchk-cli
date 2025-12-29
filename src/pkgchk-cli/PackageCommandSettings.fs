@@ -46,6 +46,11 @@ type PackageCommandSettings() =
     [<DefaultValue("")>]
     member val OutputDirectory = "" with get, set
 
+    [<CommandOption("-f|--format")>]
+    [<Description("Report formats. Valid forms are 'Markdown' or 'Json'. Multiple formats can be specified.")>]
+    [<DefaultValue([| ReportFormat.Markdown |])>]
+    member val ReportFormats: ReportFormat[] = [||] with get, set
+
 [<ExcludeFromCodeCoverage>]
 type PackageGithubCommandSettings() =
     inherit PackageCommandSettings()

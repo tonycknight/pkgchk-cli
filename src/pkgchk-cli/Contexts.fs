@@ -11,6 +11,7 @@ type GithubContext =
 
 type ReportContext =
     { reportDirectory: string
+      formats: ReportFormat[]
       goodImageUri: string
       badImageUri: string }
 
@@ -45,6 +46,7 @@ module Context =
 
     let reportContext (settings: PackageGithubCommandSettings) =
         { ReportContext.reportDirectory = settings.OutputDirectory
+          formats = settings.ReportFormats
           goodImageUri = settings.GoodImageUri
           badImageUri = settings.BadImageUri }
 

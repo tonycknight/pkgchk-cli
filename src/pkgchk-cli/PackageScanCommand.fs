@@ -7,13 +7,24 @@ open Spectre.Console.Cli
 type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
     inherit AsyncCommand<PackageScanCommandSettings>()
 
-    let genReport (context: ApplicationContext, (results: ApplicationScanResults), imageUri) =
+    let genMarkdownReport (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
         (results.hits, results.hitCounts, context.options.severities, imageUri)
         |> Markdown.generateScan
 
+    let genReports (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
+        let ctx =
+            { ReportGenerationContext.app = context
+              results = results
+              reportName = "pkgchk"
+              imageUri = imageUri
+              genMarkdown = genMarkdownReport
+              genJson = ReportGeneration.jsonReport }
+
+        ReportGeneration.reports ctx
+
     let genComment (context: ApplicationContext, (results: ApplicationScanResults), imageUri) =
 
-        let markdown = (context, results, imageUri) |> genReport |> String.joinLines
+        let markdown = (context, results, imageUri) |> genMarkdownReport |> String.joinLines
 
         if markdown.Length < Github.maxCommentSize then
             GithubComment.create context.github.summaryTitle markdown
@@ -96,10 +107,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                     if context.report.reportDirectory <> "" then
                         context.services.trace "Building reports..."
 
-                        (context, results, reportImg)
-                        |> genReport
-                        |> Io.writeFile ("pkgchk.md" |> Io.composeFilePath context.report.reportDirectory)
-                        |> CliCommands.renderReportLine
+                        (context, results, reportImg) |> genReports |> CliCommands.renderReportLines
 
                     if Context.hasGithubParameters context then
                         context.services.trace "Building Github reports..."
