@@ -54,7 +54,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
         }
 
     let genComment (context: ApplicationContext, results: ApplicationScanResults) =
-        let markdown = results.hits |> Markdown.generateList |> String.joinLines
+        let markdown = (context, results, "") |> genMarkdownReport |> String.joinLines
 
         if markdown.Length < Github.maxCommentSize then
             GithubComment.create context.github.summaryTitle markdown
