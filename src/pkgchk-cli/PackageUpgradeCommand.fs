@@ -7,10 +7,22 @@ open Spectre.Console.Cli
 type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
     inherit AsyncCommand<PackageUpgradeCommandSettings>()
 
-    let genComment (context: ApplicationContext, (results: ApplicationScanResults), reportImg) =
-        let markdown =
-            (results.hits, reportImg) |> Markdown.generateUpgrades |> String.joinLines
+    let genMarkdownReport (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
+        (results.hits, imageUri) |> Markdown.generateUpgrades
 
+    let genReports (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
+        let ctx = 
+            { ReportGenerationContext.app = context
+              results = results
+              imageUri = imageUri 
+              genMarkdown = ("pkgchk-upgrades.md", genMarkdownReport)
+              genJson = ("pkgchk-upgrades.json", ReportGeneration.jsonReport) }
+
+        ReportGeneration.reports ctx
+
+    let genComment (context: ApplicationContext, (results: ApplicationScanResults), reportImg) =
+        let markdown = (context, results, reportImg) |> genMarkdownReport |> String.joinLines
+            
         if markdown.Length < Github.maxCommentSize then
             GithubComment.create context.github.summaryTitle markdown
         else
@@ -82,10 +94,9 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                     if context.report.reportDirectory <> "" then
                         context.services.trace "Building reports..."
 
-                        (results.hits, reportImg)
-                        |> Markdown.generateUpgrades
-                        |> Io.writeFile ("pkgchk-upgrades.md" |> Io.composeFilePath context.report.reportDirectory)
-                        |> List.singleton |> CliCommands.renderReportLines
+                        (context, results, reportImg)
+                        |> genReports
+                        |> CliCommands.renderReportLines
 
                     if Context.hasGithubParameters context then
                         context.services.trace "Building Github reports..."
