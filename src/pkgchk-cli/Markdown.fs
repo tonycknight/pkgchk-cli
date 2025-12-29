@@ -82,6 +82,7 @@ module Markdown =
                     | ScaHitKind.Deprecated -> formatReasonColour
                     | ScaHitKind.Dependency
                     | ScaHitKind.DependencyTransitive -> id
+                    | x -> failwith $"Unrecognised value {x}"
 
                 $"|{Rendering.formatHitKind hks.kind}|{fmt hks.kind hks.severity}|{hks.count}|")
 
@@ -129,6 +130,7 @@ module Markdown =
                     (match hit.suggestedReplacement with
                      | "" -> ""
                      | vsn -> nugetLinkPkgVsn hit.packageId vsn |> sprintf "Upgrade to %s")
+            | x -> failwith $"Unrecognised value {x}"
         }
 
     let formatHitGroup (hit: (string * seq<ScaHit>)) =

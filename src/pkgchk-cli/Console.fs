@@ -79,6 +79,7 @@ module Console =
         | ScaHitKind.DependencyTransitive ->
             $"{hitFramework hit} {nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan}"
         | ScaHitKind.Deprecated -> $"{hitFramework hit} {nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan}"
+        | x -> failwith $"Unrecognised value {x}"
         |> Seq.singleton
 
     let hitAdvisory hit =
@@ -185,6 +186,7 @@ module Console =
             | ScaHitKind.Deprecated -> colouriseReason severity
             | ScaHitKind.Dependency
             | ScaHitKind.DependencyTransitive -> severity
+            | x -> failwith $"Unrecognised value {x}"
 
         let fmtCount value =
             match value with

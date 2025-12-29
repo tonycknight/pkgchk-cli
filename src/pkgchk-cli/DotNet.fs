@@ -250,7 +250,8 @@ module DotNet =
               | ScaHitKind.Dependency -> 1
               | ScaHitKind.VulnerabilityTransitive -> 2
               | ScaHitKind.Deprecated -> 3
-              | ScaHitKind.DependencyTransitive -> 4),
+              | ScaHitKind.DependencyTransitive -> 4
+              | x -> failwith $"Unrecognised value {x}"),
              h.packageId))
 
     let getHits x = x |> liftHits |> sortHits |> List.ofSeq

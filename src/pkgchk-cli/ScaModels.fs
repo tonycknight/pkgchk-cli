@@ -59,7 +59,8 @@ module ScaModels =
                 | ScaHitKind.Vulnerability -> h.severity |> HashSet.contains levels
                 | ScaHitKind.Deprecated -> h.reasons |> Seq.exists (HashSet.contains levels)
                 | ScaHitKind.Dependency
-                | ScaHitKind.DependencyTransitive -> false)
+                | ScaHitKind.DependencyTransitive -> false
+                | x -> failwith $"Unrecognised value {x}")
 
         let remap (hit: ScaHit) =
             match hit.kind with

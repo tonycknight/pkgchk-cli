@@ -39,6 +39,7 @@ module Rendering =
         | ScaHitKind.Deprecated -> "Deprecated package"
         | ScaHitKind.Dependency -> "Dependency"
         | ScaHitKind.DependencyTransitive -> "Transitive Dependency"
+        | x -> failwith $"Unrecognised value {x}"
 
 
     let maxHitKindLength () =
