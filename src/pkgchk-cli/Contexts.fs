@@ -3,7 +3,7 @@
 open pkgchk.Combinators
 
 type GithubContext =
-    { token: string
+    { [<Newtonsoft.Json.JsonIgnore>]token: string
       repo: string
       summaryTitle: string
       prId: string
@@ -47,7 +47,7 @@ type ApplicationContext =
     { options: OptionsContext
       report: ReportContext
       github: GithubContext
-      services: ServiceContext }
+      [<Newtonsoft.Json.JsonIgnore>]services: ServiceContext }
 
 module Context =
     let githubContext (settings: PackageGithubCommandSettings) =
@@ -232,3 +232,20 @@ module Context =
             | x -> exclusionMap.Contains hit.packageId |> not
 
         hits |> Seq.filter (included &&>> excluded)
+
+    let trace (context: ApplicationContext) =
+        
+        let github context =
+            { GithubContext.commit = context.commit
+              token = "******"
+              repo = context.repo
+              summaryTitle = context.summaryTitle
+              prId = context.prId }
+
+        let rendered = { context with github = github context.github }
+        
+        let json = Json.serialise rendered
+        
+        json |> String.escapeMarkup |> context.services.trace
+
+        context
