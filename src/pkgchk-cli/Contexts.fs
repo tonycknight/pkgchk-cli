@@ -28,6 +28,19 @@ type OptionsContext =
       scanDeprecations: bool
       scanTransitives: bool }
 
+    static member empty =
+        { OptionsContext.projectPath = ""
+          configFile = ""
+          suppressBanner = false
+          suppressRestore = false
+          includePackages = [||]
+          excludePackages = [||]
+          breakOnUpgrades = false
+          severities = [||]
+          scanVulnerabilities = false
+          scanDeprecations = false
+          scanTransitives = false }
+
 type ServiceContext = { trace: (string -> unit) }
 
 type ApplicationContext =
@@ -102,6 +115,25 @@ module Context =
 
         options |> applicationContext settings
 
+    let applyContext (overlay: OptionsContext) (source: OptionsContext) =
+        let apply overlay source =
+            match overlay = source with
+            | true -> source
+            | false -> overlay
+
+        { OptionsContext.projectPath = source.projectPath
+          configFile = source.configFile
+          suppressBanner = apply overlay.suppressBanner source.suppressBanner
+          suppressRestore = apply overlay.suppressRestore source.suppressRestore
+          includePackages = apply overlay.includePackages source.includePackages
+          excludePackages = apply overlay.excludePackages source.excludePackages
+          breakOnUpgrades = apply overlay.breakOnUpgrades source.breakOnUpgrades
+          severities = apply overlay.severities source.severities
+          scanVulnerabilities = apply overlay.scanVulnerabilities source.scanVulnerabilities
+          scanDeprecations = apply overlay.scanDeprecations source.scanDeprecations
+          scanTransitives = apply overlay.scanTransitives source.scanTransitives }
+
+
     let applyConfig (context: OptionsContext) (config: ScanConfiguration) =
         let mutable result = context
 
@@ -154,7 +186,14 @@ module Context =
 
     let loadApplyConfig (context: OptionsContext) =
         match context.configFile with
-        | x when x <> "" -> x |> Io.fullPath |> Io.normalise |> Config.load |> applyConfig context
+        | x when x <> "" ->
+            x
+            |> Io.fullPath
+            |> Io.normalise
+            |> Config.load
+            |> applyConfig OptionsContext.empty
+            |> applyContext context
+
         | _ -> context
 
     let hasGithubParameters (context: ApplicationContext) =
