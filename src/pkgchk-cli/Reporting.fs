@@ -12,9 +12,17 @@ type ReportGenerationContext =
 
 module ReportGeneration =
     
+    let private jsonSerialise =                
+        let settings = new Newtonsoft.Json.JsonSerializerSettings()
+        settings.Formatting <- Newtonsoft.Json.Formatting.Indented
+        settings.Converters.Add (new Newtonsoft.Json.Converters.StringEnumConverter())
+        
+        fun value -> Newtonsoft.Json.JsonConvert.SerializeObject(value, settings)
+
     let jsonReport (context: ApplicationContext, results: ApplicationScanResults, image: string) =
-        // TODO: F# cases do not translate well
-        seq { Newtonsoft.Json.JsonConvert.SerializeObject results.hits }
+        let json = jsonSerialise results.hits
+                
+        seq { json }
 
     let reports (context: ReportGenerationContext) =
         let directory = Io.composeFilePath context.app.report.reportDirectory

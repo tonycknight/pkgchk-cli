@@ -3,11 +3,11 @@
 open System
 
 type ScaHitKind =
-    | Vulnerability
-    | VulnerabilityTransitive
-    | Deprecated
-    | Dependency
-    | DependencyTransitive
+    | Vulnerability = 0
+    | VulnerabilityTransitive = 1
+    | Deprecated = 2
+    | Dependency = 3
+    | DependencyTransitive = 4
 
 type ScaHit =
     { kind: ScaHitKind
