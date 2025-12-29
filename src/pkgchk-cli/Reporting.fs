@@ -32,11 +32,11 @@ module ReportGeneration =
 
         let reports =
             [ if required ReportFormat.Markdown then
-                  (fst context.genMarkdown, snd context.genMarkdown, "md")
+                  (context.genMarkdown, "md")
 
               if required ReportFormat.Json then
-                  (fst context.genMarkdown, snd context.genJson, "json") ]
+                  (context.genJson, "json") ]
 
         reports
-        |> List.map (fun (name, gen, ext) ->
+        |> List.map (fun ((name, gen), ext) ->
             (context.app, context.results, context.imageUri) |> gen |> write $"{name}.{ext}")
