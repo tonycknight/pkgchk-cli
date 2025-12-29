@@ -1,5 +1,7 @@
 ﻿namespace pkgchk
 
+open System
+open System.Collections.Concurrent
 open Spectre.Console
 
 module Console =
@@ -52,11 +54,11 @@ module Console =
         $"[link={url}]{package} {suggestion}[/]"
 
     let hitFramework =
-        
-        let last = new System.Collections.Concurrent.ConcurrentDictionary<string, (string * string)>(System.StringComparer.InvariantCultureIgnoreCase)
+
+        let last = new ConcurrentDictionary<string, (string * string)>()
         last.[""] <- ("", "")
 
-        let switchColour value = 
+        let switchColour value =
             match value with
             | Rendering.cornflowerblue -> Rendering.lightcornflowerblue
             | _ -> Rendering.cornflowerblue
@@ -65,9 +67,9 @@ module Console =
             let t = last.[""]
             let mutable colour = snd t
 
-            if String.toLower hit.framework <> fst t then                                
-                colour <- switchColour colour                    
-                last.[""] <- (String.toLower hit.framework, colour)                
+            if String.toLower hit.framework <> fst t then
+                colour <- switchColour colour
+                last.[""] <- (String.toLower hit.framework, colour)
 
             hit.framework |> markup colour
 
