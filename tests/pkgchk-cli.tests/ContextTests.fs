@@ -206,3 +206,63 @@ module ContextTests =
         let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
 
         r |> List.isEmpty
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``applyContext applies overlay to source`` (source: pkgchk.OptionsContext, overlay: pkgchk.OptionsContext) =
+        let result = pkgchk.Context.applyContext overlay source
+
+        result.suppressBanner = overlay.suppressBanner
+        && result.suppressRestore = overlay.suppressRestore
+        && result.breakOnUpgrades = overlay.breakOnUpgrades
+        && result.scanDeprecations = overlay.scanDeprecations
+        && result.scanVulnerabilities = overlay.scanVulnerabilities
+        && result.scanTransitives = overlay.scanTransitives
+        && result.projectPath = overlay.projectPath
+        && result.configFile = overlay.configFile
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``applyContext applies overlay to source when overlay's sequence is empty``
+        (source: pkgchk.OptionsContext, overlay: pkgchk.OptionsContext)
+        =
+
+        let comp xs ys zs =
+            match xs with
+            | [||] -> zs = ys
+            | _ -> zs = xs
+
+        let result = pkgchk.Context.applyContext overlay source
+
+        result.includePackages |> comp overlay.includePackages source.includePackages
+        && result.excludePackages |> comp overlay.excludePackages source.excludePackages
+        && result.severities |> comp overlay.severities source.severities
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``applyContext applies overlay to empty`` (overlay: pkgchk.OptionsContext) =
+        let empty = pkgchk.OptionsContext.empty
+        let result = pkgchk.Context.applyContext overlay empty
+
+        result.suppressBanner = overlay.suppressBanner
+        && result.suppressRestore = overlay.suppressRestore
+        && result.breakOnUpgrades = overlay.breakOnUpgrades
+        && result.excludePackages = overlay.excludePackages
+        && result.includePackages = overlay.includePackages
+        && result.scanDeprecations = overlay.scanDeprecations
+        && result.scanVulnerabilities = overlay.scanVulnerabilities
+        && result.scanTransitives = overlay.scanTransitives
+        && result.projectPath = overlay.projectPath
+        && result.configFile = overlay.configFile
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``applyContext applies overlay to self`` (overlay: pkgchk.OptionsContext) =
+        let result = pkgchk.Context.applyContext overlay overlay
+
+        result.suppressBanner = overlay.suppressBanner
+        && result.suppressRestore = overlay.suppressRestore
+        && result.breakOnUpgrades = overlay.breakOnUpgrades
+        && result.excludePackages = overlay.excludePackages
+        && result.includePackages = overlay.includePackages
+        && result.scanDeprecations = overlay.scanDeprecations
+        && result.scanVulnerabilities = overlay.scanVulnerabilities
+        && result.scanTransitives = overlay.scanTransitives
+        && result.projectPath = overlay.projectPath
+        && result.configFile = overlay.configFile
