@@ -214,13 +214,42 @@ module ContextTests =
         result.suppressBanner = overlay.suppressBanner
         && result.suppressRestore = overlay.suppressRestore
         && result.breakOnUpgrades = overlay.breakOnUpgrades
-        && result.excludePackages = overlay.excludePackages
-        && result.includePackages = overlay.includePackages
         && result.scanDeprecations = overlay.scanDeprecations
         && result.scanVulnerabilities = overlay.scanVulnerabilities
         && result.scanTransitives = overlay.scanTransitives
-        && result.projectPath = source.projectPath
-        && result.configFile = source.configFile
+        && result.projectPath = overlay.projectPath
+        && result.configFile = overlay.configFile
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``applyContext applies overlay to source when includePackages is empty``
+        (source: pkgchk.OptionsContext, overlay: pkgchk.OptionsContext)
+        =
+        let result = pkgchk.Context.applyContext overlay source
+
+        match overlay.includePackages with
+        | [||] -> result.includePackages = source.includePackages
+        | _ -> result.includePackages = overlay.includePackages
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``applyContext applies overlay to source when excludePackages is empty``
+        (source: pkgchk.OptionsContext, overlay: pkgchk.OptionsContext)
+        =
+        let result = pkgchk.Context.applyContext overlay source
+
+        match overlay.excludePackages with
+        | [||] -> result.excludePackages = source.excludePackages
+        | _ -> result.excludePackages = overlay.excludePackages
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``applyContext applies overlay to source when severities is empty``
+        (source: pkgchk.OptionsContext, overlay: pkgchk.OptionsContext)
+        =
+        let result = pkgchk.Context.applyContext overlay source
+
+        match overlay.severities with
+        | [||] -> result.severities = source.severities
+        | _ -> result.severities = overlay.severities
+
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``applyContext applies overlay to empty`` (overlay: pkgchk.OptionsContext) =
@@ -235,8 +264,8 @@ module ContextTests =
         && result.scanDeprecations = overlay.scanDeprecations
         && result.scanVulnerabilities = overlay.scanVulnerabilities
         && result.scanTransitives = overlay.scanTransitives
-        && result.projectPath = empty.projectPath
-        && result.configFile = empty.configFile
+        && result.projectPath = overlay.projectPath
+        && result.configFile = overlay.configFile
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``applyContext applies overlay to self`` (overlay: pkgchk.OptionsContext) =

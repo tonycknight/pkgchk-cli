@@ -121,14 +121,20 @@ module Context =
             | true -> source
             | false -> overlay
 
-        { OptionsContext.projectPath = source.projectPath
-          configFile = source.configFile
+        let applySequence overlay source =
+            match overlay = source with
+            | false when Seq.isEmpty overlay -> source
+            | false -> overlay
+            | true -> source
+
+        { OptionsContext.projectPath = overlay.projectPath
+          configFile = overlay.configFile
           suppressBanner = apply overlay.suppressBanner source.suppressBanner
           suppressRestore = apply overlay.suppressRestore source.suppressRestore
-          includePackages = apply overlay.includePackages source.includePackages
-          excludePackages = apply overlay.excludePackages source.excludePackages
+          includePackages = applySequence overlay.includePackages source.includePackages
+          excludePackages = applySequence overlay.excludePackages source.excludePackages
           breakOnUpgrades = apply overlay.breakOnUpgrades source.breakOnUpgrades
-          severities = apply overlay.severities source.severities
+          severities = applySequence overlay.severities source.severities
           scanVulnerabilities = apply overlay.scanVulnerabilities source.scanVulnerabilities
           scanDeprecations = apply overlay.scanDeprecations source.scanDeprecations
           scanTransitives = apply overlay.scanTransitives source.scanTransitives }
