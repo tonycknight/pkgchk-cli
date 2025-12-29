@@ -252,6 +252,7 @@ module DotNet =
               | ScaHitKind.Deprecated -> 3
               | ScaHitKind.DependencyTransitive -> 4
               | x -> failwith $"Unrecognised value {x}"),
+             h.framework,
              h.packageId))
 
     let getHits x = x |> liftHits |> sortHits |> List.ofSeq
