@@ -8,14 +8,13 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
     inherit AsyncCommand<PackageListCommandSettings>()
 
     let genMarkdownReport (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
-        results.hits
-        |> Markdown.generateList
-                
+        results.hits |> Markdown.generateList
+
     let genReports (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
-        let ctx = 
+        let ctx =
             { ReportGenerationContext.app = context
               results = results
-              imageUri = imageUri 
+              imageUri = imageUri
               genMarkdown = ("pkgchk-dependencies.md", genMarkdownReport)
               genJson = ("pkgchk-dependencies.json", ReportGeneration.jsonReport) }
 

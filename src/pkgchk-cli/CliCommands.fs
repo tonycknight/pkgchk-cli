@@ -17,12 +17,14 @@ module CliCommands =
     let renderBanner (nuget: Tk.Nuget.INugetClient) = nuget |> App.banner |> console
 
     let renderReportLines (reportFiles: string list) =
-        let msg = 
-            reportFiles 
+        let msg =
+            reportFiles
             |> List.map (fun f -> $"[link={f}]{f}[/]")
             |> String.joinPretty ", " " & "
 
-        $"{System.Environment.NewLine}Report file(s) {msg} built." |> Console.italic |> console
+        $"{System.Environment.NewLine}Report file(s) {msg} built."
+        |> Console.italic
+        |> console
 
     let returnCode isSuccess =
         match isSuccess with

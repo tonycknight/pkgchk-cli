@@ -10,12 +10,12 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
     let genMarkdownReport (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
         (results.hits, results.hitCounts, context.options.severities, imageUri)
         |> Markdown.generateScan
-                
+
     let genReports (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
-        let ctx = 
+        let ctx =
             { ReportGenerationContext.app = context
               results = results
-              imageUri = imageUri 
+              imageUri = imageUri
               genMarkdown = ("pkgchk.md", genMarkdownReport)
               genJson = ("pkgchk.json", ReportGeneration.jsonReport) }
 
@@ -106,9 +106,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                     if context.report.reportDirectory <> "" then
                         context.services.trace "Building reports..."
 
-                        (context, results, reportImg)
-                        |> genReports
-                        |> CliCommands.renderReportLines
+                        (context, results, reportImg) |> genReports |> CliCommands.renderReportLines
 
                     if Context.hasGithubParameters context then
                         context.services.trace "Building Github reports..."
