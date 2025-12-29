@@ -221,35 +221,20 @@ module ContextTests =
         && result.configFile = overlay.configFile
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
-    let ``applyContext applies overlay to source when includePackages is empty``
+    let ``applyContext applies overlay to source when overlay's sequence is empty``
         (source: pkgchk.OptionsContext, overlay: pkgchk.OptionsContext)
         =
+
+        let comp xs ys zs =
+            match xs with
+            | [||] -> zs = ys
+            | _ -> zs = xs
+
         let result = pkgchk.Context.applyContext overlay source
 
-        match overlay.includePackages with
-        | [||] -> result.includePackages = source.includePackages
-        | _ -> result.includePackages = overlay.includePackages
-
-    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
-    let ``applyContext applies overlay to source when excludePackages is empty``
-        (source: pkgchk.OptionsContext, overlay: pkgchk.OptionsContext)
-        =
-        let result = pkgchk.Context.applyContext overlay source
-
-        match overlay.excludePackages with
-        | [||] -> result.excludePackages = source.excludePackages
-        | _ -> result.excludePackages = overlay.excludePackages
-
-    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
-    let ``applyContext applies overlay to source when severities is empty``
-        (source: pkgchk.OptionsContext, overlay: pkgchk.OptionsContext)
-        =
-        let result = pkgchk.Context.applyContext overlay source
-
-        match overlay.severities with
-        | [||] -> result.severities = source.severities
-        | _ -> result.severities = overlay.severities
-
+        result.includePackages |> comp overlay.includePackages source.includePackages
+        && result.excludePackages |> comp overlay.excludePackages source.excludePackages
+        && result.severities |> comp overlay.severities source.severities
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``applyContext applies overlay to empty`` (overlay: pkgchk.OptionsContext) =
