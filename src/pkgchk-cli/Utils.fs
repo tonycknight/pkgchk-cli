@@ -108,7 +108,7 @@ module Environment =
     let isRunningGithub =
         System.Environment.GetEnvironmentVariable("GITHUB_ACTIONS") <> null
 
-module Json = 
+module Json =
     open Newtonsoft.Json
 
     let serialise<'a> =
