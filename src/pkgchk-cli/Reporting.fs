@@ -11,17 +11,9 @@ type ReportGenerationContext =
       genJson: ReportFunc }
 
 module ReportGeneration =
-    open Newtonsoft.Json
-
-    let private jsonSerialise =
-        let settings = new JsonSerializerSettings()
-        settings.Formatting <- Formatting.Indented
-        settings.Converters.Add(new Converters.StringEnumConverter())
-
-        fun value -> JsonConvert.SerializeObject(value, settings)
-
+    
     let jsonReport (context: ApplicationContext, results: ApplicationScanResults, image: string) =
-        seq { jsonSerialise results.hits }
+        seq { Json.serialise results.hits }
 
     let reports (context: ReportGenerationContext) =
         let required fmt =
