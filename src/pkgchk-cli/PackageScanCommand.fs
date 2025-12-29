@@ -10,23 +10,16 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
     let genMarkdownReport (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
         (results.hits, results.hitCounts, context.options.severities, imageUri)
         |> Markdown.generateScan
-
-    let  genJsonReport (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
-        // TODO: F# cases do not translate well
-        [ Newtonsoft.Json.JsonConvert.SerializeObject results.hits ]
-        
+                
     let genReports (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
-        let directory = Io.composeFilePath context.report.reportDirectory
-        let writeFile name = Io.writeFile (name |> directory)
+        let ctx = 
+            { ReportGenerationContext.app = context
+              results = results
+              imageUri = imageUri 
+              genMarkdown = ("pkgchk.md", genMarkdownReport)
+              genJson = ("pkgchk.json", ReportGeneration.jsonReport) }
 
-        [|
-            if context.report.formats |> Seq.isEmpty 
-                || context.report.formats |> Seq.contains ReportFormat.Markdown then
-                (context, results, imageUri) |> genMarkdownReport |> writeFile "pkgchk.md"
-
-            if context.report.formats |> Seq.contains ReportFormat.Json then
-                (context, results, imageUri) |> genJsonReport |> writeFile "pkgchk.json"
-        |]
+        ReportGeneration.reports ctx
 
     let genComment (context: ApplicationContext, (results: ApplicationScanResults), imageUri) =
 

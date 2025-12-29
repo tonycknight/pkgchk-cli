@@ -42,6 +42,7 @@
     <Compile Include="Contexts.fs" />
     <Compile Include="Github.fs" />
     <Compile Include="DotNet.fs" />
+    <Compile Include="Reporting.fs" />
     <Compile Include="PackageScanCommand.fs" />
     <Compile Include="PackageListCommand.fs" />
     <Compile Include="PackageUpgradeCommand.fs" />
