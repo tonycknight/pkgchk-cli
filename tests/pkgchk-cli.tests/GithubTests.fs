@@ -27,7 +27,10 @@ module GithubTests =
             AuthorAssociation.Collaborator
         )
 
+    let checkRunsClient () = Substitute.For<ICheckRunsClient>()
+    let checksClient () = Substitute.For<IChecksClient>()
     let client () = Substitute.For<IGitHubClient>()
+
     let issueClient () = Substitute.For<IIssuesClient>()
 
     let issueGet (issue: Issue) (issueClient: IIssuesClient) =
@@ -134,3 +137,40 @@ module GithubTests =
 
         commentClient.Received(1).Update(fst repo, snd repo, comment.Id, Arg.Any<string>())
         |> ignore
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``createCheck creates and sends a check`` (owner: string, repo: string, title: string, body: string, isSuccess: bool) =
+        task {
+            let run = new CheckRun()
+
+            let checkRunsClient = checkRunsClient ()
+
+            checkRunsClient
+                .Create(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<NewCheckRun>())
+                .Returns(System.Threading.Tasks.Task.FromResult(run))
+            |> ignore
+
+            let checksClient = checksClient ()
+            checksClient.Run.Returns(checkRunsClient) |> ignore
+            let github = client ()
+            github.Check.Returns(checksClient) |> ignore
+
+            let comment = GithubComment.create title body
+            
+            do! pkgchk.Github.createCheck ignore github (owner, repo) "commit" isSuccess comment
+
+            checkRunsClient
+                .Received(1)
+                .Create(
+                    Arg.Is(owner),
+                    Arg.Is(repo),
+                    Arg.Is<NewCheckRun>(fun (x: NewCheckRun) ->
+                        x.Output.Title = comment.title
+                        && x.Output.Summary = comment.body
+                        && x.Status.Value.Value = CheckStatus.Completed
+                        && x.Conclusion.Value.Value = (match isSuccess with | true -> CheckConclusion.Success | false -> CheckConclusion.Failure) )
+                )
+            |> ignore
+
+            return true
+        }
