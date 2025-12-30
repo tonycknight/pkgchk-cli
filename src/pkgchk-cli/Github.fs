@@ -111,6 +111,7 @@ module Github =
             $"Created check for commit {run.HeadSha}, url: {run.Url}." |> trace
         }
 
+    [<DebuggerStepThrough>]
     let sendPrComment (context: ApplicationContext) (comment: GithubComment) =
         task {
             let prId = String.toInt context.github.prId
