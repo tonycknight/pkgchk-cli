@@ -57,6 +57,13 @@ module GithubTests =
 
     let throwIssueException (ci: Core.CallInfo) : Octokit.Issue = failwith "boom"
 
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``constructComment from title and body`` (title: string, body: string) =
+        let comment = GithubComment.create title body
+        let (t, b) = pkgchk.Github.constructComment comment
+
+        t.Contains(title) && b.Contains(title) && b.Contains(body)
+
     [<Fact>]
     let ``getIssueComments on no issue returns empty comments`` () =
         task {
@@ -68,7 +75,7 @@ module GithubTests =
             |> ignore
 
             let! r = pkgchk.Github.getIssueComments client repo 1
-            
+
             r |> should be Empty
         }
 
@@ -82,7 +89,7 @@ module GithubTests =
             let client = client () |> bindIssues issueClient
 
             let! r = pkgchk.Github.getIssueComments client repo 1
-            
+
             r |> should be Empty
         }
 
@@ -98,7 +105,7 @@ module GithubTests =
             let client = client () |> bindIssues issueClient
 
             let! r = pkgchk.Github.getIssueComments client repo 1
-            
+
             r |> should equal (List.ofSeq comments)
         }
 
@@ -112,12 +119,12 @@ module GithubTests =
             let gc = GithubComment.create title body
 
             let! r = pkgchk.Github.setPrComment ignore client repo prId gc
-            
-            commentClient.Received(1)
-                .Create(fst repo, snd repo, prId, 
-                        Arg.Is<string>(fun s -> s = $"# {title}{Environment.NewLine}{body}")) 
-                        |> ignore
-            
+
+            commentClient
+                .Received(1)
+                .Create(fst repo, snd repo, prId, Arg.Is<string>(fun s -> s = $"# {title}{Environment.NewLine}{body}"))
+            |> ignore
+
             return true
         }
 
@@ -135,17 +142,24 @@ module GithubTests =
             let client = client () |> bindIssues issueClient
 
             let! r = pkgchk.Github.setPrComment ignore client repo pr gc
-            
-            commentClient.Received(1)
-                .Update(fst repo, snd repo, comment.Id, 
-                        Arg.Is<string>(fun s -> s = $"# {title}{Environment.NewLine}{body}"))
-                        |> ignore
+
+            commentClient
+                .Received(1)
+                .Update(
+                    fst repo,
+                    snd repo,
+                    comment.Id,
+                    Arg.Is<string>(fun s -> s = $"# {title}{Environment.NewLine}{body}")
+                )
+            |> ignore
 
             return true
         }
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
-    let ``createCheck creates and sends a check`` (owner: string, repo: string, title: string, body: string, isSuccess: bool) =
+    let ``createCheck creates and sends a check``
+        (owner: string, repo: string, title: string, body: string, isSuccess: bool)
+        =
         task {
             let run = new CheckRun()
 
@@ -162,7 +176,7 @@ module GithubTests =
             github.Check.Returns(checksClient) |> ignore
 
             let comment = GithubComment.create title body
-            
+
             do! pkgchk.Github.createCheck ignore github (owner, repo) "commit" isSuccess comment
 
             checkRunsClient
@@ -174,7 +188,9 @@ module GithubTests =
                         x.Output.Title = comment.title
                         && x.Output.Summary = comment.body
                         && x.Status.Value.Value = CheckStatus.Completed
-                        && x.Conclusion.Value.Value = (match isSuccess with | true -> CheckConclusion.Success | false -> CheckConclusion.Failure) )
+                        && x.Conclusion.Value.Value = (match isSuccess with
+                                                       | true -> CheckConclusion.Success
+                                                       | false -> CheckConclusion.Failure))
                 )
             |> ignore
 
