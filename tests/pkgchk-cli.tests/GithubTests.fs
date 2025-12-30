@@ -59,84 +59,90 @@ module GithubTests =
 
     [<Fact>]
     let ``getIssueComments on no issue returns empty comments`` () =
+        task {
+            let commentClient = commentClient () |> commentsGet [||]
+            let issueClient = issueClient () |> bindComments commentClient
+            let client = client () |> bindIssues issueClient
 
-        let commentClient = commentClient () |> commentsGet [||]
-        let issueClient = issueClient () |> bindComments commentClient
-        let client = client () |> bindIssues issueClient
+            issueClient.Get(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int64>()).Returns(throwIssueException)
+            |> ignore
 
-        issueClient.Get(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int64>()).Returns(throwIssueException)
-        |> ignore
-
-        let rt = pkgchk.Github.getIssueComments client repo 1
-        let r = rt.Result
-
-        r |> should be Empty
-
+            let! r = pkgchk.Github.getIssueComments client repo 1
+            
+            r |> should be Empty
+        }
 
     [<Fact>]
     let ``getIssueComments on empty issue returns empty comments`` () =
-        let issue = new Octokit.Issue()
+        task {
+            let issue = new Octokit.Issue()
 
-        let commentClient = commentClient () |> commentsGet [||]
-        let issueClient = issueClient () |> issueGet issue |> bindComments commentClient
-        let client = client () |> bindIssues issueClient
+            let commentClient = commentClient () |> commentsGet [||]
+            let issueClient = issueClient () |> issueGet issue |> bindComments commentClient
+            let client = client () |> bindIssues issueClient
 
-        let rt = pkgchk.Github.getIssueComments client repo 1
-        let r = rt.Result
-
-        r |> should be Empty
+            let! r = pkgchk.Github.getIssueComments client repo 1
+            
+            r |> should be Empty
+        }
 
     [<Fact>]
     let ``getIssueComments on issue returns comments`` () =
-        let issue = new Octokit.Issue()
-        let comment = comment "just a test"
-        let comments = [| comment |]
+        task {
+            let issue = new Octokit.Issue()
+            let comment = comment "just a test"
+            let comments = [| comment |]
 
-        let commentClient = commentClient () |> commentsGet comments
-        let issueClient = issueClient () |> issueGet issue |> bindComments commentClient
-        let client = client () |> bindIssues issueClient
+            let commentClient = commentClient () |> commentsGet comments
+            let issueClient = issueClient () |> issueGet issue |> bindComments commentClient
+            let client = client () |> bindIssues issueClient
 
-        let rt = pkgchk.Github.getIssueComments client repo 1
-        let r = rt.Result
+            let! r = pkgchk.Github.getIssueComments client repo 1
+            
+            r |> should equal (List.ofSeq comments)
+        }
 
-        r |> should equal (List.ofSeq comments)
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``setPrComment new comment invokes create`` (title: string, body: string, prId: int) =
+        task {
+            let commentClient = commentClient ()
+            let issueClient = issueClient () |> bindComments commentClient
+            let client = client () |> bindIssues issueClient
 
-    [<Fact>]
-    let ``setPrComment new comment invokes create`` () =
-        let commentClient = commentClient ()
-        let issueClient = issueClient () |> bindComments commentClient
-        let client = client () |> bindIssues issueClient
+            let gc = GithubComment.create title body
 
-        let gc =
-            { GithubComment.title = "title"
-              GithubComment.body = "body" }
+            let! r = pkgchk.Github.setPrComment ignore client repo prId gc
+            
+            commentClient.Received(1)
+                .Create(fst repo, snd repo, prId, 
+                        Arg.Is<string>(fun s -> s = $"# {title}{Environment.NewLine}{body}")) 
+                        |> ignore
+            
+            return true
+        }
 
-        let pr = 1
-        let rt = pkgchk.Github.setPrComment ignore client repo pr gc
-        let r = rt.Result
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``setPrComment existing comment invokes update`` (title: string, body: string) =
+        task {
+            let gc = GithubComment.create title body
 
-        commentClient.Received(1).Create(fst repo, snd repo, pr, Arg.Any<string>())
-        |> ignore
+            let pr = 1
+            let comment = comment $"# {gc.title}"
+            let comments = [| comment |]
 
-    [<Fact>]
-    let ``setPrComment exosting comment invokes update`` () =
-        let gc =
-            { GithubComment.title = "title"
-              GithubComment.body = "body" }
+            let commentClient = commentClient () |> commentsGet comments
+            let issueClient = issueClient () |> bindComments commentClient
+            let client = client () |> bindIssues issueClient
 
-        let pr = 1
-        let comment = comment $"# {gc.title}"
-        let comments = [| comment |]
+            let! r = pkgchk.Github.setPrComment ignore client repo pr gc
+            
+            commentClient.Received(1)
+                .Update(fst repo, snd repo, comment.Id, 
+                        Arg.Is<string>(fun s -> s = $"# {title}{Environment.NewLine}{body}"))
+                        |> ignore
 
-        let commentClient = commentClient () |> commentsGet comments
-        let issueClient = issueClient () |> bindComments commentClient
-        let client = client () |> bindIssues issueClient
-
-        let rt = pkgchk.Github.setPrComment ignore client repo pr gc
-        let r = rt.Result
-
-        commentClient.Received(1).Update(fst repo, snd repo, comment.Id, Arg.Any<string>())
-        |> ignore
+            return true
+        }
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``createCheck creates and sends a check`` (owner: string, repo: string, title: string, body: string, isSuccess: bool) =
