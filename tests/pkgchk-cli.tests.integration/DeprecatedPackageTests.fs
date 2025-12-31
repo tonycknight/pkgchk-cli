@@ -105,4 +105,4 @@ type DeprecatedPackageTests(output: ITestOutputHelper) =
 
         addPackageDowngradeAadPackageArgs outDir |> execSuccess
 
-        [ "high"; "legacy" ] |> runPkgChkSeverityArgs outDir |> execSysErrorFailedPkgChk
+        [ "high"; "legacy" ] |> runPkgChkSeverityArgs outDir |> execFailedPkgChk
