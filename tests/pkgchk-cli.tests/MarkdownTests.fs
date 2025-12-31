@@ -57,3 +57,52 @@ module MarkdownTests =
 
         result.StartsWith($"[{suggestion}]")
         && result.EndsWith($"({pkgchk.Rendering.nugetLink (packageId, String.Empty)})")
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``imgLink biulds link`` (uri: string) =
+        let result = pkgchk.Markdown.imgLink uri
+
+        result = $"![image]({uri})"
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``pkgFramework renders HTML colour markup`` (hit: pkgchk.ScaHit) =
+        let result = pkgchk.Markdown.pkgFramework hit
+        
+        result <> ""
+        && result.StartsWith("<span style='color:#")
+        && result.EndsWith("</span>")
+        && result.Contains(hit.framework)
+
+    [<Property(Arbitrary = [| typeof<KnownHitSeverity> |], Verbose = true)>]
+    let ``formatSeverities renders severities``  (severities: string[] ) =
+        let result = pkgchk.Markdown.formatSeverities severities
+        
+        severities |> Seq.forall result.Contains
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], MaxTest = 1)>]
+    let ``footer renders`` () =
+        let result = pkgchk.Markdown.footer |> pkgchk.String.joinLines
+
+        result <> ""
+        && result.Contains("Thank you")
+        && result.Contains(pkgchk.App.packageId.ToLower())
+        && result.Contains(pkgchk.App.repo)
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``titleUpgrades renders`` (hits: pkgchk.ScaHit list) =
+        let result = pkgchk.Markdown.titleUpgrades hits |> pkgchk.String.joinLines
+
+        result <> ""
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``formatHitCounts renders ``  (hits: pkgchk.ScaHitSummary[] ) =
+        let severities = hits |> Seq.map (fun h -> h.severity) |> Seq.distinct |> Array.ofSeq
+
+        let result = pkgchk.Markdown.formatHitCounts (severities, hits) |> pkgchk.String.joinLines
+
+        match hits with
+        | [||] -> result = ""
+        | xs -> result <> ""
+                && severities |> Seq.forall result.Contains
+                
+    
