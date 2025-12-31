@@ -67,16 +67,16 @@ module MarkdownTests =
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``pkgFramework renders HTML colour markup`` (hit: pkgchk.ScaHit) =
         let result = pkgchk.Markdown.pkgFramework hit
-        
+
         result <> ""
         && result.StartsWith("<span style='color:#")
         && result.EndsWith("</span>")
         && result.Contains(hit.framework)
 
     [<Property(Arbitrary = [| typeof<KnownHitSeverity> |], Verbose = true)>]
-    let ``formatSeverities renders severities``  (severities: string[] ) =
+    let ``formatSeverities renders severities`` (severities: string[]) =
         let result = pkgchk.Markdown.formatSeverities severities
-        
+
         severities |> Seq.forall result.Contains
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], MaxTest = 1)>]
@@ -95,14 +95,13 @@ module MarkdownTests =
         result <> ""
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
-    let ``formatHitCounts renders ``  (hits: pkgchk.ScaHitSummary[] ) =
-        let severities = hits |> Seq.map (fun h -> h.severity) |> Seq.distinct |> Array.ofSeq
+    let ``formatHitCounts renders `` (hits: pkgchk.ScaHitSummary[]) =
+        let severities =
+            hits |> Seq.map (fun h -> h.severity) |> Seq.distinct |> Array.ofSeq
 
-        let result = pkgchk.Markdown.formatHitCounts (severities, hits) |> pkgchk.String.joinLines
+        let result =
+            pkgchk.Markdown.formatHitCounts (severities, hits) |> pkgchk.String.joinLines
 
         match hits with
         | [||] -> result = ""
-        | xs -> result <> ""
-                && severities |> Seq.forall result.Contains
-                
-    
+        | xs -> result <> "" && severities |> Seq.forall result.Contains
