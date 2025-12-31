@@ -1,6 +1,7 @@
 ﻿namespace pkgchk
 
 open System
+open System.Diagnostics
 open System.Diagnostics.CodeAnalysis
 open Octokit
 
@@ -128,15 +129,14 @@ module Github =
     let sendCheck (context: ApplicationContext) isSuccess (comment: GithubComment) =
         task {
             let trace = context.services.trace
-            let repo = String.split '/' context.github.repo
             let client = client context.github.token
-            let commit = context.github.commit
+            let repo = (String.split '/' context.github.repo)
 
-            trace $"Posting {comment.title} build check to Github repo {repo}..."
+            trace $"Posting {comment.title} build check to Github repo {context.github.repo}..."
 
-            let! _ = comment |> createCheck trace client repo commit isSuccess
+            let! _ = comment |> createCheck trace client repo context.github.commit isSuccess
 
-            $"{comment.title} check sent to Github."
+            $"Check '{comment.title}' sent to Github."
             |> Console.italic
             |> CliCommands.console
         }

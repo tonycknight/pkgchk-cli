@@ -27,6 +27,9 @@ module Rendering =
     let cornflowerblue = "#6495ed"
 
     [<Literal>]
+    let lightcornflowerblue = "#4475ed"
+
+    [<Literal>]
     let red = "red"
 
     [<Literal>]

@@ -1,5 +1,7 @@
 ﻿namespace pkgchk
 
+open System
+open System.Collections.Concurrent
 open Spectre.Console
 
 module Console =
@@ -51,15 +53,25 @@ module Console =
         let url = $"{Rendering.nugetPrefix}/{package}"
         $"[link={url}]{package} {suggestion}[/]"
 
-    let hitFramework (hit: ScaHit) =
+    let hitFramework =
 
-        let f =
-            match hit.framework.ToLowerInvariant() with
-            | "net8.0" -> markup "#4475ed"
-            | "net9.0" -> markup "#5485ed"
-            | _ -> markup Rendering.cornflowerblue
+        let last = new ConcurrentDictionary<string, (string * string)>()
+        last.[""] <- ("", "")
 
-        hit.framework |> f
+        let switchColour value =
+            match value with
+            | Rendering.cornflowerblue -> Rendering.lightcornflowerblue
+            | _ -> Rendering.cornflowerblue
+
+        fun (hit: ScaHit) ->
+            let t = last.[""]
+            let mutable colour = snd t
+
+            if String.toLower hit.framework <> fst t then
+                colour <- switchColour colour
+                last.[""] <- (String.toLower hit.framework, colour)
+
+            hit.framework |> markup colour
 
     let vulnerabilitySummaryTitle hits =
         match hits with
