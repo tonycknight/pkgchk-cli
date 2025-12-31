@@ -65,10 +65,13 @@ jobs:
           reporter: dotnet-trx
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Consolidate code coverage
+        run: dotnet reportgenerator -reports:./tests/**/coverage.info -targetdir:./reports/codecoverage -reporttypes:Html,Cobertura
+
       - name: Code coverage results
-        uses: 5monkeys/cobertura-action@master
+        uses: 5monkeys/cobertura-action@v14
         with:
-          path: ${{ github.workspace }}/tests/pkgchk-cli.tests/TestResults/coverage.info
+          path: ${{ github.workspace }}/reports/codecoverage/Cobertura.xml
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           minimum_coverage: 1
           fail_below_threshold: true
@@ -78,9 +81,6 @@ jobs:
           show_class_names: true
           link_missing_lines: true
           report_name: code coverage results
-
-      - name: Consolidate code coverage
-        run: dotnet reportgenerator -reports:./tests/**/coverage.info -targetdir:./reports/codecoverage -reporttypes:Html
 
       - name: Archive Code coverage
         uses: actions/upload-artifact@v6
