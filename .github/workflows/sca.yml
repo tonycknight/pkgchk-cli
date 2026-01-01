@@ -23,4 +23,7 @@ jobs:
       - name: Dependency scan
         uses: tonycknight/pkgchk-action@v1
         with: 
+          scan-issues: true
+          scan-upgrades: true
           config: pkgchk.config.yml
+          trace: true
