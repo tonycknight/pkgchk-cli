@@ -134,8 +134,8 @@ type PackageScanCommandSettings() =
 
     [<CommandOption("-d|--deprecated")>]
     [<Description("Check deprecated packagess. true to include, false to exclude.")>]
-    [<DefaultValue(false)>]
-    member val IncludeDeprecations = false with get, set
+    [<DefaultValue(true)>]
+    member val IncludeDeprecations = true with get, set
 
     [<CommandOption("-s|--severity")>]
     [<Description("Severity levels to scan for. Matches will return non-zero exit codes. Multiple levels can be specified.")>]
