@@ -40,9 +40,10 @@ module Github =
                 return None
         }
 
-    let getIssueComments (client: IGitHubClient) (owner: string, repo) id =
+    let getIssueComments (client: IGitHubClient) trace (owner: string, repo) id =
         task {
             try
+                trace $"Fetching comments for issue {id}..."
                 let! issue = getIssue client (owner, repo) id
 
                 let! comments =
@@ -50,12 +51,18 @@ module Github =
                     | Some issue ->
                         task {
                             let! x = client.Issue.Comment.GetAllForIssue(owner, repo, id)
+                            trace $"Fetched {x |> Seq.length} comments for id {id} issue {issue.Id}."
                             return x |> List.ofSeq
                         }
-                    | None -> task { return [] }
+                    | None ->
+                        task {
+                            trace $"Issue {id} not found."
+                            return []
+                        }
 
                 return comments
             with ex ->
+                trace $"Failed to fetch comments for issue {id}: {ex.Message}"
                 return []
         }
 
@@ -65,7 +72,7 @@ module Github =
             let (commentTitle, commentBody) = constructComment comment
 
             // As there's no concrete mechanism in Octokit to affinitise comments, we must use titles as the discriminator.
-            let! comments = getIssueComments client (owner, repo) prId
+            let! comments = getIssueComments client trace (owner, repo) prId
 
             $"Found {comments |> Seq.length} comments." |> trace
 

@@ -94,8 +94,10 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
+        #os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
-
+    env:
+      VSTEST_CONNECTION_TIMEOUT: 300
     steps:
       - uses: actions/checkout@v6
 

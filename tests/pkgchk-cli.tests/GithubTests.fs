@@ -74,7 +74,7 @@ module GithubTests =
             issueClient.Get(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int64>()).Returns(throwIssueException)
             |> ignore
 
-            let! r = pkgchk.Github.getIssueComments client repo 1
+            let! r = pkgchk.Github.getIssueComments client ignore repo 1
 
             r |> should be Empty
         }
@@ -88,7 +88,7 @@ module GithubTests =
             let issueClient = issueClient () |> issueGet issue |> bindComments commentClient
             let client = client () |> bindIssues issueClient
 
-            let! r = pkgchk.Github.getIssueComments client repo 1
+            let! r = pkgchk.Github.getIssueComments client ignore repo 1
 
             r |> should be Empty
         }
@@ -104,7 +104,7 @@ module GithubTests =
             let issueClient = issueClient () |> issueGet issue |> bindComments commentClient
             let client = client () |> bindIssues issueClient
 
-            let! r = pkgchk.Github.getIssueComments client repo 1
+            let! r = pkgchk.Github.getIssueComments client ignore repo 1
 
             r |> should equal (List.ofSeq comments)
         }
@@ -134,11 +134,13 @@ module GithubTests =
             let gc = GithubComment.create title body
 
             let pr = 1
+            let issue = new Octokit.Issue()
+
             let comment = comment $"# {gc.title}"
             let comments = [| comment |]
 
             let commentClient = commentClient () |> commentsGet comments
-            let issueClient = issueClient () |> bindComments commentClient
+            let issueClient = issueClient () |> issueGet issue |> bindComments commentClient
             let client = client () |> bindIssues issueClient
 
             let! r = pkgchk.Github.setPrComment ignore client repo pr gc
