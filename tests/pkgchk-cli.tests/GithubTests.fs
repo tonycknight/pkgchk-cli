@@ -135,7 +135,7 @@ module GithubTests =
 
             let pr = 1
             let issue = new Octokit.Issue()
-            
+
             let comment = comment $"# {gc.title}"
             let comments = [| comment |]
 
