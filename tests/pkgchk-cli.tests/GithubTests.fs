@@ -134,11 +134,13 @@ module GithubTests =
             let gc = GithubComment.create title body
 
             let pr = 1
+            let issue = new Octokit.Issue()
+            
             let comment = comment $"# {gc.title}"
             let comments = [| comment |]
 
             let commentClient = commentClient () |> commentsGet comments
-            let issueClient = issueClient () |> bindComments commentClient
+            let issueClient = issueClient () |> issueGet issue |> bindComments commentClient
             let client = client () |> bindIssues issueClient
 
             let! r = pkgchk.Github.setPrComment ignore client repo pr gc
