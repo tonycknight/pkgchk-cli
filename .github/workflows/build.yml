@@ -95,7 +95,8 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
-
+    env:
+      VSTEST_CONNECTION_TIMEOUT: 180
     steps:
       - uses: actions/checkout@v6
 
