@@ -1,7 +1,6 @@
 ﻿namespace pkgchk
 
 open System
-open System.Diagnostics
 open System.Diagnostics.CodeAnalysis
 open Octokit
 
@@ -44,23 +43,11 @@ module Github =
         task {
             try
                 trace $"Fetching comments for issue {id}..."
-                let! issue = getIssue client (owner, repo) id
 
-                let! comments =
-                    match issue with
-                    | Some issue ->
-                        task {
-                            let! x = client.Issue.Comment.GetAllForIssue(owner, repo, id)
-                            trace $"Fetched {x |> Seq.length} comments for id {id} issue {issue.Id}."
-                            return x |> List.ofSeq
-                        }
-                    | None ->
-                        task {
-                            trace $"Issue {id} not found."
-                            return []
-                        }
+                let! comments = client.Issue.Comment.GetAllForIssue(owner, repo, id)
+                trace $"Fetched {comments |> Seq.length} comments for id {id}."
+                return comments |> List.ofSeq
 
-                return comments
             with ex ->
                 trace $"Failed to fetch comments for issue {id}: {ex.Message}"
                 return []
