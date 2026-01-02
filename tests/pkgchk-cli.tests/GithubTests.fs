@@ -74,7 +74,7 @@ module GithubTests =
             issueClient.Get(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int64>()).Returns(throwIssueException)
             |> ignore
 
-            let! r = pkgchk.Github.getIssueComments client repo 1
+            let! r = pkgchk.Github.getIssueComments client ignore repo 1
 
             r |> should be Empty
         }
@@ -88,7 +88,7 @@ module GithubTests =
             let issueClient = issueClient () |> issueGet issue |> bindComments commentClient
             let client = client () |> bindIssues issueClient
 
-            let! r = pkgchk.Github.getIssueComments client repo 1
+            let! r = pkgchk.Github.getIssueComments client ignore repo 1
 
             r |> should be Empty
         }
@@ -104,7 +104,7 @@ module GithubTests =
             let issueClient = issueClient () |> issueGet issue |> bindComments commentClient
             let client = client () |> bindIssues issueClient
 
-            let! r = pkgchk.Github.getIssueComments client repo 1
+            let! r = pkgchk.Github.getIssueComments client ignore repo 1
 
             r |> should equal (List.ofSeq comments)
         }
