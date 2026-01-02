@@ -50,8 +50,8 @@ module Github =
                     match issue with
                     | Some issue ->
                         task {
-                            let! x = client.Issue.Comment.GetAllForIssue(owner, repo, issue.Id)
-                            trace $"Fetched {x |> Seq.length} comments for issue {issue.Id}."
+                            let! x = client.Issue.Comment.GetAllForIssue(owner, repo, id)
+                            trace $"Fetched {x |> Seq.length} comments for id {id} issue {issue.Id}."
                             return x |> List.ofSeq
                         }
                     | None ->
