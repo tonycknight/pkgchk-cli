@@ -21,7 +21,6 @@ on:
 env:
   build-version-number: 0.3.${{ github.run_number }}  
   nuget-package-name: pkgchk-cli.nupkg
-  docker-image-name: ghcr.io/${{ github.repository_owner }}/pkgchk-cli
   isrelease: ${{ github.event_name == 'release' && github.event.action == 'released' && github.ref == 'refs/heads/main' }}
 
 jobs:
@@ -32,6 +31,8 @@ jobs:
       - run: echo "Done!"
     outputs:
       isrelease: ${{ env.isrelease }}
+      build-version-number: ${{ env.build-version-number }}
+      nuget-package-name: ${{ env.nuget-package-name }}
 
   sca:
     name: Check SCA
@@ -155,16 +156,15 @@ jobs:
         
       - name: Build package for Preview
         if: ${{ needs.variables.outputs.isrelease == 'false' }}
-        run: dotnet pack -c Release -o ./package/ -p:PackageVersion=${{ env.build-version-number }}-preview -p:Version=${{ env.build-version-number }}-preview
+        run: dotnet pack -c Release -o ./package/ -p:PackageVersion=${{ needs.variables.outputs.build-version-number }}-preview -p:Version=${{ needs.variables.outputs.build-version-number }}-preview
       
       - name: Build package for Release
         if: ${{ needs.variables.outputs.isrelease == 'true' }}
-        run: dotnet pack -c Release -o ./package/ -p:PackageVersion=${{ env.build-version-number }} -p:Version=${{ env.build-version-number }}
-
+        run: dotnet pack -c Release -o ./package/ -p:PackageVersion=${{ needs.variables.outputs.build-version-number }} -p:Version=${{ needs.variables.outputs.build-version-number }}
       - name: Archive tool nupkg
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ env.nuget-package-name }}
+          name: ${{ needs.variables.outputs.nuget-package-name }}
           path: ./package/*.nupkg
 
   nuget-release:
@@ -182,7 +182,7 @@ jobs:
       - name: Download package
         uses: actions/download-artifact@v7
         with:
-          name: ${{ env.nuget-package-name }}
+          name: ${{ needs.variables.outputs.nuget-package-name }}
           path: ${{ github.workspace }}/artifacts      
 
       - name: Push nuget package
