@@ -196,12 +196,15 @@ module ContextTests =
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], MaxTest = 1000)>]
     let ``filterPackages with wildcard excludes package`` (context: pkgchk.OptionsContext, hit: pkgchk.ScaHit) =
+        let packageId = hit.packageId
+        let hit = { hit with packageId = hit.packageId + "Extra" } // extend the package ID to match by wildcard
+
         let hits = [ hit ]
 
         let context =
             { context with
                 includePackages = [||]
-                excludePackages = [| $"{hit.packageId}*" |] }
+                excludePackages = [| $"{packageId}*" |] }
 
         let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
 

@@ -220,7 +220,7 @@ module Context =
             let eq x y = System.StringComparer.InvariantCultureIgnoreCase.Equals(x,y)
             if map.EndsWith("*") then
                 let name = map.Substring(0, map.Length - 1)
-                eq name hit.packageId
+                hit.packageId.StartsWith(name, System.StringComparison.InvariantCultureIgnoreCase)
             else
                 eq map hit.packageId
 
