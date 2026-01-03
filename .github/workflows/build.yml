@@ -15,16 +15,34 @@ on:
       - '.github/CODEOWNERS'
       - '**/*.md'
   workflow_dispatch:
+  release:
+    types: [released]
 
 env:
-  build-version-number: 0.3.${{ github.run_number }}  
+  package-version-number: 0.3.${{ github.run_number }}  
   nuget-package-name: pkgchk-cli.nupkg
-  docker-image-name: ghcr.io/${{ github.repository_owner }}/pkgchk-cli
+  isrelease: ${{ github.event_name == 'release' && github.event.action == 'released' && github.ref == 'refs/heads/main' }}
 
 jobs:
+  variables:
+    name: Setup variables
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set preview package version
+        if: ${{ env.isrelease }} == 'false'
+        run: echo "package-version-number=${{ env.package-version-number }}-preview" >> $GITHUB_ENV
+
+      - run: echo "Building package ${{ env.package-version-number }}" >> $GITHUB_STEP_SUMMARY
+
+    outputs:
+      isrelease: ${{ env.isrelease }}
+      package-version-number: ${{ env.package-version-number }}
+      nuget-package-name: ${{ env.nuget-package-name }}
+
   sca:
     name: Check SCA
     runs-on: ubuntu-latest
+    needs: [ variables ]
 
     steps:
       - uses: actions/checkout@v6
@@ -40,6 +58,7 @@ jobs:
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
+    needs: [ variables ]
 
     steps:
       - uses: actions/checkout@v6
@@ -90,11 +109,11 @@ jobs:
 
   integration-tests:
     name: Integration Tests
+    needs: [ variables ]
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        #os: [ubuntu-latest]
+        os: [ubuntu-latest, windows-latest]        
     runs-on: ${{ matrix.os }}
     env:
       VSTEST_CONNECTION_TIMEOUT: 300
@@ -126,6 +145,7 @@ jobs:
   nuget-package:
     name: Nuget packaging
     runs-on: ubuntu-latest
+    needs: [ variables ]
     
     steps:
       - uses: actions/checkout@v6
@@ -139,26 +159,20 @@ jobs:
       - name: App restore
         run: dotnet restore
         
-      - name: Build package for Preview
-        if: ${{ github.ref != 'refs/heads/main'}}
-        run: dotnet pack -c Release -o ./package/ -p:PackageVersion=${{ env.build-version-number }}-preview -p:Version=${{ env.build-version-number }}-preview
-      
-      - name: Build package for Release
-        if: ${{ github.ref == 'refs/heads/main'}}
-        run: dotnet pack -c Release -o ./package/ -p:PackageVersion=${{ env.build-version-number }} -p:Version=${{ env.build-version-number }}
+      - name: Build package 
+        run: dotnet pack -c Release -o ./package/ -p:PackageVersion=${{ needs.variables.outputs.package-version-number }} -p:Version=${{ needs.variables.outputs.package-version-number }}
 
       - name: Archive tool nupkg
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ env.nuget-package-name }}
+          name: ${{ needs.variables.outputs.nuget-package-name }}
           path: ./package/*.nupkg
-        
 
   nuget-release:
     name: Push to Nuget
     runs-on: ubuntu-latest
-    needs:   [ sca, unit-tests, integration-tests, nuget-package ]
-    if: github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'Update tools') && github.actor != 'dependabot[bot]'
+    needs:   [ variables, sca, unit-tests, integration-tests, nuget-package ]
+    if: ${{ needs.variables.outputs.isrelease == 'true' }}
     
     steps:
       - uses: actions/checkout@v6
@@ -169,24 +183,8 @@ jobs:
       - name: Download package
         uses: actions/download-artifact@v7
         with:
-          name: ${{ env.nuget-package-name }}
+          name: ${{ needs.variables.outputs.nuget-package-name }}
           path: ${{ github.workspace }}/artifacts      
 
       - name: Push nuget package
         run: dotnet nuget push "artifacts/*.nupkg"  --api-key ${{ secrets.NUGET_PAT }} --source "nuget.org"
-
-  gh-release:
-    name: Github release
-    runs-on: ubuntu-latest
-    needs: [ nuget-release ]    
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' 
-
-    steps:    
-      - uses: actions/checkout@v6
-
-      - name: Create Release
-        uses: ncipollo/release-action@v1
-        with:
-          tag: v${{ env.build-version-number }}
-          prerelease: false
-          generateReleaseNotes: true
