@@ -25,9 +25,16 @@ env:
   isrelease: ${{ github.event_name == 'release' && github.event.action == 'released' && github.ref == 'refs/heads/main' }}
 
 jobs:
+  variables:
+    name: Setup variables
+    runs-on: ubuntu-latest
+    outputs:
+      isrelease: ${{ env.isrelease }}
+
   sca:
     name: Check SCA
     runs-on: ubuntu-latest
+    needs: [ variables ]
 
     steps:
       - uses: actions/checkout@v6
@@ -43,6 +50,7 @@ jobs:
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
+    needs: [ variables ]
 
     steps:
       - uses: actions/checkout@v6
@@ -93,11 +101,11 @@ jobs:
 
   integration-tests:
     name: Integration Tests
+    needs: [ variables ]
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        #os: [ubuntu-latest]
+        os: [ubuntu-latest, windows-latest]        
     runs-on: ${{ matrix.os }}
     env:
       VSTEST_CONNECTION_TIMEOUT: 300
@@ -129,6 +137,7 @@ jobs:
   nuget-package:
     name: Nuget packaging
     runs-on: ubuntu-latest
+    needs: [ variables ]
     
     steps:
       - uses: actions/checkout@v6
@@ -143,11 +152,11 @@ jobs:
         run: dotnet restore
         
       - name: Build package for Preview
-        if: ${{ env.isrelease != 'true' }}
+        if: ${{ needs.variables.outputs.isrelease == 'false' }}
         run: dotnet pack -c Release -o ./package/ -p:PackageVersion=${{ env.build-version-number }}-preview -p:Version=${{ env.build-version-number }}-preview
       
       - name: Build package for Release
-        if: ${{ env.isrelease == 'true' }}
+        if: ${{ needs.variables.outputs.isrelease == 'true' }}
         run: dotnet pack -c Release -o ./package/ -p:PackageVersion=${{ env.build-version-number }} -p:Version=${{ env.build-version-number }}
 
       - name: Archive tool nupkg
@@ -159,8 +168,8 @@ jobs:
   nuget-release:
     name: Push to Nuget
     runs-on: ubuntu-latest
-    needs:   [ sca, unit-tests, integration-tests, nuget-package ]
-    if: env.isrelease == 'true'
+    needs:   [ variables, sca, unit-tests, integration-tests, nuget-package ]
+    if: ${{ needs.variables.outputs.isrelease == 'true' }}
     
     steps:
       - uses: actions/checkout@v6
