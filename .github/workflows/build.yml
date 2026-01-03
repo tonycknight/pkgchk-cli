@@ -160,7 +160,7 @@ jobs:
     name: Push to Nuget
     runs-on: ubuntu-latest
     needs:   [ sca, unit-tests, integration-tests, nuget-package ]
-    if: ${{ env.isrelease == 'true' }}
+    if: env.isrelease == 'true'
     
     steps:
       - uses: actions/checkout@v6
@@ -176,5 +176,3 @@ jobs:
 
       - name: Push nuget package
         run: dotnet nuget push "artifacts/*.nupkg"  --api-key ${{ secrets.NUGET_PAT }} --source "nuget.org"
-
-  
