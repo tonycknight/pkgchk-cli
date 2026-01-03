@@ -33,8 +33,6 @@ jobs:
         run: echo "package-version-number=${{ env.package-version-number }}-preview" >> $GITHUB_ENV
 
       - run: echo "Building package ${{ env.package-version-number }}" >> $GITHUB_STEP_SUMMARY
-      
-      - run: echo "Done!"
 
     outputs:
       isrelease: ${{ env.isrelease }}
