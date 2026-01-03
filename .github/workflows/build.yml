@@ -19,7 +19,7 @@ on:
     types: [released]
 
 env:
-  build-version-number: 0.3.${{ github.run_number }}  
+  package-version-number: 0.3.${{ github.run_number }}  
   nuget-package-name: pkgchk-cli.nupkg
   isrelease: ${{ github.event_name == 'release' && github.event.action == 'released' && github.ref == 'refs/heads/main' }}
 
@@ -28,15 +28,15 @@ jobs:
     name: Setup variables
     runs-on: ubuntu-latest
     steps:
-      - name: Set preview version
+      - name: Set preview package version
         if: ${{ env.isrelease }} == 'false'
-        run: echo "build-version-number=${{ env.build-version-number }}-preview" >> $GITHUB_ENV
+        run: echo "package-version-number=${{ env.package-version-number }}-preview" >> $GITHUB_ENV
 
       - run: echo "Done!"
-      
+
     outputs:
       isrelease: ${{ env.isrelease }}
-      build-version-number: ${{ env.build-version-number }}
+      package-version-number: ${{ env.package-version-number }}
       nuget-package-name: ${{ env.nuget-package-name }}
 
   sca:
@@ -160,7 +160,8 @@ jobs:
         run: dotnet restore
         
       - name: Build package 
-        run: dotnet pack -c Release -o ./package/ -p:PackageVersion=${{ needs.variables.outputs.build-version-number }} -p:Version=${{ needs.variables.outputs.build-version-number }}
+        run: dotnet pack -c Release -o ./package/ -p:PackageVersion=${{ needs.variables.outputs.package-version-number }} -p:Version=${{ needs.variables.outputs.package-version-number }}
+        
       - name: Archive tool nupkg
         uses: actions/upload-artifact@v6
         with:
