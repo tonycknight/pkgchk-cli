@@ -32,6 +32,8 @@ jobs:
         if: ${{ env.isrelease }} == 'false'
         run: echo "package-version-number=${{ env.package-version-number }}-preview" >> $GITHUB_ENV
 
+      - run: echo "Building package ${{ env.package-version-number }}" >> $GITHUB_STEP_SUMMARY
+      
       - run: echo "Done!"
 
     outputs:
@@ -161,7 +163,7 @@ jobs:
         
       - name: Build package 
         run: dotnet pack -c Release -o ./package/ -p:PackageVersion=${{ needs.variables.outputs.package-version-number }} -p:Version=${{ needs.variables.outputs.package-version-number }}
-        
+
       - name: Archive tool nupkg
         uses: actions/upload-artifact@v6
         with:
