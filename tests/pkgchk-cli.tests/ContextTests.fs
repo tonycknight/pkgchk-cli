@@ -156,6 +156,19 @@ module ContextTests =
         r = hits
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], MaxTest = 1000)>]
+    let ``filterPackages with wildcard includes package`` (context: pkgchk.OptionsContext, hit: pkgchk.ScaHit) =
+        let hits = [ hit ]
+
+        let context =
+            { context with
+                excludePackages = [||]
+                includePackages = [| $"{hit.packageId}*" |] }
+
+        let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
+
+        r = hits
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], MaxTest = 1000)>]
     let ``filterPackages does not include package`` (context: pkgchk.OptionsContext, hit: pkgchk.ScaHit) =
         let hits = [ hit ]
 
@@ -180,6 +193,26 @@ module ContextTests =
         let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
 
         List.isEmpty r
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], MaxTest = 1000)>]
+    let ``filterPackages with wildcard excludes package`` (context: pkgchk.OptionsContext, hit: pkgchk.ScaHit) =
+        let packageId = hit.packageId
+
+        let hit =
+            { hit with
+                packageId = hit.packageId + "Extra" } // extend the package ID to match by wildcard
+
+        let hits = [ hit ]
+
+        let context =
+            { context with
+                includePackages = [||]
+                excludePackages = [| $"{packageId}*" |] }
+
+        let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
+
+        List.isEmpty r
+
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], MaxTest = 1000)>]
     let ``filterPackages does not exclude package`` (context: pkgchk.OptionsContext, hit: pkgchk.ScaHit) =
