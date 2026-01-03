@@ -216,8 +216,10 @@ module Context =
 
     let filterPackages (context: OptionsContext) (hits: seq<pkgchk.ScaHit>) =
 
-        let isIdMatch (hit: ScaHit) (map: string)=
-            let eq x y = System.StringComparer.InvariantCultureIgnoreCase.Equals(x,y)
+        let isIdMatch (hit: ScaHit) (map: string) =
+            let eq x y =
+                System.StringComparer.InvariantCultureIgnoreCase.Equals(x, y)
+
             if map.EndsWith("*") then
                 let name = map.Substring(0, map.Length - 1)
                 hit.packageId.StartsWith(name, System.StringComparison.InvariantCultureIgnoreCase)
@@ -228,7 +230,7 @@ module Context =
             match map with
             | [||] -> true
             | xs -> map |> Seq.exists (isIdMatch hit)
-            
+
         let included (hit: ScaHit) =
             match context.includePackages with
             | [||] -> true
@@ -237,9 +239,9 @@ module Context =
         let excluded (hit: ScaHit) =
             match context.excludePackages with
             | [||] -> false
-            | xs -> hit |> isHitMatch context.excludePackages 
+            | xs -> hit |> isHitMatch context.excludePackages
 
-        hits |> Seq.filter (included &&>> (excluded >> not) )
+        hits |> Seq.filter (included &&>> (excluded >> not))
 
     let trace (context: ApplicationContext) =
 
