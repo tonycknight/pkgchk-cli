@@ -223,6 +223,19 @@ module Context =
             context.excludePackages
             |> HashSet.ofSeq System.StringComparer.InvariantCultureIgnoreCase
 
+        let isIdMatch (hit: ScaHit) (map: string)=
+            let eq x y = System.StringComparer.InvariantCultureIgnoreCase.Equals(x,y)
+            if map.EndsWith("*") then
+                let name = map.Substring(0, map.Length - 1)
+                eq name hit.packageId
+            else
+                eq map hit.packageId
+
+        let isHitMatch (map: string[]) (hit: ScaHit) =
+            match map with
+            | [||] -> true
+            | xs -> map |> Seq.exists (isIdMatch hit)
+            
         let included (hit: ScaHit) =
             match inclusionMap.Count with
             | 0 -> true
