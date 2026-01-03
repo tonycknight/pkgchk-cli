@@ -236,10 +236,10 @@ module Context =
 
         let excluded (hit: ScaHit) =
             match context.excludePackages with
-            | [||] -> true
-            | xs -> hit |> isHitMatch context.excludePackages |> not
+            | [||] -> false
+            | xs -> hit |> isHitMatch context.excludePackages 
 
-        hits |> Seq.filter (included &&>> excluded)
+        hits |> Seq.filter (included &&>> (excluded >> not) )
 
     let trace (context: ApplicationContext) =
 
