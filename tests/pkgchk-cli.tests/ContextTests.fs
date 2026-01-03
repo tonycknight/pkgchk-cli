@@ -195,7 +195,7 @@ module ContextTests =
         List.isEmpty r
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], MaxTest = 1000)>]
-    let ``filterPackages excludes wildcard package`` (context: pkgchk.OptionsContext, hit: pkgchk.ScaHit) =
+    let ``filterPackages with wildcard excludes package`` (context: pkgchk.OptionsContext, hit: pkgchk.ScaHit) =
         let hits = [ hit ]
 
         let context =

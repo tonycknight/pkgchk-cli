@@ -215,13 +215,6 @@ module Context =
         | false -> context.report.badImageUri
 
     let filterPackages (context: OptionsContext) (hits: seq<pkgchk.ScaHit>) =
-        let inclusionMap =
-            context.includePackages
-            |> HashSet.ofSeq System.StringComparer.InvariantCultureIgnoreCase
-
-        let exclusionMap =
-            context.excludePackages
-            |> HashSet.ofSeq System.StringComparer.InvariantCultureIgnoreCase
 
         let isIdMatch (hit: ScaHit) (map: string)=
             let eq x y = System.StringComparer.InvariantCultureIgnoreCase.Equals(x,y)
@@ -237,14 +230,14 @@ module Context =
             | xs -> map |> Seq.exists (isIdMatch hit)
             
         let included (hit: ScaHit) =
-            match inclusionMap.Count with
-            | 0 -> true
-            | x -> inclusionMap.Contains hit.packageId
+            match context.includePackages with
+            | [||] -> true
+            | xs -> hit |> isHitMatch context.includePackages
 
         let excluded (hit: ScaHit) =
-            match exclusionMap.Count with
-            | 0 -> true
-            | x -> exclusionMap.Contains hit.packageId |> not
+            match context.excludePackages with
+            | [||] -> true
+            | xs -> hit |> isHitMatch context.excludePackages |> not
 
         hits |> Seq.filter (included &&>> excluded)
 
