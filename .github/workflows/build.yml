@@ -28,6 +28,8 @@ jobs:
   variables:
     name: Setup variables
     runs-on: ubuntu-latest
+    steps:
+      - run: echo "Done!"
     outputs:
       isrelease: ${{ env.isrelease }}
 
