@@ -28,7 +28,12 @@ jobs:
     name: Setup variables
     runs-on: ubuntu-latest
     steps:
+      - name: Set preview version
+        if: ${{ env.isrelease }} == 'false'
+        run: echo "build-version-number=${{ env.build-version-number }}-preview" >> $GITHUB_ENV
+
       - run: echo "Done!"
+      
     outputs:
       isrelease: ${{ env.isrelease }}
       build-version-number: ${{ env.build-version-number }}
@@ -154,12 +159,7 @@ jobs:
       - name: App restore
         run: dotnet restore
         
-      - name: Build package for Preview
-        if: ${{ needs.variables.outputs.isrelease == 'false' }}
-        run: dotnet pack -c Release -o ./package/ -p:PackageVersion=${{ needs.variables.outputs.build-version-number }}-preview -p:Version=${{ needs.variables.outputs.build-version-number }}-preview
-      
-      - name: Build package for Release
-        if: ${{ needs.variables.outputs.isrelease == 'true' }}
+      - name: Build package 
         run: dotnet pack -c Release -o ./package/ -p:PackageVersion=${{ needs.variables.outputs.build-version-number }} -p:Version=${{ needs.variables.outputs.build-version-number }}
       - name: Archive tool nupkg
         uses: actions/upload-artifact@v6
