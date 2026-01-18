@@ -1,6 +1,6 @@
 name: Build & Release
 
-permissions: # set permissions to principle of least privilege, codeql requires read permission to the repo content and PRs (if that option is set), and must have write permissions to security events in order to push results
+permissions:
   actions: read
   pull-requests: write
   security-events: write
@@ -9,41 +9,26 @@ permissions: # set permissions to principle of least privilege, codeql requires 
 
 on:
   push:
+    branches: [ "**" ]
+    tags: [ "**" ]
     paths-ignore:
       - '.github/ISSUE_TEMPLATE/**'
       - '.github/dependabot.yml'
       - '.github/CODEOWNERS'
       - '**/*.md'
-  workflow_dispatch:
-  release:
-    types: [released]
+  merge_group:
+  workflow_dispatch:  
 
 env:
-  package-version-number: 0.3.${{ github.run_number }}  
+  package-version-number: 0.0.${{ github.run_number }}
   nuget-package-name: pkgchk-cli.nupkg
-  isrelease: ${{ github.event_name == 'release' && github.event.action == 'released' && github.ref == 'refs/heads/main' }}
-
+  
 jobs:
-  variables:
-    name: Setup variables
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set preview package version
-        if: ${{ env.isrelease }} == 'false'
-        run: echo "package-version-number=${{ env.package-version-number }}-preview" >> $GITHUB_ENV
-
-      - run: echo "Building package ${{ env.package-version-number }}" >> $GITHUB_STEP_SUMMARY
-
-    outputs:
-      isrelease: ${{ env.isrelease }}
-      package-version-number: ${{ env.package-version-number }}
-      nuget-package-name: ${{ env.nuget-package-name }}
-
+ 
   sca:
     name: Check SCA
     runs-on: ubuntu-latest
-    needs: [ variables ]
-
+    
     steps:
       - uses: actions/checkout@v6
 
@@ -58,8 +43,7 @@ jobs:
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
-    needs: [ variables ]
-
+    
     steps:
       - uses: actions/checkout@v6
 
@@ -109,7 +93,6 @@ jobs:
 
   integration-tests:
     name: Integration Tests
-    needs: [ variables ]
     strategy:
       fail-fast: false
       matrix:
@@ -142,11 +125,10 @@ jobs:
           path-replace-backslashes: true
           token: ${{ secrets.GITHUB_TOKEN }}          
   
-  nuget-package:
-    name: Nuget packaging
+  package-app:
+    name: Test App Packaging
     runs-on: ubuntu-latest
-    needs: [ variables ]
-    
+        
     steps:
       - uses: actions/checkout@v6
 
@@ -160,31 +142,36 @@ jobs:
         run: dotnet restore
         
       - name: Build package 
-        run: dotnet pack -c Release -o ./package/ -p:PackageVersion=${{ needs.variables.outputs.package-version-number }} -p:Version=${{ needs.variables.outputs.package-version-number }}
-
-      - name: Archive tool nupkg
-        uses: actions/upload-artifact@v6
-        with:
-          name: ${{ needs.variables.outputs.nuget-package-name }}
-          path: ./package/*.nupkg
+        run: dotnet pack -c Release -o ./package/ 
 
   nuget-release:
     name: Push to Nuget
     runs-on: ubuntu-latest
-    needs:   [ variables, sca, unit-tests, integration-tests, nuget-package ]
-    if: ${{ needs.variables.outputs.isrelease == 'true' }}
+    needs: [ sca, unit-tests, integration-tests, package-app ]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v5
+
+      - name: Determine version
+        run: echo "package-version-number=$(git describe --tags --dirty)" >> $GITHUB_ENV
+
+      - name: Report version
+        run: echo "Building package ${{ env.package-version-number }}" >> $GITHUB_STEP_SUMMARY
                   
-      - name: Download package
-        uses: actions/download-artifact@v7
-        with:
-          name: ${{ needs.variables.outputs.nuget-package-name }}
-          path: ${{ github.workspace }}/artifacts      
+      - name: Tool restore
+        run: dotnet tool restore
+      
+      - name: App restore
+        run: dotnet restore
+        
+      - name: Build package 
+        run: dotnet pack -c Release -o ./package/ -p:PackageVersion=${{ env.package-version-number }} -p:Version=${{ env.package-version-number }}
 
       - name: Push nuget package
-        run: dotnet nuget push "artifacts/*.nupkg"  --api-key ${{ secrets.NUGET_PAT }} --source "nuget.org"
+        run: dotnet nuget push "package/*.nupkg"  --api-key ${{ secrets.NUGET_PAT }} --source "nuget.org"
