@@ -65,7 +65,6 @@ module App =
 
             version ()
             |> Option.defaultValue "unknown"
-            |> sprintf "%s beta"
             |> Console.yellow
             |> sprintf "Version %s"
 
