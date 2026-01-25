@@ -36,7 +36,7 @@ type PackageCommandSettings() =
     [<Description("The name of a package to exclude from the scan. Multiple packages can be specified.")>]
     member val ExcludedPackages: string[] = [||] with get, set
 
-    [<CommandOption("--config", IsHidden = false)>]
+    [<CommandOption("-c|--config", IsHidden = false)>]
     [<Description("Configuration file path.")>]
     [<DefaultValue("")>]
     member val ConfigFile = "" with get, set
