@@ -8,7 +8,8 @@ type GithubContext =
       repo: string
       summaryTitle: string
       prId: string
-      commit: string }
+      commit: string
+      noCheck: bool }
 
 type ReportContext =
     { reportDirectory: string
@@ -57,7 +58,8 @@ module Context =
           token = settings.GithubToken
           repo = settings.GithubRepo
           summaryTitle = settings.GithubSummaryTitle
-          prId = settings.GithubPrId }
+          prId = settings.GithubPrId
+          noCheck = settings.NoCheck }
 
     let reportContext (settings: PackageGithubCommandSettings) =
         { ReportContext.reportDirectory = settings.OutputDirectory

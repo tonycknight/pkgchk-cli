@@ -104,7 +104,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                         if String.isNotEmpty context.github.prId then
                             do! Github.sendPrComment context comment
 
-                        if String.isNotEmpty context.github.commit then
+                        if String.isNotEmpty context.github.commit && (not context.github.noCheck) then
                             do! Github.sendCheck context true comment
 
                     return ReturnCodes.validationOk

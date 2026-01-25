@@ -12,6 +12,7 @@ module ContextTests =
         && r.summaryTitle = settings.GithubSummaryTitle
         && r.repo = settings.GithubRepo
         && r.token = settings.GithubToken
+        && r.noCheck = settings.NoCheck
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], MaxTest = 1000)>]
     let ``reportContext maps report properties`` (settings: pkgchk.PackageGithubCommandSettings) =

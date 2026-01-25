@@ -1,5 +1,4 @@
 excludePackages:
-- FsUnit.xUnit
 scanVulnerabilities: true
 scanDeprecations: true
 scanTransitives: true
