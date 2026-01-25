@@ -2,7 +2,6 @@ namespace pkgchk.tests.integration
 
 open System
 open Xunit
-open Xunit.Abstractions
 
 type DeprecatedPackageTests(output: ITestOutputHelper) =
 

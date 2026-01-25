@@ -2,7 +2,6 @@
 
 open System
 open Xunit
-open Xunit.Abstractions
 
 type VulnerablePackageTests(output: ITestOutputHelper) =
 
