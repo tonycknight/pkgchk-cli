@@ -13,8 +13,6 @@ updates:
     labels:
       - ":game_die: dependencies"
       - ":robot: bot"
-    ignore:
-      - dependency-name: "FsUnit.xUnit"
   - package-ecosystem: "github-actions"
     directory: "/.github/workflows"
     schedule:
