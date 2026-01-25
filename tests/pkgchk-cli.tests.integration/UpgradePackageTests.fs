@@ -1,7 +1,6 @@
 ﻿namespace pkgchk.tests.integration
 
 open Xunit
-open Xunit.Abstractions
 
 type UpgradePackageTests(output: ITestOutputHelper) =
 

@@ -2,7 +2,7 @@
 
 open System
 open Xunit
-open Xunit.Abstractions
+open Xunit
 
 type CleanProjectTests(output: ITestOutputHelper) =
 

@@ -3,7 +3,7 @@
 open System
 open System.Diagnostics
 open FsUnit.Xunit
-open Xunit.Abstractions
+open Xunit
 
 [<AutoOpen>]
 module TestUtils =
