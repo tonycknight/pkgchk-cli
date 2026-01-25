@@ -80,6 +80,11 @@ type PackageGithubCommandSettings() =
     [<DefaultValue("")>]
     member val GithubCommit = "" with get, set
 
+    [<CommandOption("--no-check", IsHidden = true)>]
+    [<Description("Suppress building Github checks.")>]
+    [<DefaultValue(false)>]
+    member val NoCheck = false with get, set
+
     [<CommandOption("--pass-img", IsHidden = true)>]
     [<Description("URI of an image for successful scans.")>]
     [<DefaultValue("")>]

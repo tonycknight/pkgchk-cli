@@ -39,7 +39,8 @@ module ReportGenerationTests =
           GithubContext.repo = ""
           GithubContext.summaryTitle = ""
           GithubContext.commit = ""
-          GithubContext.token = "" }
+          GithubContext.token = "" 
+          GithubContext.noCheck = false }
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``jsonReport builds Json representation of hits`` (hits: pkgchk.ScaHit[]) =
