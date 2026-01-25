@@ -119,7 +119,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                         if String.isNotEmpty context.github.prId then
                             do! Github.sendPrComment context comment
 
-                        if String.isNotEmpty context.github.commit  && (not context.github.noCheck) then
+                        if String.isNotEmpty context.github.commit && (not context.github.noCheck) then
                             do! Github.sendCheck context results.isGoodScan comment
 
                     return CliCommands.returnCode results.isGoodScan

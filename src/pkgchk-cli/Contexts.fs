@@ -58,7 +58,7 @@ module Context =
           token = settings.GithubToken
           repo = settings.GithubRepo
           summaryTitle = settings.GithubSummaryTitle
-          prId = settings.GithubPrId 
+          prId = settings.GithubPrId
           noCheck = settings.NoCheck }
 
     let reportContext (settings: PackageGithubCommandSettings) =
