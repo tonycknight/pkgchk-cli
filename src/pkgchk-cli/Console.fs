@@ -17,6 +17,7 @@ module Console =
     let orange = markup Rendering.orange
     let blue = markup Rendering.cornflowerblue
     let error = markup Rendering.red
+    let lightgrey = markup Rendering.lightgrey
 
     let grey =
         match Environment.isRunningGithub with
@@ -97,7 +98,7 @@ module Console =
         | ScaHitKind.Vulnerability
         | ScaHitKind.Dependency
         | ScaHitKind.DependencyTransitive ->
-            $"{hitFramework hit} {nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan}"
+            $"{hitFramework hit} {nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan}" // TODO: brighten up the cyan
         | ScaHitKind.Deprecated -> $"{hitFramework hit} {nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan}"
         | x -> failwith $"Unrecognised value {x}"
         |> Seq.singleton
@@ -143,15 +144,18 @@ module Console =
         match hit.metaData with
         | None -> []
         | Some meta ->
-            [ meta.description |> trimNewLines |> grey |> italic
-              sprintf "%s%s"
+            [ meta.description |> trimNewLines |> lightgrey |> italic
+              sprintf "%s%s %s"
                 (meta.projectUrl |> Option.map (String.append " " >> green) |> Option.defaultValue "")
                 (match (meta.license |> Option.ofNull |> Option.defaultValue "", meta.licenseUrl) with
-                   | ("", Some url) -> url |> orange
-                   | ("", None) -> "No licence given" |> orange
-                   | (l, _) -> l |> yellow)                
-                |> italic ]
+                   | ("", Some url) -> url |> yellow
+                   | ("", None) -> "No licence given" |> yellow
+                   | (l, _) -> l |> yellow)
+                (meta.authors |> green)
+                |> italic
+            ]
             |> List.filter String.isNotEmpty
+            // TODO: add as an indented table?
             
     let hitDetails (hit: ScaHit) =
         seq {
