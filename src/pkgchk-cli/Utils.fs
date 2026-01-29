@@ -70,6 +70,7 @@ module String =
         | (true, x) -> x
         | _ -> 0
 
+    [<DebuggerStepThrough>]
     let split (delim: char) (value: string) =
         match value.Split(delim, StringSplitOptions.None) with
         | [| x; y |] -> (x, y)
@@ -77,6 +78,10 @@ module String =
 
     [<DebuggerStepThrough>]
     let toLower (value: string) = value.ToLowerInvariant()
+
+    [<DebuggerStepThrough>]
+    let append (suffix: string) (value: string) = 
+        $"{value}{suffix}"
 
 module Option =
     let nullDefault<'a> (defaultValue: 'a) (value: 'a) =
@@ -86,6 +91,12 @@ module Option =
             value
 
     let isNull<'a> (value: 'a) = obj.ReferenceEquals(value, null)
+
+    let ofNull<'a> (value: 'a) =
+        if obj.ReferenceEquals(value, null) then
+            None
+        else
+            Some value
 
 module ReturnCodes =
 
@@ -118,5 +129,5 @@ module Json =
         let settings = new JsonSerializerSettings()
         settings.Formatting <- Formatting.Indented
         settings.Converters.Add(new Converters.StringEnumConverter())
-
+        // TODO: Options serialisation...
         fun (value: 'a) -> JsonConvert.SerializeObject(value, settings)

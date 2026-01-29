@@ -132,11 +132,33 @@ module Console =
                     |> italic
         }
 
+
+    let packageDetails (hit: ScaHit) =
+        let trimNewLines (value: string) =
+            value.Split([| '\n'; '\r' |], StringSplitOptions.RemoveEmptyEntries)
+            |> Seq.map String.trim
+            |> Seq.filter String.isNotEmpty
+            |> String.joinLines
+
+        match hit.metaData with
+        | None -> []
+        | Some meta ->
+            [ meta.description |> trimNewLines |> grey |> italic
+              sprintf "%s%s"
+                (meta.projectUrl |> Option.map (String.append " " >> green) |> Option.defaultValue "")
+                (match (meta.license |> Option.ofNull |> Option.defaultValue "", meta.licenseUrl) with
+                   | ("", Some url) -> url |> orange
+                   | ("", None) -> "No licence given" |> orange
+                   | (l, _) -> l |> yellow)                
+                |> italic ]
+            |> List.filter String.isNotEmpty
+            
     let hitDetails (hit: ScaHit) =
         seq {
             hitPackage hit
             hitAdvisory hit
             hitReasons hit
+            packageDetails hit
         }
         |> Seq.collect id
         |> Seq.filter String.isNotEmpty
@@ -160,8 +182,6 @@ module Console =
 
         table
 
-
-    // TODO: package metadata
     let hitsTable (hits: seq<ScaHit>) =
         let table = table () |> tableColumn ""
 

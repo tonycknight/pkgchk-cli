@@ -1,6 +1,7 @@
 ﻿namespace pkgchk
 
 open System.Diagnostics.CodeAnalysis
+open System.Collections.Generic
 open Spectre.Console.Cli
 open Tk.Nuget
 
@@ -47,33 +48,45 @@ type PackageListCommand(nuget: INugetClient) =
     let packages (hits: ScaHit list) =
         let package (id, version) =
             task {
-                let! metadata = nuget.GetMetadataAsync (id, version, System.Threading.CancellationToken.None, null)
+                let! metadata = nuget.GetMetadataAsync(id, version, System.Threading.CancellationToken.None, null)
 
-                return 
+                return
                     match metadata |> Option.isNull with
                     | true -> None
                     | _ -> Some metadata
             }
-        
+
         let rec scanPackages (result: PackageMetadata list) hits =
             task {
                 return!
                     match hits with
                     | [] -> task { return result }
-                    | h::t ->
+                    | h :: t ->
                         task {
                             let! meta = package (h.packageId, h.resolvedVersion)
-                        
+
                             match meta with
-                            | Some m -> return! scanPackages (m::result) t
+                            | Some m -> return! scanPackages (m :: result) t
                             | None -> return! scanPackages result t
                         }
             }
+
         task {
             let! packages = scanPackages [] hits
 
             return packages |> List.map (fun m -> ((m.Id, m.Version), m)) |> dict
         }
+
+    let enrichHits (packages: IDictionary<(string * string), PackageMetadata>) (hits: ScaHit list) =
+        let package (id: string * string) =
+            match packages.TryGetValue id with
+            | (true, metadata) -> metadata |> ScaModels.packageMetadata |> Some
+            | _ -> None
+
+        hits
+        |> List.map (fun h ->
+            { h with
+                metaData = package (h.packageId, h.resolvedVersion) })
 
     let consoleTable (results: ApplicationScanResults) =
         seq {
@@ -123,6 +136,10 @@ type PackageListCommand(nuget: INugetClient) =
                     context.services.trace "Fetching package metadata..."
 
                     let! packages = packages results.hits
+
+                    let results =
+                        { results with
+                            hits = enrichHits packages results.hits }
 
                     context.services.trace "Building display..."
 
