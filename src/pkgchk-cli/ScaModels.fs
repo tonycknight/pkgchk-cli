@@ -9,6 +9,20 @@ type ScaHitKind =
     | Dependency = 3
     | DependencyTransitive = 4
 
+type NugetPackageMetadata =
+    { description: string
+      title: string
+      summary: string
+      authors: string
+      tags: string
+      projectUrl: string option
+      license: string
+      licenseUrl: string option
+      readmeUrl: string option
+      published: DateTimeOffset option
+      requireLicenseAcceptance: bool
+      totalDownloads: int64 option }
+
 type ScaHit =
     { kind: ScaHitKind
       framework: string
@@ -18,6 +32,7 @@ type ScaHit =
       severity: string
       advisoryUri: string
       reasons: string[]
+      metaData: NugetPackageMetadata option
       suggestedReplacement: string
       alternativePackageId: string }
 
@@ -31,6 +46,7 @@ type ScaHit =
           suggestedReplacement = ""
           alternativePackageId = ""
           advisoryUri = ""
+          metaData = None
           kind = ScaHitKind.Vulnerability }
 
 type ScaHitSummary =
@@ -87,3 +103,17 @@ module ScaModels =
                 { ScaHitSummary.kind = kind
                   severity = s
                   count = xs |> Seq.length }))
+
+    let packageMetadata (value: Tk.Nuget.PackageMetadata) =
+        { NugetPackageMetadata.authors = value.Authors
+          description = value.Description
+          title = value.Title
+          summary = value.Summary
+          tags = value.Tags
+          projectUrl = value.ProjectUrl |> Option.ofNull |> Option.map _.ToString()
+          license = value.License
+          licenseUrl = value.LicenseUrl |> Option.ofNull |> Option.map _.ToString()
+          readmeUrl = value.ReadmeUrl |> Option.ofNull |> Option.map _.ToString()
+          published = value.Published |> Option.ofNullable
+          requireLicenseAcceptance = value.RequireLicenseAcceptance
+          totalDownloads = value.DownloadCount |> Option.ofNullable }
