@@ -6,13 +6,15 @@
     <Copyright>Copyright 2023 Tony Knight</Copyright>
     <Authors>Tony Knight</Authors>
     <RootNamespace>pkgchk</RootNamespace>
-    <Description>Tooling for .net package checks</Description>
+    <Product>Dependency checks</Product>
+    <Description>Tooling for .Net package checks</Description>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>pkgchk</ToolCommandName>
     <PackageId>pkgchk-cli</PackageId>
     <RepositoryUrl>https://github.com/tonycknight/pkgchk-cli</RepositoryUrl>
     <PackageProjectUrl>https://github.com/tonycknight/pkgchk-cli</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <VersionPrefix>0.0.0</VersionPrefix>
   </PropertyGroup>
 
