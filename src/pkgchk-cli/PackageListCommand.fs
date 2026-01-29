@@ -2,9 +2,10 @@
 
 open System.Diagnostics.CodeAnalysis
 open Spectre.Console.Cli
+open Tk.Nuget
 
 [<ExcludeFromCodeCoverage>]
-type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
+type PackageListCommand(nuget: INugetClient) =
     inherit AsyncCommand<PackageListCommandSettings>()
 
     let genMarkdownReport (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
@@ -42,6 +43,37 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
         { ApplicationScanResults.hits = hits
           hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
           isGoodScan = true }
+
+    let packages (hits: ScaHit list) =
+        let package (id, version) =
+            task {
+                let! metadata = nuget.GetMetadataAsync (id, version, System.Threading.CancellationToken.None, null)
+
+                return 
+                    match metadata |> Option.isNull with
+                    | true -> None
+                    | _ -> Some metadata
+            }
+        
+        let rec scanPackages (result: PackageMetadata list) hits =
+            task {
+                return!
+                    match hits with
+                    | [] -> task { return result }
+                    | h::t ->
+                        task {
+                            let! meta = package (h.packageId, h.resolvedVersion)
+                        
+                            match meta with
+                            | Some m -> return! scanPackages (m::result) t
+                            | None -> return! scanPackages result t
+                        }
+            }
+        task {
+            let! packages = scanPackages [] hits
+
+            return packages |> List.map (fun m -> ((m.Id, m.Version), m)) |> dict
+        }
 
     let consoleTable (results: ApplicationScanResults) =
         seq {
@@ -88,9 +120,13 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                 else
                     let results = scanResults |> DotNet.getHits |> results context
 
+                    context.services.trace "Fetching package metadata..."
+
+                    let! packages = packages results.hits
+
                     context.services.trace "Building display..."
 
-                    consoleTable results |> CliCommands.renderTables
+                    results |> consoleTable |> CliCommands.renderTables
 
                     if context.report.reportDirectory <> "" then
                         context.services.trace "Building reports..."

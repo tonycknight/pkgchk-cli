@@ -161,6 +161,7 @@ module Console =
         table
 
 
+    // TODO: package metadata
     let hitsTable (hits: seq<ScaHit>) =
         let table = table () |> tableColumn ""
 
