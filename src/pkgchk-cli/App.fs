@@ -3,6 +3,7 @@
 open System
 open System.Diagnostics.CodeAnalysis
 open System.Reflection
+open System.Threading
 open Microsoft.Extensions.DependencyInjection
 open Spectre.Console.Cli
 
@@ -46,7 +47,7 @@ module App =
         task {
             try
                 let currVsn = version () |> Option.defaultValue ""
-                let! upgVsn = nuget.GetUpgradeVersionAsync(packageId, currVsn, false, null)
+                let! upgVsn = nuget.GetUpgradeVersionAsync(packageId, currVsn, false, CancellationToken.None, null)
 
                 return
                     match upgVsn with
