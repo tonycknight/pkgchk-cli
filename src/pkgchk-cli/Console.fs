@@ -144,7 +144,7 @@ module Console =
             |> Seq.filter String.isNotEmpty
             |> String.joinLines
 
-        match hit.metaData with
+        match hit.metadata with
         | None -> []
         | Some meta ->
             [ meta.projectUrl |> Option.map green |> Option.defaultValue ""

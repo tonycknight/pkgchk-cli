@@ -49,7 +49,7 @@ module DotNetParsing =
                                   reasons = [||]
                                   suggestedReplacement = ""
                                   alternativePackageId = ""
-                                  metaData = None
+                                  metadata = None
                                   advisoryUri = v.Advisoryurl }))))
 
             let topLevelDeprecations =
@@ -75,7 +75,7 @@ module DotNetParsing =
                                 | Some ap -> ap.Id
                                 | None -> ""
                               reasons = tp.DeprecationReasons |> Array.ofSeq
-                              metaData = None
+                              metadata = None
                               advisoryUri = "" })))
 
             let transitiveVuls =
@@ -96,7 +96,7 @@ module DotNetParsing =
                                   reasons = [||]
                                   suggestedReplacement = ""
                                   alternativePackageId = ""
-                                  metaData = None
+                                  metadata = None
                                   advisoryUri = v.Advisoryurl }))))
 
             let hits =
@@ -134,7 +134,7 @@ module DotNetParsing =
                                 | _ -> [||]
                               suggestedReplacement = tp.LatestVersion |> Option.defaultValue ""
                               alternativePackageId = ""
-                              metaData = None
+                              metadata = None
                               advisoryUri = "" })))
 
             let transitiveVuls =
@@ -153,7 +153,7 @@ module DotNetParsing =
                               reasons = [||]
                               suggestedReplacement = ""
                               alternativePackageId = ""
-                              metaData = None
+                              metadata = None
                               advisoryUri = "" })))
 
             let hits = transitiveVuls |> Seq.append topLevelVuls |> List.ofSeq

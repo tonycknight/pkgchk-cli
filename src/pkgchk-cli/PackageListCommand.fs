@@ -86,7 +86,7 @@ type PackageListCommand(nuget: INugetClient) =
         hits
         |> List.map (fun h ->
             { h with
-                metaData = package (h.packageId, h.resolvedVersion) })
+                metadata = package (h.packageId, h.resolvedVersion) })
 
     let consoleTable (results: ApplicationScanResults) =
         seq {

@@ -32,7 +32,7 @@ type ScaHit =
       severity: string
       advisoryUri: string
       reasons: string[]
-      metaData: NugetPackageMetadata option
+      metadata: NugetPackageMetadata option
       suggestedReplacement: string
       alternativePackageId: string }
 
@@ -46,7 +46,7 @@ type ScaHit =
           suggestedReplacement = ""
           alternativePackageId = ""
           advisoryUri = ""
-          metaData = None
+          metadata = None
           kind = ScaHitKind.Vulnerability }
 
 type ScaHitSummary =
