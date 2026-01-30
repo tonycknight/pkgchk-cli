@@ -14,6 +14,7 @@
     <RepositoryUrl>https://github.com/tonycknight/pkgchk-cli</RepositoryUrl>
     <PackageProjectUrl>https://github.com/tonycknight/pkgchk-cli</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageTags>nuget;sca;dependencies;vulnerabilities;deprecations;ci/cd</PackageTags>
     <VersionPrefix>0.0.0</VersionPrefix>
