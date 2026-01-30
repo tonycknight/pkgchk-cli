@@ -45,17 +45,6 @@ type PackageListCommand(nuget: INugetClient) =
           hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
           isGoodScan = true }
 
-    let enrichHits context (results: ApplicationScanResults) =
-        task {
-            if context.options.fetchMetadata then
-                context.services.trace "Fetching package metadata..."
-                let! hits = ScaModels.enrichMetadata context.services.nuget results.hits
-
-                return { results with hits = hits }
-            else
-                return results
-        }
-
     let consoleTable (results: ApplicationScanResults) =
         seq {
             match results.hits with
@@ -99,7 +88,7 @@ type PackageListCommand(nuget: INugetClient) =
                 if Seq.isEmpty errors |> not then
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
-                    let! results = scanResults |> DotNet.getHits |> results context |> enrichHits context
+                    let! results = scanResults |> DotNet.getHits |> results context |> DotNet.enrichHits context
 
                     context.services.trace "Building display..."
 

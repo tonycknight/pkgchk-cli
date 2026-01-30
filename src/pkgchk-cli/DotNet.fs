@@ -260,3 +260,14 @@ module DotNet =
              h.packageId))
 
     let getHits x = x |> liftHits |> sortHits |> List.ofSeq
+
+    let enrichHits context (results: ApplicationScanResults) =
+        task {
+            if context.options.fetchMetadata then
+                context.services.trace "Fetching package metadata..."
+                let! hits = ScaModels.enrichMetadata context.services.nuget results.hits
+
+                return { results with hits = hits }
+            else
+                return results
+        }
