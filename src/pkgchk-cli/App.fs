@@ -46,7 +46,7 @@ module App =
         task {
             try
                 let currVsn = version () |> Option.defaultValue ""
-                let! upgVsn = nuget.GetUpgradeVersionAsync(packageId, currVsn, false, null)
+                let! upgVsn = nuget.GetUpgradeVersionAsync(packageId, currVsn, false)
 
                 return
                     match upgVsn with
