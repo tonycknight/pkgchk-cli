@@ -98,7 +98,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 if Seq.isEmpty errors |> not then
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
-                    let results = DotNet.getHits scanResults |> results context
+                    let! results = DotNet.getHits scanResults |> results context |> DotNet.enrichHits context
 
                     context.services.trace "Building display..."
 

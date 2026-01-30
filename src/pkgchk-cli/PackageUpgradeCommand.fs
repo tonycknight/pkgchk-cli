@@ -88,7 +88,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
 
-                    let results = DotNet.getHits scanResults |> results context
+                    let! results = DotNet.getHits scanResults |> results context |> DotNet.enrichHits context
 
                     context.services.trace "Building display..."
                     results |> consoleTable |> CliCommands.renderTables
