@@ -13,6 +13,8 @@ module Console =
     let white = markup Rendering.white
     let green = markup Rendering.green
     let cyan = markup Rendering.cyan
+    let lightcyan = markup Rendering.lightcyan
+    let darkcyan = markup Rendering.darkcyan
     let yellow = markup Rendering.yellow
     let orange = markup Rendering.orange
     let blue = markup Rendering.cornflowerblue
@@ -98,8 +100,9 @@ module Console =
         | ScaHitKind.Vulnerability
         | ScaHitKind.Dependency
         | ScaHitKind.DependencyTransitive ->
-            $"{hitFramework hit} {nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan}" // TODO: brighten up the cyan
-        | ScaHitKind.Deprecated -> $"{hitFramework hit} {nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan}"
+            $"{hitFramework hit} {nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> markup Rendering.lightcyan}"
+        | ScaHitKind.Deprecated ->
+            $"{hitFramework hit} {nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> lightcyan}"
         | x -> failwith $"Unrecognised value {x}"
         |> Seq.singleton
 
@@ -144,19 +147,26 @@ module Console =
         match hit.metaData with
         | None -> []
         | Some meta ->
-            [ meta.description |> trimNewLines |> lightgrey |> italic
-              sprintf "%s%s %s"
-                (meta.projectUrl |> Option.map (String.append " " >> green) |> Option.defaultValue "")
-                (match (meta.license |> Option.ofNull |> Option.defaultValue "", meta.licenseUrl) with
+            [ meta.projectUrl |> Option.map green |> Option.defaultValue ""
+              sprintf
+                  "%s %s"
+                  (match (meta.license |> Option.ofNull |> Option.defaultValue "", meta.licenseUrl) with
                    | ("", Some url) -> url |> yellow
                    | ("", None) -> "No licence given" |> yellow
                    | (l, _) -> l |> yellow)
-                (meta.authors |> green)
-                |> italic
-            ]
+                  (meta.authors |> darkcyan)
+              |> italic
+              meta.description
+              |> trimNewLines
+              |> Option.nonEmpty
+              |> Option.map (Markup.Escape >> lightgrey >> italic)
+              |> Option.defaultValue ""
+              meta.tags
+              |> Option.nonEmpty
+              |> Option.map (String.trim >> Markup.Escape >> grey >> italic)
+              |> Option.defaultValue "" ]
             |> List.filter String.isNotEmpty
-            // TODO: add as an indented table?
-            
+
     let hitDetails (hit: ScaHit) =
         seq {
             hitPackage hit

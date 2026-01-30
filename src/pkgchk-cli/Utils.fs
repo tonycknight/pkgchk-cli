@@ -58,6 +58,9 @@ module String =
             (value.Substring(0, len2) + "...")
 
     [<DebuggerStepThrough>]
+    let indent (pad: int) (value: string) = $"{new String(' ', pad)}{value}"
+
+    [<DebuggerStepThrough>]
     let escapeMarkup (value: string) =
         value.Replace("[", "[[").Replace("]", "]]")
 
@@ -80,8 +83,7 @@ module String =
     let toLower (value: string) = value.ToLowerInvariant()
 
     [<DebuggerStepThrough>]
-    let append (suffix: string) (value: string) = 
-        $"{value}{suffix}"
+    let append (suffix: string) (value: string) = $"{value}{suffix}"
 
 module Option =
     let nullDefault<'a> (defaultValue: 'a) (value: 'a) =
@@ -97,6 +99,9 @@ module Option =
             None
         else
             Some value
+
+    let nonEmpty (value: string) =
+        if String.IsNullOrEmpty value then None else Some value
 
 module ReturnCodes =
 
