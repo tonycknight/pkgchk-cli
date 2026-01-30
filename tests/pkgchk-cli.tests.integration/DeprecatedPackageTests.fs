@@ -1,6 +1,5 @@
 namespace pkgchk.tests.integration
 
-open System
 open Xunit
 
 type DeprecatedPackageTests(output: ITestOutputHelper) =

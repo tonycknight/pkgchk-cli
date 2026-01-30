@@ -3,6 +3,7 @@
 open System
 open System.Diagnostics.CodeAnalysis
 open System.Reflection
+open System.Threading
 open Microsoft.Extensions.DependencyInjection
 open Spectre.Console.Cli
 

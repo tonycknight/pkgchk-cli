@@ -19,7 +19,9 @@ module ReportGenerationTests =
           ReportContext.goodImageUri = ""
           ReportContext.reportDirectory = "" }
 
-    let svcContext = { ServiceContext.trace = ignore }
+    let svcContext =
+        { ServiceContext.trace = ignore
+          ServiceContext.nuget = NSubstitute.Substitute.For<Tk.Nuget.INugetClient>() }
 
     let optContext =
         { OptionsContext.includePackages = [||]
@@ -32,7 +34,8 @@ module ReportGenerationTests =
           OptionsContext.scanVulnerabilities = false
           OptionsContext.scanDeprecations = false
           OptionsContext.scanTransitives = false
-          OptionsContext.severities = [||] }
+          OptionsContext.severities = [||]
+          OptionsContext.fetchMetadata = true }
 
     let ghContext =
         { GithubContext.prId = ""
@@ -59,7 +62,7 @@ module ReportGenerationTests =
             pkgchk.ReportGeneration.jsonReport (appContext, results, "")
             |> pkgchk.String.joinLines
 
-        let check = Newtonsoft.Json.JsonConvert.DeserializeObject<pkgchk.ScaHit[]>(result)
+        let check = pkgchk.Json.deserialise<pkgchk.ScaHit[]> result
 
         check = hits
 

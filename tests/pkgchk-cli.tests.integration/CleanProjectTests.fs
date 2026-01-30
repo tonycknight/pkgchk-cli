@@ -1,7 +1,5 @@
 ﻿namespace pkgchk.tests.integration
 
-open System
-open Xunit
 open Xunit
 
 type CleanProjectTests(output: ITestOutputHelper) =

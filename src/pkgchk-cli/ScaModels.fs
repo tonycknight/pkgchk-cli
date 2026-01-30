@@ -9,6 +9,20 @@ type ScaHitKind =
     | Dependency = 3
     | DependencyTransitive = 4
 
+type NugetPackageMetadata =
+    { description: string
+      title: string
+      summary: string
+      authors: string
+      tags: string
+      projectUrl: string option
+      license: string
+      licenseUrl: string option
+      readmeUrl: string option
+      published: DateTimeOffset option
+      requireLicenseAcceptance: bool
+      totalDownloads: int64 option }
+
 type ScaHit =
     { kind: ScaHitKind
       framework: string
@@ -18,6 +32,7 @@ type ScaHit =
       severity: string
       advisoryUri: string
       reasons: string[]
+      metadata: NugetPackageMetadata option
       suggestedReplacement: string
       alternativePackageId: string }
 
@@ -31,6 +46,7 @@ type ScaHit =
           suggestedReplacement = ""
           alternativePackageId = ""
           advisoryUri = ""
+          metadata = None
           kind = ScaHitKind.Vulnerability }
 
 type ScaHitSummary =
@@ -87,3 +103,70 @@ module ScaModels =
                 { ScaHitSummary.kind = kind
                   severity = s
                   count = xs |> Seq.length }))
+
+    let packageMetadata (value: Tk.Nuget.PackageMetadata) =
+        { NugetPackageMetadata.authors = value.Authors
+          description = value.Description
+          title = value.Title
+          summary = value.Summary
+          tags = value.Tags
+          projectUrl = value.ProjectUrl |> Option.ofNull |> Option.map _.ToString()
+          license = value.License
+          licenseUrl = value.LicenseUrl |> Option.ofNull |> Option.map _.ToString()
+          readmeUrl = value.ReadmeUrl |> Option.ofNull |> Option.map _.ToString()
+          published = value.Published |> Option.ofNullable
+          requireLicenseAcceptance = value.RequireLicenseAcceptance
+          totalDownloads = value.DownloadCount |> Option.ofNullable }
+
+    let private packages (nuget: Tk.Nuget.INugetClient) (hits: ScaHit list) =
+        let package (id, version) =
+            task {
+                let! metadata = nuget.GetMetadataAsync(id, version, System.Threading.CancellationToken.None, null)
+
+                return
+                    match metadata |> Option.isNull with
+                    | true -> None
+                    | _ -> Some metadata
+            }
+
+        let rec scanPackages (result: Tk.Nuget.PackageMetadata list) hits =
+            task {
+                return!
+                    match hits with
+                    | [] -> task { return result }
+                    | h :: t ->
+                        task {
+                            let! meta = package (h.packageId, h.resolvedVersion)
+
+                            match meta with
+                            | Some m -> return! scanPackages (m :: result) t
+                            | None -> return! scanPackages result t
+                        }
+            }
+
+        task {
+            let! packages = scanPackages [] hits
+
+            return packages |> List.map (fun m -> ((m.Id, m.Version), m)) |> dict
+        }
+
+    let private enrichHits
+        (packages: System.Collections.Generic.IDictionary<(string * string), Tk.Nuget.PackageMetadata>)
+        (hits: ScaHit list)
+        =
+        let package (id: string * string) =
+            match packages.TryGetValue id with
+            | (true, metadata) -> metadata |> packageMetadata |> Some
+            | _ -> None
+
+        hits
+        |> List.map (fun h ->
+            { h with
+                metadata = package (h.packageId, h.resolvedVersion) })
+
+    let enrichMetadata (nuget: Tk.Nuget.INugetClient) (hits: ScaHit list) =
+        task {
+            let! packages = packages nuget hits
+
+            return enrichHits packages hits
+        }

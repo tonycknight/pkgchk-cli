@@ -13,10 +13,13 @@ module Console =
     let white = markup Rendering.white
     let green = markup Rendering.green
     let cyan = markup Rendering.cyan
+    let lightcyan = markup Rendering.lightcyan
+    let darkcyan = markup Rendering.darkcyan
     let yellow = markup Rendering.yellow
     let orange = markup Rendering.orange
     let blue = markup Rendering.cornflowerblue
     let error = markup Rendering.red
+    let lightgrey = markup Rendering.lightgrey
 
     let grey =
         match Environment.isRunningGithub with
@@ -97,8 +100,9 @@ module Console =
         | ScaHitKind.Vulnerability
         | ScaHitKind.Dependency
         | ScaHitKind.DependencyTransitive ->
-            $"{hitFramework hit} {nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan}"
-        | ScaHitKind.Deprecated -> $"{hitFramework hit} {nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> cyan}"
+            $"{hitFramework hit} {nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> markup Rendering.lightcyan}"
+        | ScaHitKind.Deprecated ->
+            $"{hitFramework hit} {nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> lightcyan}"
         | x -> failwith $"Unrecognised value {x}"
         |> Seq.singleton
 
@@ -132,11 +136,43 @@ module Console =
                     |> italic
         }
 
+
+    let packageDetails (hit: ScaHit) =
+        let trimNewLines (value: string) =
+            value.Split([| '\n'; '\r' |], StringSplitOptions.RemoveEmptyEntries)
+            |> Seq.map String.trim
+            |> Seq.filter String.isNotEmpty
+            |> String.joinLines
+
+        match hit.metadata with
+        | None -> []
+        | Some meta ->
+            [ meta.projectUrl |> Option.map green |> Option.defaultValue ""
+              sprintf
+                  "%s %s"
+                  (match (meta.license |> Option.ofNull |> Option.defaultValue "", meta.licenseUrl) with
+                   | ("", Some url) -> url |> yellow
+                   | ("", None) -> "No licence given" |> yellow
+                   | (l, _) -> l |> yellow)
+                  (meta.authors |> darkcyan)
+              |> italic
+              meta.description
+              |> trimNewLines
+              |> Option.nonEmpty
+              |> Option.map (Markup.Escape >> lightgrey >> italic)
+              |> Option.defaultValue ""
+              meta.tags
+              |> Option.nonEmpty
+              |> Option.map (String.trim >> Markup.Escape >> grey >> italic)
+              |> Option.defaultValue "" ]
+            |> List.filter String.isNotEmpty
+
     let hitDetails (hit: ScaHit) =
         seq {
             hitPackage hit
             hitAdvisory hit
             hitReasons hit
+            packageDetails hit
         }
         |> Seq.collect id
         |> Seq.filter String.isNotEmpty
@@ -159,7 +195,6 @@ module Console =
         rows |> Seq.iter (fun r -> table.AddRow r |> ignore)
 
         table
-
 
     let hitsTable (hits: seq<ScaHit>) =
         let table = table () |> tableColumn ""

@@ -31,7 +31,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
             GithubComment.create context.github.summaryTitle "_The report is too big for Github - Please check logs_"
 
     let appContext (settings: PackageUpgradeCommandSettings) =
-        let context = Context.upgradesContext settings
+        let context = Context.upgradesContext (nuget, settings)
 
         { context with
             options = Context.loadApplyConfig context.options }
@@ -88,7 +88,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
 
-                    let results = DotNet.getHits scanResults |> results context
+                    let! results = DotNet.getHits scanResults |> results context |> DotNet.enrichHits context
 
                     context.services.trace "Building display..."
                     results |> consoleTable |> CliCommands.renderTables

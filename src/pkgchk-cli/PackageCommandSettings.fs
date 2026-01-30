@@ -51,6 +51,11 @@ type PackageCommandSettings() =
     [<DefaultValue([| ReportFormat.Markdown |])>]
     member val ReportFormats: ReportFormat[] = [||] with get, set
 
+    [<CommandOption("-m|--metadata")>]
+    [<Description("Query package metadata.")>]
+    [<DefaultValue(false)>]
+    member val FetchMetadata = false with get, set
+
 [<ExcludeFromCodeCoverage>]
 type PackageGithubCommandSettings() =
     inherit PackageCommandSettings()

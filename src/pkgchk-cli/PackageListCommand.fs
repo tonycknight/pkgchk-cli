@@ -2,9 +2,10 @@
 
 open System.Diagnostics.CodeAnalysis
 open Spectre.Console.Cli
+open Tk.Nuget
 
 [<ExcludeFromCodeCoverage>]
-type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
+type PackageListCommand(nuget: INugetClient) =
     inherit AsyncCommand<PackageListCommandSettings>()
 
     let genMarkdownReport (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
@@ -22,7 +23,7 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
         ReportGeneration.reports ctx
 
     let appContext (settings: PackageListCommandSettings) =
-        let context = Context.listContext settings
+        let context = Context.listContext (nuget, settings)
 
         { context with
             options = Context.loadApplyConfig context.options }
@@ -86,11 +87,11 @@ type PackageListCommand(nuget: Tk.Nuget.INugetClient) =
                 if Seq.isEmpty errors |> not then
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
-                    let results = scanResults |> DotNet.getHits |> results context
+                    let! results = scanResults |> DotNet.getHits |> results context |> DotNet.enrichHits context
 
                     context.services.trace "Building display..."
 
-                    consoleTable results |> CliCommands.renderTables
+                    results |> consoleTable |> CliCommands.renderTables
 
                     if context.report.reportDirectory <> "" then
                         context.services.trace "Building reports..."
