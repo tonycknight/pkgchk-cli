@@ -89,7 +89,7 @@ module Context =
           scanVulnerabilities = false
           scanDeprecations = false
           scanTransitives = false
-          fetchMetadata = false }
+          fetchMetadata = settings.FetchMetadata }
 
     let serviceContext (settings: PackageCommandSettings, nuget) =
         { ServiceContext.trace = CliCommands.trace settings.TraceLogging
@@ -114,8 +114,7 @@ module Context =
     let listContext (nuget, settings: PackageListCommandSettings) =
         let options =
             { optionsContext settings with
-                scanTransitives = settings.IncludeTransitives
-                fetchMetadata = settings.FetchMetadata }
+                scanTransitives = settings.IncludeTransitives }
 
         options |> applicationContext nuget settings
 
