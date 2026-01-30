@@ -128,27 +128,17 @@ module Environment =
         System.Environment.GetEnvironmentVariable("GITHUB_ACTIONS") <> null
 
 module Json =
-    open Newtonsoft.Json
-
-    let serialise<'a> =
-        let settings = new JsonSerializerSettings()
-        settings.Formatting <- Formatting.Indented
-        settings.Converters.Add(new Converters.StringEnumConverter())
-        
-        fun (value: 'a) -> JsonConvert.SerializeObject(value, settings)
-
-module PrettyJson =
+    
     open System.Text.Json.Serialization
     open System.Text.Json
 
-    let options = JsonFSharpOptions.Default().ToJsonSerializerOptions()
-
-    let enumLikeOptions () =
-        JsonFSharpOptions.Default().WithUnionUnwrapFieldlessTags().WithMapFormat(MapFormat.Object)
-
-    let serialise<'a> =
-        let opts = enumLikeOptions().ToJsonSerializerOptions()
+    let private options () =
+        let opts = JsonFSharpOptions.Default().WithUnionUnwrapFieldlessTags().WithMapFormat(MapFormat.Object).ToJsonSerializerOptions()
         opts.Converters.Add(new JsonStringEnumConverter())
         opts.WriteIndented <- true
+        opts
+
+    let serialise<'a> =
+        let opts = options ()       
         
         fun (value: 'a) -> JsonSerializer.Serialize (value, opts)
