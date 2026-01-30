@@ -3,6 +3,9 @@
 open FsCheck.Xunit
 
 module ContextTests =
+
+    let nuget = NSubstitute.Substitute.For<Tk.Nuget.INugetClient>()
+
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], MaxTest = 1000)>]
     let ``githubContext maps Github properties`` (settings: pkgchk.PackageGithubCommandSettings) =
         let r = pkgchk.Context.githubContext settings
@@ -41,7 +44,7 @@ module ContextTests =
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], MaxTest = 1000)>]
     let ``scanContext maps properties`` (settings: pkgchk.PackageScanCommandSettings) =
-        let r = pkgchk.Context.scanContext settings
+        let r = pkgchk.Context.scanContext (nuget, settings)
 
         r.options.severities = (settings.SeverityLevels |> Array.filter pkgchk.String.isNotEmpty)
         && r.options.scanVulnerabilities = settings.IncludeVulnerables
@@ -52,7 +55,7 @@ module ContextTests =
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], MaxTest = 1000)>]
     let ``listContext maps properties`` (settings: pkgchk.PackageListCommandSettings) =
-        let r = pkgchk.Context.listContext settings
+        let r = pkgchk.Context.listContext (nuget, settings)
 
         r.options.scanTransitives = settings.IncludeTransitives
         && r.github = (pkgchk.Context.githubContext settings)
@@ -60,7 +63,7 @@ module ContextTests =
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], MaxTest = 1000)>]
     let ``upgradesContext maps properties`` (settings: pkgchk.PackageUpgradeCommandSettings) =
-        let r = pkgchk.Context.upgradesContext settings
+        let r = pkgchk.Context.upgradesContext (nuget, settings)
 
         r.options.breakOnUpgrades = settings.BreakOnUpgrades
         && r.github = (pkgchk.Context.githubContext settings)

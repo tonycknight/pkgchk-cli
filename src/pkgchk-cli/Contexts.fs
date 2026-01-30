@@ -45,7 +45,9 @@ type OptionsContext =
           scanTransitives = false
           fetchMetadata = false }
 
-type ServiceContext = { trace: (string -> unit) }
+type ServiceContext =
+    { trace: (string -> unit)
+      nuget: Tk.Nuget.INugetClient }
 
 type ApplicationContext =
     { options: OptionsContext
@@ -89,16 +91,17 @@ module Context =
           scanTransitives = false
           fetchMetadata = false }
 
-    let serviceContext (settings: PackageCommandSettings) =
-        { ServiceContext.trace = CliCommands.trace settings.TraceLogging }
+    let serviceContext (settings: PackageCommandSettings, nuget) =
+        { ServiceContext.trace = CliCommands.trace settings.TraceLogging
+          nuget = nuget }
 
-    let applicationContext (settings: PackageGithubCommandSettings) (options: OptionsContext) =
+    let applicationContext nuget (settings: PackageGithubCommandSettings) (options: OptionsContext) =
         { ApplicationContext.options = options
           github = githubContext settings
           report = reportContext settings
-          services = serviceContext settings }
+          services = serviceContext (settings, nuget) }
 
-    let scanContext (settings: PackageScanCommandSettings) =
+    let scanContext (nuget, settings: PackageScanCommandSettings) =
         let options =
             { optionsContext settings with
                 severities = settings.SeverityLevels |> Array.filter String.isNotEmpty
@@ -106,22 +109,22 @@ module Context =
                 scanDeprecations = settings.IncludeDeprecations
                 scanTransitives = settings.IncludeTransitives }
 
-        options |> applicationContext settings
+        options |> applicationContext nuget settings
 
-    let listContext (settings: PackageListCommandSettings) =
+    let listContext (nuget, settings: PackageListCommandSettings) =
         let options =
             { optionsContext settings with
                 scanTransitives = settings.IncludeTransitives
                 fetchMetadata = settings.FetchMetadata }
 
-        options |> applicationContext settings
+        options |> applicationContext nuget settings
 
-    let upgradesContext (settings: PackageUpgradeCommandSettings) =
+    let upgradesContext (nuget, settings: PackageUpgradeCommandSettings) =
         let options =
             { optionsContext settings with
                 breakOnUpgrades = settings.BreakOnUpgrades }
 
-        options |> applicationContext settings
+        options |> applicationContext nuget settings
 
     let applyContext (overlay: OptionsContext) (source: OptionsContext) =
         let apply overlay source =

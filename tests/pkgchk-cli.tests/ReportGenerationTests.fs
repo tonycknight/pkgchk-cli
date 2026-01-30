@@ -19,7 +19,9 @@ module ReportGenerationTests =
           ReportContext.goodImageUri = ""
           ReportContext.reportDirectory = "" }
 
-    let svcContext = { ServiceContext.trace = ignore }
+    let svcContext =
+        { ServiceContext.trace = ignore
+          ServiceContext.nuget = NSubstitute.Substitute.For<Tk.Nuget.INugetClient>() }
 
     let optContext =
         { OptionsContext.includePackages = [||]

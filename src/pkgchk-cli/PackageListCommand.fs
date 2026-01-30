@@ -24,7 +24,7 @@ type PackageListCommand(nuget: INugetClient) =
         ReportGeneration.reports ctx
 
     let appContext (settings: PackageListCommandSettings) =
-        let context = Context.listContext settings
+        let context = Context.listContext (nuget, settings)
 
         { context with
             options = Context.loadApplyConfig context.options }

@@ -33,7 +33,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
     let appContext (settings: PackageScanCommandSettings) =
 
-        let context = Context.scanContext settings
+        let context = Context.scanContext (nuget, settings)
 
         { context with
             options = Context.loadApplyConfig context.options }
