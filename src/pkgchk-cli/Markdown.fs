@@ -2,6 +2,8 @@
 
 module Markdown =
 
+    let italic (value: string) = $"_{value}_"
+
     let colourise colour value =
         $"<span style='color:{colour}'>{value}</span>"
 
@@ -19,6 +21,8 @@ module Markdown =
     let nugetLinkPkgSuggestion package suggestion =
         let url = Rendering.nugetLink (package, "")
         $"[{suggestion}]({url})"
+
+    let link name url = $"[{name}]({url})"
 
     let pkgFramework (hit: ScaHit) =
         hit.framework |> colourise Rendering.cornflowerblue
@@ -97,41 +101,80 @@ module Markdown =
                 yield "---"
             }
 
+    let formatHitMetadata (hit: ScaHit) =
+        match hit.metadata with
+        | None -> seq { }
+        | Some meta ->
+            let licence =
+                (match (meta.license, meta.licenseUrl) with
+                 | ("", None) -> ""
+                 | ("", Some l) -> l
+                 | (x, _) -> x)
+                |> Option.nonEmpty
+                |> Option.map (colourise Rendering.yellow >> italic)
+                |> Option.defaultValue ""
+
+            let authors =
+                meta.authors
+                |> Option.nonEmpty
+                |> Option.map (colourise Rendering.darkcyan >> italic)
+                |> Option.defaultValue ""
+
+            seq {
+                meta.projectUrl
+                |> Option.map (fun l -> link l l |> sprintf "Project: %s" |> italic)
+                |> Option.defaultValue ""
+
+                sprintf "%s %s" licence authors
+
+                meta.tags
+                |> Option.nonEmpty
+                |> Option.map (sprintf "Tags: %s" >> colourise Rendering.lightgrey >> italic)
+                |> Option.defaultValue ""
+            }
+            |> Seq.filter String.isNotEmpty
+
     let formatHit (hit: ScaHit) =
+
         seq {
-            match hit.kind with
-            | ScaHitKind.VulnerabilityTransitive
-            | ScaHitKind.Vulnerability ->
-                sprintf
-                    "| %s | %s | %s: %s | %s | "
-                    (Rendering.formatHitKind hit.kind)
-                    (formatSeverity hit.severity)
-                    (pkgFramework hit)
-                    (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
-                    $"Advisory: [{hit.advisoryUri}]({hit.advisoryUri})"
-            | ScaHitKind.Deprecated ->
-                sprintf
-                    "| %s | %s | %s: %s | %s | "
-                    (Rendering.formatHitKind hit.kind)
-                    (formatReasons hit.reasons)
-                    (pkgFramework hit)
-                    (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
-                    (match (hit.suggestedReplacement, hit.alternativePackageId) with
-                     | "", _ -> ""
-                     | x, y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> sprintf "Use %s"
-                     | x, _ -> x |> sprintf "Use %s")
-            | ScaHitKind.Dependency
-            | ScaHitKind.DependencyTransitive ->
-                sprintf
-                    "| %s |  | %s: %s | %s | "
-                    (Rendering.formatHitKind hit.kind)
-                    (pkgFramework hit)
-                    (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
-                    (match hit.suggestedReplacement with
-                     | "" -> ""
-                     | vsn -> nugetLinkPkgVsn hit.packageId vsn |> sprintf "Upgrade to %s")
-            | x -> failwith $"Unrecognised value {x}"
+            yield
+                match hit.kind with
+                | ScaHitKind.VulnerabilityTransitive
+                | ScaHitKind.Vulnerability ->
+                    sprintf
+                        "| %s | %s | %s: %s | %s | "
+                        (Rendering.formatHitKind hit.kind)
+                        (formatSeverity hit.severity)
+                        (pkgFramework hit)
+                        (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
+                        $"Advisory: [{hit.advisoryUri}]({hit.advisoryUri})"
+                | ScaHitKind.Deprecated ->
+                    sprintf
+                        "| %s | %s | %s: %s | %s | "
+                        (Rendering.formatHitKind hit.kind)
+                        (formatReasons hit.reasons)
+                        (pkgFramework hit)
+                        (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
+                        (match (hit.suggestedReplacement, hit.alternativePackageId) with
+                         | "", _ -> ""
+                         | x, y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> sprintf "Use %s"
+                         | x, _ -> x |> sprintf "Use %s")
+                | ScaHitKind.Dependency
+                | ScaHitKind.DependencyTransitive ->
+                    sprintf
+                        "| %s |  | %s: %s | %s | "
+                        (Rendering.formatHitKind hit.kind)
+                        (pkgFramework hit)
+                        (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
+                        (match hit.suggestedReplacement with
+                         | "" -> ""
+                         | vsn -> nugetLinkPkgVsn hit.packageId vsn |> sprintf "Upgrade to %s")
+                | x -> failwith $"Unrecognised value {x}"
+
+            yield! hit |> formatHitMetadata |> Seq.map (sprintf "|  |  | %s |  | ")
+
         }
+        |> Seq.filter String.isNotEmpty
 
     let formatHitGroup (hit: (string * seq<ScaHit>)) =
         let grpHdr =
