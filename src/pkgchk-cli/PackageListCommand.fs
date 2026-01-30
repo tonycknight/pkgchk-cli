@@ -88,6 +88,17 @@ type PackageListCommand(nuget: INugetClient) =
             { h with
                 metadata = package (h.packageId, h.resolvedVersion) })
 
+    let enrichHits context (results: ApplicationScanResults) =
+        task {
+            if context.options.fetchMetadata then
+                context.services.trace "Fetching package metadata..."
+                let! packages = packages results.hits
+                            
+                return { results with hits = enrichHits packages results.hits }
+            else
+                return results
+        }
+
     let consoleTable (results: ApplicationScanResults) =
         seq {
             match results.hits with
@@ -131,16 +142,8 @@ type PackageListCommand(nuget: INugetClient) =
                 if Seq.isEmpty errors |> not then
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
-                    let results = scanResults |> DotNet.getHits |> results context
-
-                    context.services.trace "Fetching package metadata..."
-
-                    let! packages = packages results.hits
-
-                    let results =
-                        { results with
-                            hits = enrichHits packages results.hits }
-
+                    let! results = scanResults |> DotNet.getHits |> results context |> enrichHits context 
+                        
                     context.services.trace "Building display..."
 
                     results |> consoleTable |> CliCommands.renderTables

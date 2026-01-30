@@ -32,7 +32,8 @@ module ReportGenerationTests =
           OptionsContext.scanVulnerabilities = false
           OptionsContext.scanDeprecations = false
           OptionsContext.scanTransitives = false
-          OptionsContext.severities = [||] }
+          OptionsContext.severities = [||] 
+          OptionsContext.fetchMetadata = true }
 
     let ghContext =
         { GithubContext.prId = ""

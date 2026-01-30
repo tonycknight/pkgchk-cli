@@ -28,7 +28,8 @@ type OptionsContext =
       severities: string[]
       scanVulnerabilities: bool
       scanDeprecations: bool
-      scanTransitives: bool }
+      scanTransitives: bool 
+      fetchMetadata: bool }
 
     static member empty =
         { OptionsContext.projectPath = ""
@@ -41,7 +42,8 @@ type OptionsContext =
           severities = [||]
           scanVulnerabilities = false
           scanDeprecations = false
-          scanTransitives = false }
+          scanTransitives = false 
+          fetchMetadata = false }
 
 type ServiceContext = { trace: (string -> unit) }
 
@@ -84,7 +86,8 @@ module Context =
           severities = [||]
           scanVulnerabilities = false
           scanDeprecations = false
-          scanTransitives = false }
+          scanTransitives = false 
+          fetchMetadata = false }
 
     let serviceContext (settings: PackageCommandSettings) =
         { ServiceContext.trace = CliCommands.trace settings.TraceLogging }
@@ -108,7 +111,8 @@ module Context =
     let listContext (settings: PackageListCommandSettings) =
         let options =
             { optionsContext settings with
-                scanTransitives = settings.IncludeTransitives }
+                scanTransitives = settings.IncludeTransitives 
+                fetchMetadata = settings.FetchMetadata }
 
         options |> applicationContext settings
 
@@ -141,7 +145,8 @@ module Context =
           severities = applySequence overlay.severities source.severities
           scanVulnerabilities = apply overlay.scanVulnerabilities source.scanVulnerabilities
           scanDeprecations = apply overlay.scanDeprecations source.scanDeprecations
-          scanTransitives = apply overlay.scanTransitives source.scanTransitives }
+          scanTransitives = apply overlay.scanTransitives source.scanTransitives 
+          fetchMetadata = apply overlay.fetchMetadata source.fetchMetadata  }
 
 
     let applyConfig (context: OptionsContext) (config: ScanConfiguration) =

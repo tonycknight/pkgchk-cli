@@ -156,6 +156,11 @@ type PackageListCommandSettings() =
     [<DefaultValue(true)>]
     member val IncludeTransitives = true with get, set
 
+    [<CommandOption("--metadata")>]
+    [<Description("Query package metadata.")>]
+    [<DefaultValue(true)>]
+    member val FetchMetadata = true with get, set
+
 [<ExcludeFromCodeCoverage>]
 type PackageUpgradeCommandSettings() =
     inherit PackageGithubCommandSettings()
