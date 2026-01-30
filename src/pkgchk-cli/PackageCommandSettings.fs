@@ -51,6 +51,11 @@ type PackageCommandSettings() =
     [<DefaultValue([| ReportFormat.Markdown |])>]
     member val ReportFormats: ReportFormat[] = [||] with get, set
 
+    [<CommandOption("--metadata")>]
+    [<Description("Query package metadata.")>]
+    [<DefaultValue(true)>]
+    member val FetchMetadata = true with get, set
+
 [<ExcludeFromCodeCoverage>]
 type PackageGithubCommandSettings() =
     inherit PackageCommandSettings()
@@ -155,11 +160,6 @@ type PackageListCommandSettings() =
     [<Description("Toggle transitive package checks. true to include them, false to exclude.")>]
     [<DefaultValue(true)>]
     member val IncludeTransitives = true with get, set
-
-    [<CommandOption("--metadata")>]
-    [<Description("Query package metadata.")>]
-    [<DefaultValue(true)>]
-    member val FetchMetadata = true with get, set
 
 [<ExcludeFromCodeCoverage>]
 type PackageUpgradeCommandSettings() =
