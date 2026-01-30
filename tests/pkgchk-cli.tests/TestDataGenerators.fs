@@ -1,7 +1,6 @@
 ﻿namespace pkgchk.tests
 
 open System
-open FsCheck
 open FsCheck.FSharp
 open pkgchk.Combinators
 
