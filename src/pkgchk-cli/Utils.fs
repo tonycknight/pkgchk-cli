@@ -139,6 +139,9 @@ module Json =
         opts
 
     let serialise<'a> =
-        let opts = options ()       
-        
+        let opts = options ()        
         fun (value: 'a) -> JsonSerializer.Serialize (value, opts)
+
+    let deserialise<'a> =
+        let opts = options ()
+        fun (value: string) -> JsonSerializer.Deserialize<'a>(value, opts)

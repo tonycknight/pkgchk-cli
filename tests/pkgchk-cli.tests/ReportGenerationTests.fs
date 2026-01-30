@@ -59,8 +59,8 @@ module ReportGenerationTests =
             pkgchk.ReportGeneration.jsonReport (appContext, results, "")
             |> pkgchk.String.joinLines
 
-        let check = Newtonsoft.Json.JsonConvert.DeserializeObject<pkgchk.ScaHit[]>(result)
-
+        let check = pkgchk.Json.deserialise<pkgchk.ScaHit[]> result
+        
         check = hits
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
