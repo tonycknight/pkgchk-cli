@@ -13,7 +13,7 @@ type ReportGenerationContext =
 module ReportGeneration =
 
     let jsonReport (context: ApplicationContext, results: ApplicationScanResults, image: string) =
-        seq { Json.serialise results.hits }
+        seq { PrettyJson.serialise results.hits }
 
     let reports (context: ReportGenerationContext) =
         let required fmt =
