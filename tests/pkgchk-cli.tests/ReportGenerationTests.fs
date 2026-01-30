@@ -32,7 +32,7 @@ module ReportGenerationTests =
           OptionsContext.scanVulnerabilities = false
           OptionsContext.scanDeprecations = false
           OptionsContext.scanTransitives = false
-          OptionsContext.severities = [||] 
+          OptionsContext.severities = [||]
           OptionsContext.fetchMetadata = true }
 
     let ghContext =
@@ -61,7 +61,7 @@ module ReportGenerationTests =
             |> pkgchk.String.joinLines
 
         let check = pkgchk.Json.deserialise<pkgchk.ScaHit[]> result
-        
+
         check = hits
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
