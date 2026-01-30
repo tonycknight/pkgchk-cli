@@ -45,58 +45,13 @@ type PackageListCommand(nuget: INugetClient) =
           hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
           isGoodScan = true }
 
-    let packages (hits: ScaHit list) =
-        let package (id, version) =
-            task {
-                let! metadata = nuget.GetMetadataAsync(id, version, System.Threading.CancellationToken.None, null)
-
-                return
-                    match metadata |> Option.isNull with
-                    | true -> None
-                    | _ -> Some metadata
-            }
-
-        let rec scanPackages (result: PackageMetadata list) hits =
-            task {
-                return!
-                    match hits with
-                    | [] -> task { return result }
-                    | h :: t ->
-                        task {
-                            let! meta = package (h.packageId, h.resolvedVersion)
-
-                            match meta with
-                            | Some m -> return! scanPackages (m :: result) t
-                            | None -> return! scanPackages result t
-                        }
-            }
-
-        task {
-            let! packages = scanPackages [] hits
-
-            return packages |> List.map (fun m -> ((m.Id, m.Version), m)) |> dict
-        }
-
-    let enrichHits (packages: IDictionary<(string * string), PackageMetadata>) (hits: ScaHit list) =
-        let package (id: string * string) =
-            match packages.TryGetValue id with
-            | (true, metadata) -> metadata |> ScaModels.packageMetadata |> Some
-            | _ -> None
-
-        hits
-        |> List.map (fun h ->
-            { h with
-                metadata = package (h.packageId, h.resolvedVersion) })
-
     let enrichHits context (results: ApplicationScanResults) =
         task {
             if context.options.fetchMetadata then
                 context.services.trace "Fetching package metadata..."
-                let! packages = packages results.hits
+                let! hits = ScaModels.enrichMetadata context.services.nuget results.hits
 
-                return
-                    { results with
-                        hits = enrichHits packages results.hits }
+                return { results with hits = hits }
             else
                 return results
         }
