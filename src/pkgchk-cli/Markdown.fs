@@ -4,19 +4,17 @@ module Markdown =
 
     let italic (value: string) = $"_{value}_"
 
-    let escape (value: string) = value.Replace('\r', ' ').Replace('\n', ' ')
+    let escape (value: string) =
+        value.Replace('\r', ' ').Replace('\n', ' ')
 
-    let trimlines (value: string) = 
-         value.Split([| '\n'; '\r' |], System.StringSplitOptions.RemoveEmptyEntries)
-            |> Seq.map String.trim
-            |> Seq.filter String.isNotEmpty
-            |> String.join " "
+    let trimlines (value: string) =
+        value.Split([| '\n'; '\r' |], System.StringSplitOptions.RemoveEmptyEntries)
+        |> Seq.map String.trim
+        |> Seq.filter String.isNotEmpty
+        |> String.join " "
 
     let separator (separator: string) (x: string) (y: string) =
-        if x.Length = 0 then
-            y
-        else
-            $"{y}{separator}{x}"
+        if x.Length = 0 then y else $"{y}{separator}{x}"
 
     let colourise colour value =
         $"<span style='color:{colour}'>{value}</span>"
@@ -119,31 +117,45 @@ module Markdown =
 
     let formatHitMetadata (hit: ScaHit) =
         match hit.metadata with
-        | None -> seq {}
+        | None -> seq { }
         | Some meta ->
             let separator = separator " - "
-            let licence = 
-                ( match (meta.license |> Option.ofNull, meta.licenseUrl) with                    
-                    | (Some x, _) when x <> "" -> x |> escape |> colourise Rendering.yellow |> italic
-                    | (_, Some l) when l <> "" -> l |> escape |> link |> colourise Rendering.yellow |> italic
-                    | _ -> "" )
-            let authors = 
-                meta.authors |> Option.nonEmpty |> Option.map (escape >> colourise Rendering.darkcyan >> italic) |> Option.defaultValue ""
+
+            let licence =
+                (match (meta.license |> Option.ofNull, meta.licenseUrl) with
+                 | (Some x, _) when x <> "" -> x |> escape |> colourise Rendering.yellow |> italic
+                 | (_, Some l) when l <> "" -> l |> escape |> link |> colourise Rendering.yellow |> italic
+                 | _ -> "")
+
+            let authors =
+                meta.authors
+                |> Option.nonEmpty
+                |> Option.map (escape >> colourise Rendering.darkcyan >> italic)
+                |> Option.defaultValue ""
 
             let tags =
-                meta.tags |> Option.nonEmpty |> Option.map (escape >> colourise Rendering.lightgrey >> italic) |> Option.defaultValue ""
+                meta.tags
+                |> Option.nonEmpty
+                |> Option.map (escape >> colourise Rendering.lightgrey >> italic)
+                |> Option.defaultValue ""
 
             let project =
-                meta.projectUrl |> Option.map (link >> escape >> italic) |> Option.defaultValue ""
+                meta.projectUrl
+                |> Option.map (link >> escape >> italic)
+                |> Option.defaultValue ""
 
             seq {
-                meta.description |> Option.nonEmpty |> Option.map (trimlines >> italic) |> Option.defaultValue ""
+                meta.description
+                |> Option.nonEmpty
+                |> Option.map (trimlines >> italic)
+                |> Option.defaultValue ""
+
                 project |> separator licence |> separator authors |> separator tags
             }
             |> Seq.filter String.isNotEmpty
 
     let formatHit (hit: ScaHit) =
-        
+
         seq {
             yield
                 match hit.kind with
@@ -164,25 +176,25 @@ module Markdown =
                         (pkgFramework hit)
                         (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
                         (match (hit.suggestedReplacement, hit.alternativePackageId) with
-                            | "", _ -> ""
-                            | x, y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> sprintf "Use %s"
-                            | x, _ -> x |> sprintf "Use %s")
+                         | "", _ -> ""
+                         | x, y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> sprintf "Use %s"
+                         | x, _ -> x |> sprintf "Use %s")
                 | ScaHitKind.Dependency
                 | ScaHitKind.DependencyTransitive ->
                     sprintf
                         "| %s |  | %s: %s | %s | "
                         (Rendering.formatHitKind hit.kind)
                         (pkgFramework hit)
-                        (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)                    
+                        (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
                         (match hit.suggestedReplacement with
-                            | "" -> ""
-                            | vsn -> nugetLinkPkgVsn hit.packageId vsn |> sprintf "Upgrade to %s")
-                | x -> failwith $"Unrecognised value {x}"            
+                         | "" -> ""
+                         | vsn -> nugetLinkPkgVsn hit.packageId vsn |> sprintf "Upgrade to %s")
+                | x -> failwith $"Unrecognised value {x}"
 
-            yield!
-                hit |> formatHitMetadata |> Seq.map (sprintf "|  |  | %s |  | ")
-            
-        } |> Seq.filter String.isNotEmpty
+            yield! hit |> formatHitMetadata |> Seq.map (sprintf "|  |  | %s |  | ")
+
+        }
+        |> Seq.filter String.isNotEmpty
 
     let formatHitGroup (hit: (string * seq<ScaHit>)) =
         let grpHdr =
