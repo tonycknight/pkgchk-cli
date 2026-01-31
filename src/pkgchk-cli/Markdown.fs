@@ -2,6 +2,22 @@
 
 module Markdown =
 
+    let italic (value: string) = $"_{value}_"
+
+    let escape (value: string) =
+        value.Replace('\r', ' ').Replace('\n', ' ')
+
+    let trimlines (value: string) =
+        value.Split([| '\n'; '\r' |], System.StringSplitOptions.RemoveEmptyEntries)
+        |> Seq.map String.trim
+        |> Seq.filter String.isNotEmpty
+        |> String.join " "
+
+    let append (separator: string) (x: string) (y: string) =
+        if y.Length = 0 then x
+        else if x.Length = 0 then y
+        else $"{y}{separator}{x}"
+
     let colourise colour value =
         $"<span style='color:{colour}'>{value}</span>"
 
@@ -19,6 +35,10 @@ module Markdown =
     let nugetLinkPkgSuggestion package suggestion =
         let url = Rendering.nugetLink (package, "")
         $"[{suggestion}]({url})"
+
+    let hyperlink name url = $"[{name}]({url})"
+
+    let link url = hyperlink url url
 
     let pkgFramework (hit: ScaHit) =
         hit.framework |> colourise Rendering.cornflowerblue
@@ -97,41 +117,86 @@ module Markdown =
                 yield "---"
             }
 
+    let formatHitMetadata (hit: ScaHit) =
+        match hit.metadata with
+        | None -> seq { }
+        | Some meta ->
+            let append = append (sprintf " %s " "-" |> colourise Rendering.grey)
+
+            let licence =
+                (match (meta.license |> Option.ofNull, meta.licenseUrl) with
+                 | (Some x, _) when x <> "" -> x |> escape |> colourise Rendering.yellow |> italic
+                 | (_, Some l) when l <> "" -> l |> escape |> link |> colourise Rendering.yellow |> italic
+                 | _ -> "")
+
+            let authors =
+                meta.authors
+                |> Option.nonEmpty
+                |> Option.map (escape >> colourise Rendering.darkcyan >> italic)
+                |> Option.defaultValue ""
+
+            let tags =
+                meta.tags
+                |> Option.nonEmpty
+                |> Option.map (escape >> colourise Rendering.lightgrey >> italic)
+                |> Option.defaultValue ""
+
+            let project =
+                meta.projectUrl
+                |> Option.map (link >> escape >> italic)
+                |> Option.defaultValue ""
+
+            seq {
+                meta.description
+                |> Option.nonEmpty
+                |> Option.map (trimlines >> italic)
+                |> Option.defaultValue ""
+
+                project |> append licence |> append authors |> append tags
+            }
+            |> Seq.filter String.isNotEmpty
+
     let formatHit (hit: ScaHit) =
+
         seq {
-            match hit.kind with
-            | ScaHitKind.VulnerabilityTransitive
-            | ScaHitKind.Vulnerability ->
-                sprintf
-                    "| %s | %s | %s: %s | %s | "
-                    (Rendering.formatHitKind hit.kind)
-                    (formatSeverity hit.severity)
-                    (pkgFramework hit)
-                    (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
-                    $"Advisory: [{hit.advisoryUri}]({hit.advisoryUri})"
-            | ScaHitKind.Deprecated ->
-                sprintf
-                    "| %s | %s | %s: %s | %s | "
-                    (Rendering.formatHitKind hit.kind)
-                    (formatReasons hit.reasons)
-                    (pkgFramework hit)
-                    (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
-                    (match (hit.suggestedReplacement, hit.alternativePackageId) with
-                     | "", _ -> ""
-                     | x, y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> sprintf "Use %s"
-                     | x, _ -> x |> sprintf "Use %s")
-            | ScaHitKind.Dependency
-            | ScaHitKind.DependencyTransitive ->
-                sprintf
-                    "| %s |  | %s: %s | %s | "
-                    (Rendering.formatHitKind hit.kind)
-                    (pkgFramework hit)
-                    (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
-                    (match hit.suggestedReplacement with
-                     | "" -> ""
-                     | vsn -> nugetLinkPkgVsn hit.packageId vsn |> sprintf "Upgrade to %s")
-            | x -> failwith $"Unrecognised value {x}"
+            yield
+                match hit.kind with
+                | ScaHitKind.VulnerabilityTransitive
+                | ScaHitKind.Vulnerability ->
+                    sprintf
+                        "| %s | %s | %s: %s | %s | "
+                        (Rendering.formatHitKind hit.kind)
+                        (formatSeverity hit.severity)
+                        (pkgFramework hit)
+                        (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
+                        $"Advisory: [{hit.advisoryUri}]({hit.advisoryUri})"
+                | ScaHitKind.Deprecated ->
+                    sprintf
+                        "| %s | %s | %s: %s | %s | "
+                        (Rendering.formatHitKind hit.kind)
+                        (formatReasons hit.reasons)
+                        (pkgFramework hit)
+                        (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
+                        (match (hit.suggestedReplacement, hit.alternativePackageId) with
+                         | "", _ -> ""
+                         | x, y when x <> "" && y <> "" -> nugetLinkPkgSuggestion y x |> sprintf "Use %s"
+                         | x, _ -> x |> sprintf "Use %s")
+                | ScaHitKind.Dependency
+                | ScaHitKind.DependencyTransitive ->
+                    sprintf
+                        "| %s |  | %s: %s | %s | "
+                        (Rendering.formatHitKind hit.kind)
+                        (pkgFramework hit)
+                        (nugetLinkPkgVsn hit.packageId hit.resolvedVersion)
+                        (match hit.suggestedReplacement with
+                         | "" -> ""
+                         | vsn -> nugetLinkPkgVsn hit.packageId vsn |> sprintf "Upgrade to %s")
+                | x -> failwith $"Unrecognised value {x}"
+
+            yield! hit |> formatHitMetadata |> Seq.map (sprintf "|  |  | %s |  | ")
+
         }
+        |> Seq.filter String.isNotEmpty
 
     let formatHitGroup (hit: (string * seq<ScaHit>)) =
         let grpHdr =
