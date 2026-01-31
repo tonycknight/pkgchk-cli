@@ -22,7 +22,9 @@ module Markdown =
         let url = Rendering.nugetLink (package, "")
         $"[{suggestion}]({url})"
 
-    let link name url = $"[{name}]({url})"
+    let hyperlink name url = $"[{name}]({url})"
+
+    let link url = hyperlink url url
 
     let pkgFramework (hit: ScaHit) =
         hit.framework |> colourise Rendering.cornflowerblue
@@ -106,13 +108,10 @@ module Markdown =
         | None -> seq { }
         | Some meta ->
             let licence =
-                (match (meta.license, meta.licenseUrl) with
-                 | ("", None) -> ""
-                 | ("", Some l) -> l
-                 | (x, _) -> x)
-                |> Option.nonEmpty
-                |> Option.map (colourise Rendering.yellow >> italic)
-                |> Option.defaultValue ""
+                (match (meta.license |> Option.ofNull, meta.licenseUrl) with
+                 | (Some x, _) when x <> "" -> x |> colourise Rendering.yellow |> italic
+                 | (_, Some l) when l <> "" -> l |> link |> colourise Rendering.yellow |> italic
+                 | _ -> "")
 
             let authors =
                 meta.authors
@@ -122,7 +121,7 @@ module Markdown =
 
             seq {
                 meta.projectUrl
-                |> Option.map (fun l -> link l l |> sprintf "Project: %s" |> italic)
+                |> Option.map (link >> sprintf "Project: %s" >> italic)
                 |> Option.defaultValue ""
 
                 sprintf "%s %s" licence authors
