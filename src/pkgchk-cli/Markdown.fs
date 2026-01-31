@@ -14,7 +14,9 @@ module Markdown =
         |> String.join " "
 
     let separator (separator: string) (x: string) (y: string) =
-        if x.Length = 0 then y else $"{y}{separator}{x}"
+        if y.Length = 0 then x
+        else if x.Length = 0 then y
+        else $"{y}{separator}{x}"
 
     let colourise colour value =
         $"<span style='color:{colour}'>{value}</span>"
