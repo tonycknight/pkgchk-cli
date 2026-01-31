@@ -13,7 +13,7 @@ module Markdown =
         |> Seq.filter String.isNotEmpty
         |> String.join " "
 
-    let separator (separator: string) (x: string) (y: string) =
+    let append (separator: string) (x: string) (y: string) =
         if y.Length = 0 then x
         else if x.Length = 0 then y
         else $"{y}{separator}{x}"
@@ -121,7 +121,7 @@ module Markdown =
         match hit.metadata with
         | None -> seq { }
         | Some meta ->
-            let separator = separator " - "
+            let append = append (sprintf " %s " "-" |> colourise Rendering.grey)
 
             let licence =
                 (match (meta.license |> Option.ofNull, meta.licenseUrl) with
@@ -152,7 +152,7 @@ module Markdown =
                 |> Option.map (trimlines >> italic)
                 |> Option.defaultValue ""
 
-                project |> separator licence |> separator authors |> separator tags
+                project |> append licence |> append authors |> append tags
             }
             |> Seq.filter String.isNotEmpty
 
