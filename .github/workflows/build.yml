@@ -86,7 +86,7 @@ jobs:
           report_name: code coverage results
 
       - name: Archive Code coverage
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: codecoverage
           path: ./reports/codecoverage/*.*
