@@ -171,7 +171,7 @@ jobs:
         run: dotnet restore
         
       - name: Build package 
-        run: dotnet pack -c Release -o ./package/ -p:PackageVersion=${{ env.package-version-number }} -p:Version=${{ env.package-version-number }}
+        run: dotnet pack -c Release -o ./package/ -p:PackageVersion=${{ env.package-version-number }} -p:Version=${{ env.package-version-number }} /p:ContinuousIntegrationBuild=true
 
       - name: Push nuget package
         run: dotnet nuget push "package/*.nupkg"  --api-key ${{ secrets.NUGET_PAT }} --source "nuget.org"
