@@ -28,7 +28,7 @@ module Console =
         |> markup
 
     let table () =
-        let table = (new Table()).LeftAligned()
+        let table = new Table()
         table.Border <- TableBorder.None
         table.ShowHeaders <- false
         table
