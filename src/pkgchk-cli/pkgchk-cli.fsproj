@@ -78,13 +78,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FSharp.Data" Version="8.1.7" />
+    <PackageReference Include="FSharp.Data" Version="8.1.8" />
     <PackageReference Include="FSharp.SystemTextJson" Version="1.4.36" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.6" />
     <PackageReference Include="Octokit" Version="14.0.0" />
     <PackageReference Include="Spectre.Console.Cli" Version="0.55.0" />
-    <PackageReference Include="Tk.Nuget" Version="0.2.195" />
-    <PackageReference Include="YamlDotNet" Version="17.0.0" />    
+    <PackageReference Include="Tk.Nuget" Version="0.2.198" />
+    <PackageReference Include="YamlDotNet" Version="17.0.1" />    
   </ItemGroup>
   
 </Project>
