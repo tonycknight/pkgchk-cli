@@ -72,6 +72,7 @@
     <Compile Include="DotNet.fs" />
     <Compile Include="Reporting.fs" />
     <Compile Include="PackageScanCommand.fs" />
+    <Compile Include="PackageLicenceCommand.fs" />
     <Compile Include="PackageListCommand.fs" />
     <Compile Include="PackageUpgradeCommand.fs" />
     <Compile Include="Program.fs" />

@@ -29,7 +29,10 @@ type OptionsContext =
       scanVulnerabilities: bool
       scanDeprecations: bool
       scanTransitives: bool
-      fetchMetadata: bool }
+      fetchMetadata: bool 
+      allowedLicences: string[]
+      disallowedLicences: string[]
+      }
 
     static member empty =
         { OptionsContext.projectPath = ""
@@ -43,7 +46,9 @@ type OptionsContext =
           scanVulnerabilities = false
           scanDeprecations = false
           scanTransitives = false
-          fetchMetadata = false }
+          fetchMetadata = false 
+          allowedLicences = [||]
+          disallowedLicences = [||] }
 
 type ServiceContext =
     { trace: (string -> unit)
@@ -89,6 +94,8 @@ module Context =
           scanVulnerabilities = false
           scanDeprecations = false
           scanTransitives = false
+          allowedLicences = [||]
+          disallowedLicences = [||]
           fetchMetadata = settings.FetchMetadata }
 
     let serviceContext (settings: PackageCommandSettings, nuget) =
@@ -114,6 +121,16 @@ module Context =
     let listContext (nuget, settings: PackageListCommandSettings) =
         let options =
             { optionsContext settings with
+                scanTransitives = settings.IncludeTransitives }
+
+        options |> applicationContext nuget settings
+
+    let licenceContext (nuget, settings: PackageLicenceCommandSettings) =
+        let options =
+            { optionsContext settings with
+                fetchMetadata = true
+                allowedLicences = settings.AllowedLicences
+                disallowedLicences = settings.DisallowedLicences
                 scanTransitives = settings.IncludeTransitives }
 
         options |> applicationContext nuget settings
@@ -148,7 +165,9 @@ module Context =
           scanVulnerabilities = apply overlay.scanVulnerabilities source.scanVulnerabilities
           scanDeprecations = apply overlay.scanDeprecations source.scanDeprecations
           scanTransitives = apply overlay.scanTransitives source.scanTransitives
-          fetchMetadata = apply overlay.fetchMetadata source.fetchMetadata }
+          fetchMetadata = apply overlay.fetchMetadata source.fetchMetadata 
+          allowedLicences = apply overlay.allowedLicences source.allowedLicences
+          disallowedLicences = apply overlay.disallowedLicences source.disallowedLicences }
 
 
     let applyConfig (context: OptionsContext) (config: ScanConfiguration) =
@@ -251,6 +270,27 @@ module Context =
             | xs -> hit |> isHitMatch context.excludePackages
 
         hits |> Seq.filter (included &&>> (excluded >> not))
+
+    // TODO: 
+    let filterLicences (context: OptionsContext) (hits: seq<pkgchk.ScaHit>) =
+        let licence (hit: ScaHit) =
+            let get (meta: NugetPackageMetadata) =
+                match (meta.license, meta.licenseUrl) with
+                | ("", Some url) -> url
+                | (x, _) -> x
+                                
+            hit.metadata |> Option.map get |> Option.defaultValue ""
+            
+        let filter licence = 
+            match (context.allowedLicences, context.disallowedLicences) with
+            | ([||], [||]) -> true
+            | (allowed,[||]) -> allowed |> Seq.contains licence
+            | ([||], disallowed) -> disallowed |> Seq.contains licence |> not
+            | (allowed,disallowed) -> allowed |> Seq.contains licence && disallowed |> Seq.contains licence |> not
+
+        hits
+        |> Seq.filter (licence >> filter)
+        |> List.ofSeq
 
     let trace (context: ApplicationContext) =
 

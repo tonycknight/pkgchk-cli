@@ -28,8 +28,10 @@ module Program =
             |> ignore
 
             c.AddCommand<PackageUpgradeCommand>("upgrades").WithDescription("Find package upgrades.")
-            |> ignore)
+            |> ignore
 
+            c.AddCommand<PackageLicenceCommand>("licence").WithDescription("Find package licences.")
+            |> ignore)
         try
             app.Run(argv)
         with ex ->

@@ -162,6 +162,23 @@ type PackageListCommandSettings() =
     member val IncludeTransitives = true with get, set
 
 [<ExcludeFromCodeCoverage>]
+type PackageLicenceCommandSettings() =
+    inherit PackageGithubCommandSettings()
+        
+    [<CommandOption("--allowed-licence", IsHidden = false)>]
+    [<Description("The allowed licence codes, e.g. MIT, Apache-2.0, etc. Multiple licences can be specified.")>]
+    member val AllowedLicences: string[] = [||] with get, set
+
+    [<CommandOption("--disallowed-licence", IsHidden = false)>]
+    [<Description("The disallowed licence codes, e.g. MIT, Apache-2.0, etc. Multiple licences can be specified.")>]
+    member val DisallowedLicences: string[] = [||] with get, set
+
+    [<CommandOption("-t|--transitive")>]
+    [<Description("Toggle transitive package checks. true to include them, false to exclude.")>]
+    [<DefaultValue(true)>]
+    member val IncludeTransitives = true with get, set
+
+[<ExcludeFromCodeCoverage>]
 type PackageUpgradeCommandSettings() =
     inherit PackageGithubCommandSettings()
 
