@@ -294,7 +294,7 @@ module Context =
     let isDisllowedLicence (context: OptionsContext) (hit: pkgchk.ScaHit) =
         match (licence hit |> Option.map String.toLower, context.disallowedLicences) with
         | (None, _) -> None
-        | (Some _, [||]) -> Some true
+        | (Some _, [||]) -> Some false
         | (Some l, licences) -> licences |> Seq.map String.toLower |> Seq.contains l |> Some
 
     let trace (context: ApplicationContext) =

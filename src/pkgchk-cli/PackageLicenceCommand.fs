@@ -48,12 +48,12 @@ type PackageLicenceCommand(nuget: INugetClient) =
 
         let isHit (hit: ScaHit) =
             match (Context.isDisllowedLicence context.options hit, Context.isAllowedLicence context.options hit) with
-            | (None, None) -> context.options.ignoreMissingLicence |> not |> Some
-            | (Some false, _) -> Some false
-            | (Some true, _) -> Some true
-            | (_, Some x) -> x |> not |> Some
+            | (None, None) -> not context.options.ignoreMissingLicence
+            | (Some false, _) -> false
+            | (Some true, _) -> true
+            | (_, Some x) -> not x
                         
-        let filteredHits = results.hits |> Seq.filter (isHit >> Option.defaultValue true)|> List.ofSeq
+        let filteredHits = results.hits |> Seq.filter isHit|> List.ofSeq
         
         { ApplicationScanResults.hits = filteredHits
           hitCounts = filteredHits |> ScaModels.hitCountSummary |> List.ofSeq
