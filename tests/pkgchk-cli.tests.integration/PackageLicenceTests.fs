@@ -84,7 +84,7 @@ type PackageLicenceTests(output: ITestOutputHelper) =
         runPkgChkLicenceArgs outDir false false [ "abc" ] [ "xyz" ]
         |> execFailedPkgChk
         |> assertPackagesFound [ apachePackage; mitPackage ]
-        
+
     [<Fact>]
     let ``Project with unknown licences including missing licences returns non-empty list`` () =
 
