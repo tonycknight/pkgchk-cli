@@ -274,10 +274,11 @@ module Context =
     let licence (hit: ScaHit) =
         let get (meta: NugetPackageMetadata) =
             match (meta.license, meta.licenseUrl) with
-            | ("", Some url) -> url
+            | ("", Some url)
+            | (null, Some url) -> url
             | (x, _) -> x
                                 
-        hit.metadata |> Option.map get |> Option.defaultValue ""
+        hit.metadata |> Option.map get |> Option.defaultValue "unknown"
 
     let isAllowedLicence (context: OptionsContext) (hit: pkgchk.ScaHit) =
         match context.allowedLicences with
@@ -287,7 +288,7 @@ module Context =
     let isDisllowedLicence (context: OptionsContext) (hit: pkgchk.ScaHit) =
         match context.disallowedLicences with
         | [||] -> None
-        | licences -> licences |> Seq.contains (licence hit) |> not |> Some
+        | licences -> licences |> Seq.contains (licence hit) |> Some
 
     let trace (context: ApplicationContext) =
 
