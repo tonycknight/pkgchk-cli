@@ -15,7 +15,7 @@ type PackageLicenceCommand(nuget: INugetClient) =
         let ctx =
             { ReportGenerationContext.app = context
               results = results
-              reportName = "pkgchk-licence" // TODO:
+              reportName = "pkgchk-licence-scan"
               imageUri = imageUri
               genMarkdown = genMarkdownReport
               genJson = ReportGeneration.jsonReport }
@@ -49,8 +49,9 @@ type PackageLicenceCommand(nuget: INugetClient) =
         let isHit (hit: ScaHit) =
             match (Context.isDisllowedLicence context.options hit, Context.isAllowedLicence context.options hit) with
             | (None, None) -> not context.options.ignoreMissingLicence
-            | (Some false, _) -> false
-            | (Some true, _) -> true
+            | (Some false, None) -> false
+            | (Some false, Some x) -> not x
+            | (Some true, x) -> true
             | (_, Some x) -> not x
 
         let filteredHits = results.hits |> Seq.filter isHit |> List.ofSeq

@@ -33,6 +33,19 @@ type PackageLicenceTests(output: ITestOutputHelper) =
         |> assertTitleShowsNoLicences
 
     [<Fact>]
+    let ``Project with default allowed licence returns empty list`` () =
+
+        let outDir = getOutDir ()
+
+        createProjectArgs outDir |> execSuccess
+        addMitPackageArgs outDir |> execSuccess
+        addApachePackageArgs outDir |> execSuccess
+
+        runPkgChkLicenceArgs outDir false false [] []
+        |> execSuccessPkgChk
+        |> assertTitleShowsNoLicences
+
+    [<Fact>]
     let ``Project with disallowed licence returns non-empty list`` () =
 
         let outDir = getOutDir ()
@@ -58,6 +71,32 @@ type PackageLicenceTests(output: ITestOutputHelper) =
         |> execFailedPkgChk
         |> assertPackagesFound [ apachePackage ]
         |> assertPackagesNotFound [ mitPackage ]
+
+    [<Fact>]
+    let ``Project with unknown licences returns non-empty list`` () =
+
+        let outDir = getOutDir ()
+
+        createProjectArgs outDir |> execSuccess
+        addMitPackageArgs outDir |> execSuccess
+        addApachePackageArgs outDir |> execSuccess
+
+        runPkgChkLicenceArgs outDir false false [ "abc" ] [ "xyz" ]
+        |> execFailedPkgChk
+        |> assertPackagesFound [ apachePackage; mitPackage ]
+        
+    [<Fact>]
+    let ``Project with unknown licences including missing licences returns non-empty list`` () =
+
+        let outDir = getOutDir ()
+
+        createProjectArgs outDir |> execSuccess
+        addMitPackageArgs outDir |> execSuccess
+        addApachePackageArgs outDir |> execSuccess
+
+        runPkgChkLicenceArgs outDir false true [ "abc" ] [ "xyz" ]
+        |> execFailedPkgChk
+        |> assertPackagesFound [ apachePackage; mitPackage ]
 
     [<Fact>]
     let ``Project with missing licence returns empty list`` () =
