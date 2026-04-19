@@ -32,6 +32,7 @@ type OptionsContext =
       fetchMetadata: bool 
       allowedLicences: string[]
       disallowedLicences: string[]
+      ignoreMissingLicence: bool
       }
 
     static member empty =
@@ -48,7 +49,8 @@ type OptionsContext =
           scanTransitives = false
           fetchMetadata = false 
           allowedLicences = [||]
-          disallowedLicences = [||] }
+          disallowedLicences = [||]
+          ignoreMissingLicence = false }
 
 type ServiceContext =
     { trace: (string -> unit)
@@ -96,6 +98,7 @@ module Context =
           scanTransitives = false
           allowedLicences = [||]
           disallowedLicences = [||]
+          ignoreMissingLicence = false
           fetchMetadata = settings.FetchMetadata }
 
     let serviceContext (settings: PackageCommandSettings, nuget) =
@@ -131,6 +134,7 @@ module Context =
                 fetchMetadata = true
                 allowedLicences = settings.AllowedLicences
                 disallowedLicences = settings.DisallowedLicences
+                ignoreMissingLicence = settings.IgnoreMissingLicence
                 scanTransitives = settings.IncludeTransitives }
 
         options |> applicationContext nuget settings
@@ -167,7 +171,8 @@ module Context =
           scanTransitives = apply overlay.scanTransitives source.scanTransitives
           fetchMetadata = apply overlay.fetchMetadata source.fetchMetadata 
           allowedLicences = apply overlay.allowedLicences source.allowedLicences
-          disallowedLicences = apply overlay.disallowedLicences source.disallowedLicences }
+          disallowedLicences = apply overlay.disallowedLicences source.disallowedLicences 
+          ignoreMissingLicence = apply overlay.ignoreMissingLicence source.ignoreMissingLicence}
 
 
     let applyConfig (context: OptionsContext) (config: ScanConfiguration) =
@@ -282,14 +287,14 @@ module Context =
 
     let isAllowedLicence (context: OptionsContext) (hit: pkgchk.ScaHit) =
         match (licence hit |> Option.map String.toLower, context.allowedLicences) with
-        | (None, _) 
-        | (Some _, [||]) -> None
+        | (None, _) -> None 
+        | (Some _, [||]) -> Some true
         | (Some l, licences) -> licences |> Seq.map String.toLower |> Seq.contains l |> Some
     
     let isDisllowedLicence (context: OptionsContext) (hit: pkgchk.ScaHit) =
         match (licence hit |> Option.map String.toLower, context.disallowedLicences) with
-        | (None, _) 
-        | (Some _, [||]) -> None
+        | (None, _) -> None
+        | (Some _, [||]) -> Some true
         | (Some l, licences) -> licences |> Seq.map String.toLower |> Seq.contains l |> Some
 
     let trace (context: ApplicationContext) =

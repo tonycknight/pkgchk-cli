@@ -37,7 +37,8 @@ module ReportGenerationTests =
           OptionsContext.severities = [||]
           OptionsContext.fetchMetadata = true 
           OptionsContext.allowedLicences = [||]
-          OptionsContext.disallowedLicences = [||] }
+          OptionsContext.disallowedLicences = [||] 
+          OptionsContext.ignoreMissingLicence = false }
 
     let ghContext =
         { GithubContext.prId = ""

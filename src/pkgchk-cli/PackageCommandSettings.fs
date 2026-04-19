@@ -178,6 +178,11 @@ type PackageLicenceCommandSettings() =
     [<DefaultValue(false)>]
     member val IncludeTransitives = true with get, set
 
+    [<CommandOption("--ignore-missing-licence")>]
+    [<Description("Ignore package versions that are published without a licence.")>]
+    [<DefaultValue(false)>]
+    member val IgnoreMissingLicence = false with get, set
+
 [<ExcludeFromCodeCoverage>]
 type PackageUpgradeCommandSettings() =
     inherit PackageGithubCommandSettings()

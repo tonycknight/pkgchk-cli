@@ -59,7 +59,7 @@ type PackageLicenceCommand(nuget: INugetClient) =
 
         let isHit (hit: ScaHit) =
             match (Context.isDisllowedLicence context.options hit, Context.isAllowedLicence context.options hit) with
-            | (None, None) -> Some true // TODO: need a setting to include unknowns
+            | (None, None) -> context.options.ignoreMissingLicence |> not |> Some
             | (Some false, _) -> Some false
             | (Some true, _) -> Some true
             | (_, Some x) -> x |> not |> Some
