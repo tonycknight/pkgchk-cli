@@ -175,7 +175,7 @@ type PackageLicenceCommandSettings() =
 
     [<CommandOption("-t|--transitive")>]
     [<Description("Toggle transitive package checks. true to include them, false to exclude.")>]
-    [<DefaultValue(true)>]
+    [<DefaultValue(false)>]
     member val IncludeTransitives = true with get, set
 
 [<ExcludeFromCodeCoverage>]
