@@ -30,7 +30,7 @@ module Program =
             c.AddCommand<PackageUpgradeCommand>("upgrades").WithDescription("Find package upgrades.")
             |> ignore
 
-            c.AddCommand<PackageLicenceCommand>("licence").WithDescription("Find package licences.")
+            c.AddCommand<PackageLicenceCommand>("licence").WithDescription("Scan package licences.")
             |> ignore)
         try
             app.Run(argv)

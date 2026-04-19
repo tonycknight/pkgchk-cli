@@ -39,11 +39,37 @@ type PackageLicenceCommand(nuget: INugetClient) =
 
     let results (context: ApplicationContext) (hits: seq<ScaHit>) =
         let hits = hits |> Context.filterPackages context.options |> List.ofSeq
-        let licenceHits = hits |> Context.filterLicences context.options |> List.ofSeq // TODO: how to transform this into a failure?
+        // TODO: depending on the options, find either:
+        // - only allowed licenced packages
+        // - only disallowed licnced packages
+        // - all packages with their licences, but mark the ones with disallowed licences
+        // - anything else?
+        
+        // TODO: the question is really how do these two arrays interop?
+        // - context.options.allowedLicences
+        // - context.options.disallowedLicences
+        // - if a licence does not appear in either list, is it an unknown?
+
+        // TODO: map to be a tuple?
+        let disallowedScans = hits |> Seq.map (fun h -> (h, Context.isDisllowedLicence context.options h))
+        let disallowed = disallowedScans |> Seq.filter (fun (_, isDisallowed) -> isDisallowed |> Option.defaultValue true) |> Seq.map fst
+
+        //let allowedScans = hits |> Seq.map (fun h -> (h, Context.isAllowedLicence context.options h))
+        //let allowed = allowedScans |> Seq.filter (fun (_, isAllowed) -> isAllowed |> Option.defaultValue false) |> Seq.map fst
+        
+        let unknown = 
+            hits 
+            |> Seq.map (fun h -> (h, (Context.isDisllowedLicence context.options h, Context.isAllowedLicence context.options h)) )
+            |> Seq.filter (fun (h,t) -> (match t with | (None, None) -> true | _ -> false ) )
+            |> Seq.map fst
+
+        let hits = disallowed |> Seq.append unknown |> List.ofSeq
+        
+        // TODO: need a setting to include unknowns
 
         { ApplicationScanResults.hits = hits
           hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
-          isGoodScan = true }
+          isGoodScan = hits |> List.isEmpty }
 
     let consoleTable (results: ApplicationScanResults) =
         seq {
@@ -88,8 +114,10 @@ type PackageLicenceCommand(nuget: INugetClient) =
                 if Seq.isEmpty errors |> not then
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
-                    let! results = scanResults |> DotNet.getHits |> results context |> DotNet.enrichHits context
                     // TODO: include/exclude by licence
+
+                    let! results = scanResults |> DotNet.getHits |> results context |> DotNet.enrichHits context
+                    
                     
                     context.services.trace "Building display..."
 
