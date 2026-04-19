@@ -271,26 +271,23 @@ module Context =
 
         hits |> Seq.filter (included &&>> (excluded >> not))
 
-    // TODO: 
-    let filterLicences (context: OptionsContext) (hits: seq<pkgchk.ScaHit>) =
-        let licence (hit: ScaHit) =
-            let get (meta: NugetPackageMetadata) =
-                match (meta.license, meta.licenseUrl) with
-                | ("", Some url) -> url
-                | (x, _) -> x
+    let licence (hit: ScaHit) =
+        let get (meta: NugetPackageMetadata) =
+            match (meta.license, meta.licenseUrl) with
+            | ("", Some url) -> url
+            | (x, _) -> x
                                 
-            hit.metadata |> Option.map get |> Option.defaultValue ""
-            
-        let filter licence = 
-            match (context.allowedLicences, context.disallowedLicences) with
-            | ([||], [||]) -> true
-            | (allowed,[||]) -> allowed |> Seq.contains licence
-            | ([||], disallowed) -> disallowed |> Seq.contains licence |> not
-            | (allowed,disallowed) -> allowed |> Seq.contains licence && disallowed |> Seq.contains licence |> not
+        hit.metadata |> Option.map get |> Option.defaultValue ""
 
-        hits
-        |> Seq.filter (licence >> filter)
-        |> List.ofSeq
+    let isAllowedLicence (context: OptionsContext) (hit: pkgchk.ScaHit) =
+        match context.allowedLicences with
+        | [||] -> None
+        | licences -> licences |> Seq.contains (licence hit) |> Some
+    
+    let isDisllowedLicence (context: OptionsContext) (hit: pkgchk.ScaHit) =
+        match context.disallowedLicences with
+        | [||] -> None
+        | licences -> licences |> Seq.contains (licence hit) |> not |> Some
 
     let trace (context: ApplicationContext) =
 
