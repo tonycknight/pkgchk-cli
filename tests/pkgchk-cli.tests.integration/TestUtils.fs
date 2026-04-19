@@ -20,6 +20,15 @@ module TestUtils =
     [<Literal>]
     let sysIoPackage = "System.IO"
 
+    [<Literal>]
+    let mitPackage = "coverlet.msbuild"
+
+    [<Literal>]
+    let apachePackage = "xunit.v3"
+
+    [<Literal>]
+    let missingLicencePackage = "FSharp.Core"
+
     let clean80Columns (value: string) =
         value.Replace(" ", "").Replace(Environment.NewLine, "")
 
@@ -52,6 +61,15 @@ module TestUtils =
     let addDeprecatedAadPackageArgs outDir =
         sprintf "dotnet add ./%s/testproj.csproj package %s -v 4.5.1" outDir aadPackage
 
+    let addMitPackageArgs outDir =
+        sprintf "dotnet add ./%s/testproj.csproj package %s -v 10.0.0" outDir mitPackage
+
+    let addApachePackageArgs outDir =
+        sprintf "dotnet add ./%s/testproj.csproj package %s -v 3.2.2" outDir apachePackage
+
+    let addMissingLicencePackageArgs outDir =
+        sprintf "dotnet add ./%s/testproj.csproj package %s -v 11.0.100" outDir missingLicencePackage
+
     let addPackageDowngradeAadPackageArgs outDir =
         // conflicts with httpPackage - introduces 4.3.4
         sprintf "dotnet add ./%s/testproj.csproj package %s -v 5.3.0" outDir aadPackage
@@ -66,6 +84,23 @@ module TestUtils =
             "dotnet pkgchk-cli.dll list ./%s/testproj.csproj --transitive %b --trace --no-banner "
             outDir
             includeTransitives
+
+    let runPkgChkLicenceArgs outDir includeTransitives ignoreMissing (allowed: seq<string>) (disallowed: seq<string>) =
+        let allowedArgs =
+            allowed |> Seq.map (sprintf "--allowed-licence %s") |> pkgchk.String.join " "
+
+        let disallowedArgs =
+            disallowed
+            |> Seq.map (sprintf "--disallowed-licence %s")
+            |> pkgchk.String.join " "
+
+        sprintf
+            "dotnet pkgchk-cli.dll licences ./%s/testproj.csproj --transitive %b --no-banner --ignore-missing-licence %b %s %s"
+            outDir
+            includeTransitives
+            ignoreMissing
+            allowedArgs
+            disallowedArgs
 
     let runPkgChkUpgradesArgs outDir (breakOnHit: bool) (inclusions: seq<string>) (exclusions: seq<string>) =
         let inclusions =
@@ -166,6 +201,10 @@ module TestUtils =
 
     let assertTitleShowsNoVulnerabilities (rc, out, err) =
         out |> should haveSubstring "No vulnerabilities found!"
+        (rc, out, err)
+
+    let assertTitleShowsNoLicences (rc, out, err) =
+        out |> should haveSubstring "Nothing found!"
         (rc, out, err)
 
     let assertPackagesFound (hits: string list) (rc, out, err) =
