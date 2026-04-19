@@ -45,17 +45,6 @@ type PackageLicenceCommand(nuget: INugetClient) =
           isGoodScan = true }
 
     let filterLicenceHits (context: ApplicationContext) (results: ApplicationScanResults) =
-        
-        // TODO: depending on the options, find either:
-        // - only allowed licenced packages
-        // - only disallowed licnced packages
-        // - all packages with their licences, but mark the ones with disallowed licences
-        // - anything else?
-        
-        // TODO: the question is really how do these two arrays interop?
-        // - context.options.allowedLicences
-        // - context.options.disallowedLicences
-        // - if a licence does not appear in either list, is it an unknown?
 
         let isHit (hit: ScaHit) =
             match (Context.isDisllowedLicence context.options hit, Context.isAllowedLicence context.options hit) with
