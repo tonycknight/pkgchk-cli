@@ -278,17 +278,19 @@ module Context =
             | (null, Some url) -> url
             | (x, _) -> x
                                 
-        hit.metadata |> Option.map get |> Option.defaultValue "unknown"
+        hit.metadata |> Option.map get
 
     let isAllowedLicence (context: OptionsContext) (hit: pkgchk.ScaHit) =
-        match context.allowedLicences with
-        | [||] -> None
-        | licences -> licences |> Seq.contains (licence hit) |> Some
+        match (licence hit |> Option.map String.toLower, context.allowedLicences) with
+        | (None, _) 
+        | (Some _, [||]) -> None
+        | (Some l, licences) -> licences |> Seq.map String.toLower |> Seq.contains l |> Some
     
     let isDisllowedLicence (context: OptionsContext) (hit: pkgchk.ScaHit) =
-        match context.disallowedLicences with
-        | [||] -> None
-        | licences -> licences |> Seq.contains (licence hit) |> Some
+        match (licence hit |> Option.map String.toLower, context.disallowedLicences) with
+        | (None, _) 
+        | (Some _, [||]) -> None
+        | (Some l, licences) -> licences |> Seq.map String.toLower |> Seq.contains l |> Some
 
     let trace (context: ApplicationContext) =
 
