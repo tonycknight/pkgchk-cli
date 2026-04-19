@@ -29,11 +29,10 @@ type OptionsContext =
       scanVulnerabilities: bool
       scanDeprecations: bool
       scanTransitives: bool
-      fetchMetadata: bool 
+      fetchMetadata: bool
       allowedLicences: string[]
       disallowedLicences: string[]
-      ignoreMissingLicence: bool
-      }
+      ignoreMissingLicence: bool }
 
     static member empty =
         { OptionsContext.projectPath = ""
@@ -47,7 +46,7 @@ type OptionsContext =
           scanVulnerabilities = false
           scanDeprecations = false
           scanTransitives = false
-          fetchMetadata = false 
+          fetchMetadata = false
           allowedLicences = [||]
           disallowedLicences = [||]
           ignoreMissingLicence = false }
@@ -169,10 +168,10 @@ module Context =
           scanVulnerabilities = apply overlay.scanVulnerabilities source.scanVulnerabilities
           scanDeprecations = apply overlay.scanDeprecations source.scanDeprecations
           scanTransitives = apply overlay.scanTransitives source.scanTransitives
-          fetchMetadata = apply overlay.fetchMetadata source.fetchMetadata 
+          fetchMetadata = apply overlay.fetchMetadata source.fetchMetadata
           allowedLicences = apply overlay.allowedLicences source.allowedLicences
-          disallowedLicences = apply overlay.disallowedLicences source.disallowedLicences 
-          ignoreMissingLicence = apply overlay.ignoreMissingLicence source.ignoreMissingLicence}
+          disallowedLicences = apply overlay.disallowedLicences source.disallowedLicences
+          ignoreMissingLicence = apply overlay.ignoreMissingLicence source.ignoreMissingLicence }
 
 
     let applyConfig (context: OptionsContext) (config: ScanConfiguration) =
@@ -282,15 +281,15 @@ module Context =
             | ("", Some url)
             | (null, Some url) -> url
             | (x, _) -> x
-                                
+
         hit.metadata |> Option.map get
 
     let isAllowedLicence (context: OptionsContext) (hit: pkgchk.ScaHit) =
         match (licence hit |> Option.map String.toLower, context.allowedLicences) with
-        | (None, _) -> None 
+        | (None, _) -> None
         | (Some _, [||]) -> Some true
         | (Some l, licences) -> licences |> Seq.map String.toLower |> Seq.contains l |> Some
-    
+
     let isDisllowedLicence (context: OptionsContext) (hit: pkgchk.ScaHit) =
         match (licence hit |> Option.map String.toLower, context.disallowedLicences) with
         | (None, _) -> None

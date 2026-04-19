@@ -15,7 +15,7 @@ type PackageLicenceCommand(nuget: INugetClient) =
         let ctx =
             { ReportGenerationContext.app = context
               results = results
-              reportName = "pkgchk-licence" // TODO: 
+              reportName = "pkgchk-licence" // TODO:
               imageUri = imageUri
               genMarkdown = genMarkdownReport
               genJson = ReportGeneration.jsonReport }
@@ -24,7 +24,7 @@ type PackageLicenceCommand(nuget: INugetClient) =
 
     let appContext (settings: PackageLicenceCommandSettings) =
         let context = Context.licenceContext (nuget, settings)
-        
+
         { context with
             options = Context.loadApplyConfig context.options }
 
@@ -39,7 +39,7 @@ type PackageLicenceCommand(nuget: INugetClient) =
 
     let results (context: ApplicationContext) (hits: seq<ScaHit>) =
         let hits = hits |> Context.filterPackages context.options |> List.ofSeq
-        
+
         { ApplicationScanResults.hits = hits
           hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
           isGoodScan = true }
@@ -52,9 +52,9 @@ type PackageLicenceCommand(nuget: INugetClient) =
             | (Some false, _) -> false
             | (Some true, _) -> true
             | (_, Some x) -> not x
-                        
-        let filteredHits = results.hits |> Seq.filter isHit|> List.ofSeq
-        
+
+        let filteredHits = results.hits |> Seq.filter isHit |> List.ofSeq
+
         { ApplicationScanResults.hits = filteredHits
           hitCounts = filteredHits |> ScaModels.hitCountSummary |> List.ofSeq
           isGoodScan = filteredHits |> List.isEmpty }
@@ -102,11 +102,11 @@ type PackageLicenceCommand(nuget: INugetClient) =
                 if Seq.isEmpty errors |> not then
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
-                    
+
                     let! results = scanResults |> DotNet.getHits |> results context |> DotNet.enrichHits context
-                    
+
                     let results = results |> filterLicenceHits context
-                    
+
                     context.services.trace "Building display..."
 
                     results |> consoleTable |> CliCommands.renderTables

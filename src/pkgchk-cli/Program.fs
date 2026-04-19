@@ -32,6 +32,7 @@ module Program =
 
             c.AddCommand<PackageLicenceCommand>("licence").WithDescription("Scan package licences.")
             |> ignore)
+
         try
             app.Run(argv)
         with ex ->

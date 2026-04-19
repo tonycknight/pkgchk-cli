@@ -35,9 +35,9 @@ module ReportGenerationTests =
           OptionsContext.scanDeprecations = false
           OptionsContext.scanTransitives = false
           OptionsContext.severities = [||]
-          OptionsContext.fetchMetadata = true 
+          OptionsContext.fetchMetadata = true
           OptionsContext.allowedLicences = [||]
-          OptionsContext.disallowedLicences = [||] 
+          OptionsContext.disallowedLicences = [||]
           OptionsContext.ignoreMissingLicence = false }
 
     let ghContext =

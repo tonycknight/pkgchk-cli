@@ -164,7 +164,7 @@ type PackageListCommandSettings() =
 [<ExcludeFromCodeCoverage>]
 type PackageLicenceCommandSettings() =
     inherit PackageGithubCommandSettings()
-        
+
     [<CommandOption("--allowed-licence", IsHidden = false)>]
     [<Description("The allowed licence codes, e.g. MIT, Apache-2.0, etc. Multiple licences can be specified.")>]
     [<DefaultValue([| "MIT"; "Apache-2.0" |])>]
