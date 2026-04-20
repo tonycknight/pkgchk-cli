@@ -167,7 +167,7 @@ type PackageLicenceCommandSettings() =
 
     [<CommandOption("--allowed-licence", IsHidden = false)>]
     [<Description("The allowed licence codes, e.g. MIT, Apache-2.0, etc. Multiple licences can be specified.")>]
-    // TODO: [<DefaultValue([| "MIT"; "Apache-2.0" |])>]
+    [<DefaultValue([| "MIT"; "Apache-2.0" |])>]
     member val AllowedLicences: string[] = [||] with get, set
 
     [<CommandOption("--disallowed-licence", IsHidden = false)>]
