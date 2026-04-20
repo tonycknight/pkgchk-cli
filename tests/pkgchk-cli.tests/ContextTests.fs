@@ -256,6 +256,7 @@ module ContextTests =
         && result.scanTransitives = overlay.scanTransitives
         && result.projectPath = overlay.projectPath
         && result.configFile = overlay.configFile
+        && result.ignoreMissingLicence = overlay.ignoreMissingLicence
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``applyContext applies overlay to source when overlay's sequence is empty``
@@ -288,6 +289,7 @@ module ContextTests =
         && result.scanTransitives = overlay.scanTransitives
         && result.projectPath = overlay.projectPath
         && result.configFile = overlay.configFile
+        && result.ignoreMissingLicence = overlay.ignoreMissingLicence
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``applyContext applies overlay to self`` (overlay: pkgchk.OptionsContext) =
@@ -303,3 +305,4 @@ module ContextTests =
         && result.scanTransitives = overlay.scanTransitives
         && result.projectPath = overlay.projectPath
         && result.configFile = overlay.configFile
+        && result.ignoreMissingLicence = overlay.ignoreMissingLicence

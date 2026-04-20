@@ -169,8 +169,8 @@ module Context =
           scanDeprecations = apply overlay.scanDeprecations source.scanDeprecations
           scanTransitives = apply overlay.scanTransitives source.scanTransitives
           fetchMetadata = apply overlay.fetchMetadata source.fetchMetadata
-          allowedLicences = apply overlay.allowedLicences source.allowedLicences
-          disallowedLicences = apply overlay.disallowedLicences source.disallowedLicences
+          allowedLicences = applySequence overlay.allowedLicences source.allowedLicences
+          disallowedLicences = applySequence overlay.disallowedLicences source.disallowedLicences
           ignoreMissingLicence = apply overlay.ignoreMissingLicence source.ignoreMissingLicence }
 
 
@@ -221,6 +221,21 @@ module Context =
             result <-
                 { result with
                     scanTransitives = config.scanTransitives.Value }
+
+        if config.allowedLicences |> Option.isNull |> not then
+            result <-
+                { result with
+                    allowedLicences = config.allowedLicences }
+
+        if config.disallowedLicences |> Option.isNull |> not then
+            result <-
+                { result with
+                    disallowedLicences = config.disallowedLicences }
+
+        if config.ignoreMissingLicence.HasValue then
+            result <-
+                { result with
+                    ignoreMissingLicence = config.ignoreMissingLicence.Value }
 
         result
 
