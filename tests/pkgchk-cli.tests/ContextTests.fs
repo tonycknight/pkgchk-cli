@@ -243,4 +243,3 @@ module ContextTests =
         let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
 
         r |> List.isEmpty
-    
