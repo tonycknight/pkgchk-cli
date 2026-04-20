@@ -143,7 +143,7 @@ jobs:
         
       - name: Build package 
         run: |
-          dotnet pack -c Release -o ./package/ -p:PackageVersion=${{ env.package-version-number }} -p:Version=${{ env.package-version-number }} /p:ContinuousIntegrationBuild=true
+          dotnet pack -c Release -o ./package/ -p:PackageVersion=${{ env.package-version-number }}-preview -p:Version=${{ env.package-version-number }}-preview /p:ContinuousIntegrationBuild=true
 
       - name: Archive package
         uses: actions/upload-artifact@v7
