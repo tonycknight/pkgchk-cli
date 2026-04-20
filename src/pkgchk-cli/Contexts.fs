@@ -145,35 +145,6 @@ module Context =
 
         options |> applicationContext nuget settings
 
-    let applyContext (overlay: OptionsContext) (source: OptionsContext) =
-        let apply overlay source =
-            match overlay = source with
-            | true -> source
-            | false -> overlay
-
-        let applySequence overlay source =
-            match overlay = source with
-            | false when Seq.isEmpty overlay -> source
-            | false -> overlay
-            | true -> source
-
-        { OptionsContext.projectPath = overlay.projectPath
-          configFile = overlay.configFile
-          suppressBanner = apply overlay.suppressBanner source.suppressBanner
-          suppressRestore = apply overlay.suppressRestore source.suppressRestore
-          includePackages = applySequence overlay.includePackages source.includePackages
-          excludePackages = applySequence overlay.excludePackages source.excludePackages
-          breakOnUpgrades = apply overlay.breakOnUpgrades source.breakOnUpgrades
-          severities = applySequence overlay.severities source.severities
-          scanVulnerabilities = apply overlay.scanVulnerabilities source.scanVulnerabilities
-          scanDeprecations = apply overlay.scanDeprecations source.scanDeprecations
-          scanTransitives = apply overlay.scanTransitives source.scanTransitives
-          fetchMetadata = apply overlay.fetchMetadata source.fetchMetadata
-          allowedLicences = applySequence overlay.allowedLicences source.allowedLicences
-          disallowedLicences = applySequence overlay.disallowedLicences source.disallowedLicences
-          ignoreMissingLicence = apply overlay.ignoreMissingLicence source.ignoreMissingLicence }
-
-
     let applyConfig (context: OptionsContext) (config: ScanConfiguration) =
         let mutable result = context
 
@@ -242,12 +213,13 @@ module Context =
     let loadApplyConfig (context: OptionsContext) =
         match context.configFile with
         | x when x <> "" ->
-            x
-            |> Io.fullPath
-            |> Io.normalise
-            |> Config.load
-            |> applyConfig OptionsContext.empty
-            |> applyContext context
+            let config = 
+                x
+                |> Io.fullPath
+                |> Io.normalise
+                |> Config.load
+            config
+            |> applyConfig context
 
         | _ -> context
 
