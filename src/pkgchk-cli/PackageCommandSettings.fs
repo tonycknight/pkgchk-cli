@@ -182,7 +182,6 @@ type PackageLicenceCommandSettings() =
     [<CommandOption("--ignore-missing-licence")>]
     [<Description("Ignore package versions that are published without a licence.")>]
     [<DefaultValue(true)>]
-    [<DefaultValue(false)>]
     member val IgnoreMissingLicence = false with get, set
 
 [<ExcludeFromCodeCoverage>]
