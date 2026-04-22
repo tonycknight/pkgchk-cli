@@ -263,7 +263,8 @@ module Context =
             | ("", Some url)
             | (null, Some url) -> url
             | (x, _) -> x
-            |> Option.ofNull |> Option.defaultValue ""
+            |> Option.ofNull
+            |> Option.defaultValue ""
 
         hit.metadata |> Option.map get
 
