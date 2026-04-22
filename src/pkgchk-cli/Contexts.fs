@@ -271,12 +271,14 @@ module Context =
     let isAllowedLicence (context: OptionsContext) (hit: pkgchk.ScaHit) =
         match (licence hit |> Option.map String.toLower, context.allowedLicences) with
         | (None, _) -> None
+        | (Some "", _) -> None
         | (Some _, [||]) -> Some true
         | (Some l, licences) -> licences |> Seq.map String.toLower |> Seq.contains l |> Some
 
     let isDisllowedLicence (context: OptionsContext) (hit: pkgchk.ScaHit) =
         match (licence hit |> Option.map String.toLower, context.disallowedLicences) with
         | (None, _) -> None
+        | (Some "", _) -> None
         | (Some _, [||]) -> Some false
         | (Some l, licences) -> licences |> Seq.map String.toLower |> Seq.contains l |> Some
 
