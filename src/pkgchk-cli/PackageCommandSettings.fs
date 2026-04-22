@@ -167,7 +167,7 @@ type PackageLicenceCommandSettings() =
 
     [<CommandOption("--allowed-licence", IsHidden = false)>]
     [<Description("The allowed licence codes, e.g. MIT, Apache-2.0, etc. Multiple licences can be specified.")>]
-    [<DefaultValue([| "MIT"; "Apache-2.0" |])>]
+    [<DefaultValue([| "MIT"; "Apache-2.0"; "BSD-2-Clause"; "BSD-3-Clause" |])>]
     member val AllowedLicences: string[] = [||] with get, set
 
     [<CommandOption("--disallowed-licence", IsHidden = false)>]
@@ -181,6 +181,7 @@ type PackageLicenceCommandSettings() =
 
     [<CommandOption("--ignore-missing-licence")>]
     [<Description("Ignore package versions that are published without a licence.")>]
+    [<DefaultValue(true)>]
     [<DefaultValue(false)>]
     member val IgnoreMissingLicence = false with get, set
 
