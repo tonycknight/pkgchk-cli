@@ -47,7 +47,6 @@ type PackageLicenceCommand(nuget: INugetClient) =
     let filterLicenceHits (context: ApplicationContext) (results: ApplicationScanResults) =
 
         let isHit (hit: ScaHit) =
-            // TODO: what if no allowed/disallowed licence names provided?
             match (Context.isDisllowedLicence context.options hit, Context.isAllowedLicence context.options hit) with
             | (None, None) -> not context.options.ignoreMissingLicence
             | (Some false, None) -> false
