@@ -28,6 +28,9 @@ module Program =
             |> ignore
 
             c.AddCommand<PackageUpgradeCommand>("upgrades").WithDescription("Find package upgrades.")
+            |> ignore
+
+            c.AddCommand<PackageLicenceCommand>("licences").WithDescription("Scan package licences.")
             |> ignore)
 
         try

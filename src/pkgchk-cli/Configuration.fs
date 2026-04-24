@@ -13,7 +13,10 @@ type ScanConfiguration =
       severities: string[]
       scanVulnerabilities: Nullable<bool>
       scanDeprecations: Nullable<bool>
-      scanTransitives: Nullable<bool> }
+      scanTransitives: Nullable<bool>
+      allowedLicences: string[]
+      disallowedLicences: string[]
+      ignoreMissingLicence: Nullable<bool> }
 
 module Config =
     let private deserialiser = (new DeserializerBuilder()).Build()
