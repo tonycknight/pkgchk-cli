@@ -10,10 +10,10 @@ open Tk.Nuget
 type NugetLookupCommand(nuget: INugetClient) =
     inherit AsyncCommand<NugetLookupCommandSettings>()
 
-    let versions name =
+    let versions name prerelease =
         task {
 
-            let! versions = nuget.GetAllMetadataAsync(name, true)
+            let! versions = nuget.GetAllMetadataAsync(name, prerelease)
 
             return versions |> Array.ofSeq
         }
@@ -175,16 +175,15 @@ type NugetLookupCommand(nuget: INugetClient) =
                         "Prerelease version" |> Console.yellow
 
                     if v.Deprecation |> Option.ofNull |> Option.isSome then
-                        ":warning:  " + ("This version is deprecated." |> Console.error)
+                        ":warning:  This version is deprecated." |> Console.error
                         safe <- false
 
                     if v.Vulnerabilities |> Seq.isEmpty |> not then
-                        ":warning:  " + ("This version has known vulnerabilities." |> Console.error)
+                        ":warning:  This version has known vulnerabilities." |> Console.error
                         safe <- false
 
                     if safe then
-                        ":check_mark_button:  "
-                        + ("No known vulnerabilities or deprecations." |> Console.green)
+                        ":check_mark_button: No known vulnerabilities or deprecations." |> Console.green
 
                 }
                 |> String.join Environment.NewLine
@@ -209,7 +208,7 @@ type NugetLookupCommand(nuget: INugetClient) =
                 CliCommands.renderBanner nuget
 
             if settings.AllVersions then
-                let! versions = versions settings.PackageId
+                let! versions = versions settings.PackageId settings.PreRelease
 
                 return
                     match versions with

@@ -211,6 +211,11 @@ type NugetLookupCommandSettings() =
     [<DefaultValue("")>]
     member val PackageVersion = "" with get, set
 
+    [<CommandOption("--prerelease")>]
+    [<Description("Include pre-release versions.")>]
+    [<DefaultValue(false)>]
+    member val PreRelease = false with get, set
+
     [<CommandOption("--no-banner")>]
     [<Description("Don't show the banner.")>]
     [<DefaultValue(false)>]
