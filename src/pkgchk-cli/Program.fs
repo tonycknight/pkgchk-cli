@@ -17,7 +17,14 @@ module Program =
         let app = CommandApp(svcs)
 
         app.Configure(fun c ->
-            c.PropagateExceptions().ValidateExamples().TrimTrailingPeriods(false) |> ignore
+            c
+                .SetApplicationName(App.packageId)
+                .SetApplicationVersion(App.version () |> Option.defaultValue "")
+                .PropagateExceptions()
+                .UseStrictParsing()
+                .ValidateExamples()
+                .TrimTrailingPeriods(false)
+            |> ignore
 
             c
                 .AddCommand<PackageScanCommand>("scan")
