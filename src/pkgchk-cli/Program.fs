@@ -17,8 +17,13 @@ module Program =
         let app = CommandApp(svcs)
 
         app.Configure(fun c ->
-
-            c.PropagateExceptions().UseStrictParsing().ValidateExamples().TrimTrailingPeriods(false)
+            c
+                .SetApplicationName(App.packageId)
+                .SetApplicationVersion(App.version () |> Option.defaultValue "")
+                .PropagateExceptions()
+                .UseStrictParsing()
+                .ValidateExamples()
+                .TrimTrailingPeriods(false)
             |> ignore
 
             c
