@@ -192,3 +192,22 @@ type PackageUpgradeCommandSettings() =
     [<Description("Break on outstanding package upgrades.")>]
     [<DefaultValue(false)>]
     member val BreakOnUpgrades = false with get, set
+
+[<ExcludeFromCodeCoverage>]
+type NugetLookupCommandSettings() =
+    inherit CommandSettings()
+
+    [<CommandArgument(0, "[PACKAGE_ID]")>]
+    [<Description("The package's name.")>]
+    [<DefaultValue("")>]
+    member val PackageId = "" with get, set
+
+    [<CommandOption("-v|--version")>]
+    [<Description("The package version.")>]
+    [<DefaultValue("")>]
+    member val PackageVersion = "" with get, set
+
+    [<CommandOption("--no-banner")>]
+    [<Description("Don't show the banner.")>]
+    [<DefaultValue(false)>]
+    member val NoBanner = false with get, set

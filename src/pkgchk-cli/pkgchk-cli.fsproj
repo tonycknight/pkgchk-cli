@@ -75,6 +75,7 @@
     <Compile Include="PackageLicenceCommand.fs" />
     <Compile Include="PackageListCommand.fs" />
     <Compile Include="PackageUpgradeCommand.fs" />
+    <Compile Include="NugetLookupCommand.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
@@ -84,7 +85,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
     <PackageReference Include="Octokit" Version="14.0.0" />
     <PackageReference Include="Spectre.Console.Cli" Version="0.55.0" />
-    <PackageReference Include="Tk.Nuget" Version="0.2.204" />
+    <PackageReference Include="Tk.Nuget" Version="0.2.210" />
     <PackageReference Include="YamlDotNet" Version="17.0.1" />    
   </ItemGroup>
   

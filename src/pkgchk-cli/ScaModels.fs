@@ -10,7 +10,9 @@ type ScaHitKind =
     | DependencyTransitive = 4
 
 type NugetPackageMetadata =
-    { description: string
+    { id: string
+      version: string
+      description: string
       title: string
       summary: string
       authors: string
@@ -105,7 +107,9 @@ module ScaModels =
                   count = xs |> Seq.length }))
 
     let packageMetadata (value: Tk.Nuget.PackageMetadata) =
-        { NugetPackageMetadata.authors = value.Authors
+        { NugetPackageMetadata.id = value.Id
+          version = value.Version
+          authors = value.Authors
           description = value.Description
           title = value.Title
           summary = value.Summary

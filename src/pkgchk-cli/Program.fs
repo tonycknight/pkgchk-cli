@@ -31,6 +31,9 @@ module Program =
             |> ignore
 
             c.AddCommand<PackageLicenceCommand>("licences").WithDescription("Scan package licences.")
+            |> ignore
+
+            c.AddCommand<NugetLookupCommand>("lookup").WithDescription("Look up a package's details.")
             |> ignore)
 
         try
