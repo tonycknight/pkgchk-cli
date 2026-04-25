@@ -99,7 +99,7 @@ type NugetLookupCommand(nuget: INugetClient) =
         if deprecation |> Option.isSome then
             let lines =
                 seq {
-                    "This package is deprecated." |> Console.error
+                    ":warning:  This package is deprecated." |> Console.error
                     deprecation.Value.Description |> Console.italic |> Console.lightgrey
 
                     if deprecation.Value.AlternatePackage |> Option.ofNull |> Option.isSome then
@@ -118,7 +118,7 @@ type NugetLookupCommand(nuget: INugetClient) =
 
             let message =
                 seq {
-                    "This package has known vulnerabilities." |> Console.error
+                    ":warning:  This package has known vulnerabilities." |> Console.error
 
                     yield!
                         metadata.Vulnerabilities
