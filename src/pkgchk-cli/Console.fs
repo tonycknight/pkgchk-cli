@@ -3,6 +3,7 @@
 open System
 open System.Collections.Concurrent
 open Spectre.Console
+open Tk.Nuget
 
 module Console =
     let toRenderable x =
@@ -51,6 +52,10 @@ module Console =
     let nugetLinkPkgVsn package version =
         let url = $"{Rendering.nugetPrefix}/{package}/{version}"
         $"[link={url}]{package} {version}[/]"
+
+    let nugetLinkPkgVsnOnly package version =
+        let url = $"{Rendering.nugetPrefix}/{package}/{version}"
+        $"[link={url}]{version}[/]"
 
     let nugetLinkPkgSuggestion package suggestion =
         let url = $"{Rendering.nugetPrefix}/{package}"
@@ -259,5 +264,168 @@ module Console =
         let rows = counts |> Seq.map hitSummaryRow
 
         rows |> Seq.iter (table.AddRow >> ignore)
+
+        table
+
+
+    let metadataLicenceDetails (metadata: PackageMetadata) =
+        seq {
+            metadata.License |> Option.nullDefault ""
+
+            metadata.LicenseUrl
+            |> Option.ofNull
+            |> Option.map _.ToString()
+            |> Option.defaultValue ""
+        }
+        |> Seq.filter String.isNotEmpty
+        |> String.join Environment.NewLine
+
+    let metadataPackageDetails (metadata: PackageMetadata) =
+        seq {
+            nugetLinkPkgVsn metadata.Id metadata.Version |> lightcyan
+            metadata.Description |> lightgrey |> italic
+        }
+        |> String.join Environment.NewLine
+
+    let metadataAuthors (metadata: PackageMetadata) = metadata.Authors |> cyan |> italic
+
+    let metadataProject (metadata: PackageMetadata) =
+        metadata.ProjectUrl
+        |> Option.ofNull
+        |> Option.map _.ToString()
+        |> Option.defaultValue ""
+        |> green
+
+    let metadataReadme (metadata: PackageMetadata) =
+        metadata.ReadmeUrl
+        |> Option.ofNull
+        |> Option.ofNull
+        |> Option.map _.ToString()
+        |> Option.defaultValue ""
+        |> green
+
+    let metadataTags (metadata: PackageMetadata) = metadata.Tags |> grey |> italic
+
+    let metadataSingleTable (metadata: PackageMetadata) =
+        let table = table () |> tableColumn "" |> tableColumn ""
+
+        table.AddRow [| "Package"; metadataPackageDetails metadata |] |> ignore
+
+        if metadata.Authors <> "" then
+            table.AddRow [| grey "Authors"; metadataAuthors metadata |] |> ignore
+
+        let licenceLines = metadataLicenceDetails metadata
+
+        if licenceLines <> "" then
+            table.AddRow [| grey "Licence"; licenceLines |> yellow |] |> ignore
+
+        if metadata.ProjectUrl |> Option.ofNull |> Option.isSome then
+            table.AddRow [| grey "Project"; metadataProject metadata |] |> ignore
+
+        if metadata.ReadmeUrl |> Option.ofNull |> Option.isSome then
+            table.AddRow [| grey "Readme"; metadataReadme metadata |] |> ignore
+
+        if metadata.Tags <> "" then
+            table.AddRow [| grey "Tags"; metadataTags metadata |] |> ignore
+
+        let deprecation = metadata.Deprecation |> Option.ofNull
+
+        if deprecation |> Option.isSome then
+            let lines =
+                seq {
+                    ":warning:  This version is deprecated." |> error
+                    deprecation.Value.Description |> italic |> lightgrey
+
+                    if deprecation.Value.AlternatePackage |> Option.ofNull |> Option.isSome then
+                        sprintf
+                            "Consider using %s %s instead."
+                            deprecation.Value.AlternatePackage.Name
+                            deprecation.Value.AlternatePackage.Range
+                        |> Markup.Escape
+                        |> yellow
+                }
+                |> String.join Environment.NewLine
+
+            table.AddRow [| grey "Deprecation"; lines |] |> ignore
+
+        if metadata.Vulnerabilities |> Seq.isEmpty |> not then
+
+            let message =
+                seq {
+                    ":warning:  This version has known vulnerabilities." |> error
+
+                    yield!
+                        metadata.Vulnerabilities
+                        |> Seq.sortByDescending (fun v -> v.Severity)
+                        |> Seq.map (fun v -> $"{v.Severity.ToString() |> error} {v.AdvisoryUrl |> yellow}")
+                }
+                |> String.join Environment.NewLine
+
+            table.AddRow [| grey "Vulnerabilities"; message |] |> ignore
+
+        table
+
+    let metadataVersionsTable (versions: PackageMetadata[]) =
+        let table = table () |> tableColumn "" |> tableColumn ""
+
+        let metadata =
+            match versions |> Seq.filter (fun v -> v.IsPrerelease |> not) |> Seq.tryHead with
+            | Some v -> v
+            | None -> versions |> Seq.head
+
+        // emit the details of this version to describe the package as a whole
+        table.AddRow [| "Package"; metadataPackageDetails metadata |] |> ignore
+
+        if metadata.Authors <> "" then
+            table.AddRow [| grey "Authors"; metadataAuthors metadata |] |> ignore
+
+        let licenceLines = metadataLicenceDetails metadata
+
+        if licenceLines <> "" then
+            table.AddRow [| grey "Licence"; licenceLines |> yellow |] |> ignore
+
+        if metadata.ProjectUrl |> Option.ofNull |> Option.isSome then
+            table.AddRow [| grey "Project"; metadataProject metadata |] |> ignore
+
+        if metadata.ReadmeUrl |> Option.ofNull |> Option.isSome then
+            table.AddRow [| grey "Readme"; metadataReadme metadata |] |> ignore
+
+        if metadata.Tags <> "" then
+            table.AddRow [| grey "Tags"; metadataTags metadata |] |> ignore
+
+        // now enumerate the versions
+        table.AddRow [| "Versions"; "" |] |> ignore
+
+        versions
+        |> Seq.rev
+        |> Seq.iter (fun v ->
+            let lines =
+                seq {
+                    let mutable safe = true
+
+                    match (v.Published.HasValue, v.IsPrerelease) with
+                    | (true, true) ->
+                        $"Published {v.Published.Value.Date:``yyyy-MM-dd``}"
+                        + (yellow " Prerelease version")
+                    | (true, false) -> $"Published {v.Published.Value.Date:``yyyy-MM-dd``}"
+                    | (false, true) -> yellow "Prerelease version"
+                    | _ -> ""
+
+                    if v.Deprecation |> Option.ofNull |> Option.isSome then
+                        error ":warning:  This version is deprecated."
+                        safe <- false
+
+                    if v.Vulnerabilities |> Seq.isEmpty |> not then
+                        error ":warning:  This version has known vulnerabilities."
+                        safe <- false
+
+                    if safe then
+                        green ":check_mark_button: No known vulnerabilities or deprecations."
+
+                }
+                |> String.join Environment.NewLine
+
+            let vsn = nugetLinkPkgVsnOnly metadata.Id v.Version |> cyan
+            table.AddRow [| vsn; lines |] |> ignore)
 
         table

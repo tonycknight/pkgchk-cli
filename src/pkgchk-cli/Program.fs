@@ -11,7 +11,7 @@ module Program =
 
     [<EntryPoint>]
     let main argv =
-
+        System.Console.OutputEncoding <- System.Text.Encoding.UTF8
         let svcs = App.spectreServices ()
 
         let app = CommandApp(svcs)
@@ -31,6 +31,9 @@ module Program =
             |> ignore
 
             c.AddCommand<PackageLicenceCommand>("licences").WithDescription("Scan package licences.")
+            |> ignore
+
+            c.AddCommand<NugetLookupCommand>("lookup").WithDescription("Look up a package's details.")
             |> ignore)
 
         try
