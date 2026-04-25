@@ -40,6 +40,7 @@
     <Compile Include="VulnerablePackageTests.fs" />
     <Compile Include="PackageDependencyTests.fs" />
     <Compile Include="PackageLicenceTests.fs" />
+    <Compile Include="PackageLookupTests.fs" />
     <Compile Include="UpgradePackageTests.fs" />
   </ItemGroup>
 

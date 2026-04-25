@@ -333,7 +333,7 @@ module Console =
         if deprecation |> Option.isSome then
             let lines =
                 seq {
-                    ":warning:  This package is deprecated." |> error
+                    ":warning:  This version is deprecated." |> error
                     deprecation.Value.Description |> italic |> lightgrey
 
                     if deprecation.Value.AlternatePackage |> Option.ofNull |> Option.isSome then
@@ -352,7 +352,7 @@ module Console =
 
             let message =
                 seq {
-                    ":warning:  This package has known vulnerabilities." |> error
+                    ":warning:  This version has known vulnerabilities." |> error
 
                     yield!
                         metadata.Vulnerabilities
