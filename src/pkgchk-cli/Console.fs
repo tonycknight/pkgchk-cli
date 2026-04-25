@@ -403,19 +403,24 @@ module Console =
                 seq {
                     let mutable safe = true
 
-                    if v.IsPrerelease then
-                        "Prerelease version" |> yellow
+                    match (v.Published.HasValue, v.IsPrerelease) with
+                    | (true, true) ->
+                        $"Published {v.Published.Value.Date:``yyyy-MM-dd``}"
+                        + (yellow " Prerelease version")
+                    | (true, false) -> $"Published {v.Published.Value.Date:``yyyy-MM-dd``}"
+                    | (false, true) -> yellow "Prerelease version"
+                    | _ -> ""
 
                     if v.Deprecation |> Option.ofNull |> Option.isSome then
-                        ":warning:  This version is deprecated." |> error
+                        error ":warning:  This version is deprecated."
                         safe <- false
 
                     if v.Vulnerabilities |> Seq.isEmpty |> not then
-                        ":warning:  This version has known vulnerabilities." |> error
+                        error ":warning:  This version has known vulnerabilities."
                         safe <- false
 
                     if safe then
-                        ":check_mark_button: No known vulnerabilities or deprecations." |> green
+                        green ":check_mark_button: No known vulnerabilities or deprecations."
 
                 }
                 |> String.join Environment.NewLine
