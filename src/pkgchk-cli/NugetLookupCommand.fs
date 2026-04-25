@@ -45,7 +45,7 @@ type NugetLookupCommand(nuget: INugetClient) =
 
     let packageDetails (metadata: PackageMetadata) =
         seq {
-            sprintf "%s %s" (metadata.Id |> Console.lightcyan) (metadata.Version |> Console.yellow)
+            Console.nugetLinkPkgVsn metadata.Id metadata.Version |> Console.lightcyan
             metadata.Description |> Console.lightgrey |> Console.italic
         }
         |> String.join Environment.NewLine
@@ -188,7 +188,8 @@ type NugetLookupCommand(nuget: INugetClient) =
                 }
                 |> String.join Environment.NewLine
 
-            table.AddRow [| Console.cyan v.Version; lines |] |> ignore)
+            let vsn = Console.nugetLinkPkgVsnOnly metadata.Id v.Version |> Console.cyan
+            table.AddRow [| vsn; lines |] |> ignore)
 
         table
 
@@ -214,8 +215,6 @@ type NugetLookupCommand(nuget: INugetClient) =
                     match versions with
                     | [||] -> CliCommands.returnError "The package metadata was not found."
                     | _ ->
-                        // TODO: the array is in descending version order
-                        // which to pick for the headline info? last non-prerelease?
                         [ versionsTable versions ] |> CliCommands.renderTables
                         CliCommands.returnCode true
             else

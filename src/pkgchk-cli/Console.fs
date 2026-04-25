@@ -52,6 +52,10 @@ module Console =
         let url = $"{Rendering.nugetPrefix}/{package}/{version}"
         $"[link={url}]{package} {version}[/]"
 
+    let nugetLinkPkgVsnOnly package version =
+        let url = $"{Rendering.nugetPrefix}/{package}/{version}"
+        $"[link={url}]{version}[/]"
+
     let nugetLinkPkgSuggestion package suggestion =
         let url = $"{Rendering.nugetPrefix}/{package}"
         $"[link={url}]{package} {suggestion}[/]"
