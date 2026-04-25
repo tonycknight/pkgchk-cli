@@ -299,7 +299,6 @@ module Console =
     let metadataReadme (metadata: PackageMetadata) =
         metadata.ReadmeUrl
         |> Option.ofNull
-        |> Option.ofNull
         |> Option.map _.ToString()
         |> Option.defaultValue ""
         |> green
