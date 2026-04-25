@@ -202,6 +202,10 @@ type NugetLookupCommandSettings() =
     [<DefaultValue("")>]
     member val PackageId = "" with get, set
 
+    [<CommandOption("-a|--all-versions")>]
+    [<Description("List all package versions.")>]
+    member val AllVersions = false with get, set
+
     [<CommandOption("-v|--version")>]
     [<Description("The package version.")>]
     [<DefaultValue("")>]

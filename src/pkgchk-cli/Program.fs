@@ -11,7 +11,7 @@ module Program =
 
     [<EntryPoint>]
     let main argv =
-
+        System.Console.OutputEncoding <- System.Text.Encoding.UTF8
         let svcs = App.spectreServices ()
 
         let app = CommandApp(svcs)
