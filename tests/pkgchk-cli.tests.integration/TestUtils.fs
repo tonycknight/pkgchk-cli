@@ -127,8 +127,8 @@ module TestUtils =
 
         $"{runPkgChkArgs outDir} {severityArgs}"
 
-    let runPkgChkLookupArgs (packageId: string) (version: string) (all: bool) (prerelease: bool)=
-        let args = 
+    let runPkgChkLookupArgs (packageId: string) (version: string) (all: bool) (prerelease: bool) =
+        let args =
             seq {
                 if version <> "" then
                     $"--version {version}"
@@ -139,10 +139,10 @@ module TestUtils =
                 if prerelease then
                     "--prerelease"
 
-            } |> pkgchk.String.join " "
-        
-        sprintf
-            "dotnet pkgchk-cli.dll lookup %s %s" packageId args
+            }
+            |> pkgchk.String.join " "
+
+        sprintf "dotnet pkgchk-cli.dll lookup %s %s" packageId args
 
     let createProc cmd =
         let (exec, args) = cmdArgs cmd
