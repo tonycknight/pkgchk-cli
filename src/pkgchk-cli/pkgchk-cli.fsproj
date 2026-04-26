@@ -67,6 +67,7 @@
     <Compile Include="Markdown.fs" />
     <Compile Include="PackageCommandSettings.fs" />
     <Compile Include="CliCommands.fs" />
+    <Compile Include="Licences.fs" />
     <Compile Include="Contexts.fs" />
     <Compile Include="Github.fs" />
     <Compile Include="DotNet.fs" />
@@ -84,6 +85,7 @@
     <PackageReference Include="FSharp.SystemTextJson" Version="1.4.36" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
     <PackageReference Include="Octokit" Version="14.0.0" />
+    <PackageReference Include="Spdx" Version="0.11.0" />
     <PackageReference Include="Spectre.Console.Cli" Version="0.55.0" />
     <PackageReference Include="Tk.Nuget" Version="0.2.213" />
     <PackageReference Include="YamlDotNet" Version="17.0.1" />    

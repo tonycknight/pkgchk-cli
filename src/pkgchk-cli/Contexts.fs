@@ -257,30 +257,20 @@ module Context =
 
         hits |> Seq.filter (included &&>> (excluded >> not))
 
-    let licence (hit: ScaHit) =
-        let get (meta: NugetPackageMetadata) =
-            match (meta.license, meta.licenseUrl) with
-            | ("", Some url)
-            | (null, Some url) -> url
-            | (x, _) -> x
-            |> Option.ofNull
-            |> Option.defaultValue ""
-
-        hit.metadata |> Option.map get
-
     let isAllowedLicence (context: OptionsContext) (hit: pkgchk.ScaHit) =
-        match (licence hit |> Option.map String.toLower, context.allowedLicences) with
-        | (None, _) -> None
-        | (Some "", _) -> None
-        | (Some _, [||]) -> Some true
-        | (Some l, licences) -> licences |> Seq.map String.toLower |> Seq.contains l |> Some
+        match (Licences.licence hit |> Array.map String.toLower, context.allowedLicences) with
+        | ([||], _) -> None
+        | ([| "" |], _) -> None
+        | (_, [||]) -> Some true
+        | (hitLicences, licences) -> licences |> Licences.isMemberOf hitLicences |> Some
+
 
     let isDisllowedLicence (context: OptionsContext) (hit: pkgchk.ScaHit) =
-        match (licence hit |> Option.map String.toLower, context.disallowedLicences) with
-        | (None, _) -> None
-        | (Some "", _) -> None
-        | (Some _, [||]) -> Some false
-        | (Some l, licences) -> licences |> Seq.map String.toLower |> Seq.contains l |> Some
+        match (Licences.licence hit |> Array.map String.toLower, context.disallowedLicences) with
+        | ([||], _) -> None
+        | ([| "" |], _) -> None
+        | (_, [||]) -> Some false
+        | (hitLicences, licences) -> licences |> Licences.isMemberOf hitLicences |> Some
 
     let trace (context: ApplicationContext) =
 

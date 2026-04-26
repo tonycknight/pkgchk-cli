@@ -43,6 +43,7 @@
     <Compile Include="DotNetParsingTests.fs" />
     <Compile Include="ScaHitTests.fs" />
     <Compile Include="ScaModelsTests.fs" />
+    <Compile Include="LicencesTests.fs" />
     <Compile Include="ConsoleTests.fs" />
     <Compile Include="MarkdownTests.fs" />
     <Compile Include="ContextTests.fs" />
