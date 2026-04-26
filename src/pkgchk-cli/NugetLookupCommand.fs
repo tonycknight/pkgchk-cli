@@ -11,10 +11,12 @@ type NugetLookupCommand(nuget: INugetClient) =
 
     let versions name prerelease =
         task {
+            try
+                let! versions = nuget.GetAllMetadataAsync(name, prerelease)
 
-            let! versions = nuget.GetAllMetadataAsync(name, prerelease)
-
-            return versions |> Array.ofSeq
+                return versions |> Array.ofSeq
+            with ex ->
+                return [||]
         }
 
     let metadata name version =
