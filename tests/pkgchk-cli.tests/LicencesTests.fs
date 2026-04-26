@@ -51,3 +51,30 @@ module LicencesTests =
         let result = pkgchk.Licences.licence hit
         let expected = expected.Split('|')
         result |> should equalSeq expected
+
+    [<Theory>]
+    [<InlineData("MIT", "MIT")>]
+    [<InlineData("MIT", "mit")>]
+    [<InlineData("mit", "MIT")>]
+    [<InlineData("MIT|Apache-2.0", "MIT")>]
+    [<InlineData("MIT|Apache-2.0", "Apache-2.0")>]
+    [<InlineData("MIT|Apache-2.0", "MIT|Apache-2.0")>]
+    [<InlineData("mit|apache-2.0", "MIT|Apache-2.0")>]
+    let ``isMemberOf returns true on match`` (licences: string, referenceLicences: string) =
+        let licences = licences.Split('|')
+        let referenceLicences = referenceLicences.Split('|')
+        
+        let result = referenceLicences |> pkgchk.Licences.isMemberOf licences
+
+        result |> should be True
+
+    [<Theory>]
+    [<InlineData("MIT", "Apache-2.0")>]
+    [<InlineData("aaa|bbb", "MIT|Apache-2.0")>]
+    let ``isMemberOf returns false on mismatch`` (licences: string, referenceLicences: string) =
+        let licences = licences.Split('|')
+        let referenceLicences = referenceLicences.Split('|')
+        
+        let result = referenceLicences |> pkgchk.Licences.isMemberOf licences
+
+        result |> should be False

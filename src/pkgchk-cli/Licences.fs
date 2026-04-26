@@ -44,7 +44,7 @@ module Licences =
             [ expression ]
 
     let licence (hit: ScaHit) =
-        
+
         let get (meta: NugetPackageMetadata) =
             match (meta.license, meta.licenseUrl) with
             | ("", Some url)
@@ -53,4 +53,16 @@ module Licences =
             |> Option.ofNull
             |> Option.defaultValue ""
 
-        hit.metadata |> Option.map (get >> parse) |> Option.defaultValue Seq.empty |> Array.ofSeq
+        hit.metadata
+        |> Option.map (get >> parse)
+        |> Option.defaultValue Seq.empty
+        |> Array.ofSeq
+
+    let isMemberOf (licences: seq<string>) referenceLicences =
+        let referenceLicences = referenceLicences |> HashSet.ofSeq StringComparer.InvariantCultureIgnoreCase
+        
+        licences
+        |> Seq.filter (fun l -> l |> HashSet.contains referenceLicences)
+        |> Seq.isEmpty
+        |> not
+        
