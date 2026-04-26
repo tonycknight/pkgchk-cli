@@ -34,3 +34,20 @@ module LicencesTests =
 
         result |> Seq.length |> should equal 1
         result |> Seq.head |> should equal expression
+
+    [<Theory>]
+    [<InlineData("MIT", "MIT")>]
+    [<InlineData("MIT OR Apache-2.0", "MIT|Apache-2.0")>]
+    [<InlineData("MIT AND Apache-2.0", "MIT|Apache-2.0")>]
+    let ``licence extracts licences`` (expression, expected: string) =
+        let metadata =
+            { pkgchk.NugetPackageMetadata.empty with
+                license = expression }
+
+        let hit =
+            { pkgchk.ScaHit.empty with
+                metadata = Some metadata }
+
+        let result = pkgchk.Licences.licence hit
+        let expected = expected.Split('|')
+        result |> should equalSeq expected

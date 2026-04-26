@@ -44,7 +44,7 @@ module Licences =
             [ expression ]
 
     let licence (hit: ScaHit) =
-        // TODO: extract from expression
+        
         let get (meta: NugetPackageMetadata) =
             match (meta.license, meta.licenseUrl) with
             | ("", Some url)
@@ -53,4 +53,4 @@ module Licences =
             |> Option.ofNull
             |> Option.defaultValue ""
 
-        hit.metadata |> Option.map get
+        hit.metadata |> Option.map (get >> parse) |> Option.defaultValue Seq.empty |> Array.ofSeq
