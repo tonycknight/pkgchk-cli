@@ -2,6 +2,7 @@ namespace pkgchk
 
 open System
 open System.Diagnostics.CodeAnalysis
+open Spectre.Console
 open Spectre.Console.Cli
 open Tk.Nuget
 
@@ -54,15 +55,29 @@ type NugetLookupCommand(nuget: INugetClient) =
             if settings.NoBanner |> not then
                 CliCommands.renderBanner nuget
 
-            let! versions = versions settings
+            let mutable metadata: PackageMetadata[] = [||]
+
+            do!
+                AnsiConsole
+                    .Status()
+                    .Spinner(Spinner.Known.Dots12)
+                    .StartAsync(
+                        "Looking up package metadata...",
+                        fun _ ->
+                            task {
+                                let! xs = versions settings
+                                metadata <- xs
+                                ignore 0
+                            }
+                    )
 
             return
-                match versions with
+                match metadata with
                 | [||] -> CliCommands.returnError "The package metadata was not found."
                 | xs ->
                     match settings.AllVersions with
                     | true ->
-                        [ Console.metadataVersionsTable versions ] |> CliCommands.renderTables
+                        [ Console.metadataVersionsTable metadata ] |> CliCommands.renderTables
                         CliCommands.returnCode true
                     | false ->
                         [ Console.metadataSingleTable (Array.head xs) ] |> CliCommands.renderTables
