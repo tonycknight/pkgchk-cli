@@ -9,15 +9,20 @@ type private LicenseVisitor() =
     inherit SpdxExpressionVisitor<Object, seq<string>>()
 
     override this.VisitAnd(context: Object, expression: SpdxAndExpression) : seq<string> =
-        expression.Left.Accept(context, this).Concat(expression.Right.Accept(context, this))
+        let l = expression.Left.Accept(context, this)
+        let r = expression.Right.Accept(context, this)
+
+        r |> Seq.append l
 
     override this.VisitException(context: Object, expression: SpdxLicenseExceptionExpression) : seq<string> = seq { }
 
-    override this.VisitLicense(conteext: Object, expression: SpdxLicenseExpression) : seq<string> =
-        seq { expression.Id }
+    override this.VisitLicense(context: Object, expression: SpdxLicenseExpression) : seq<string> = seq { expression.Id }
 
     override this.VisitOr(context: Object, expression: SpdxOrExpression) : seq<string> =
-        expression.Left.Accept(context, this).Concat(expression.Right.Accept(context, this))
+        let l = expression.Left.Accept(context, this)
+        let r = expression.Right.Accept(context, this)
+
+        r |> Seq.append l
 
     override this.VisitReference(context: Object, expression: SpdxLicenseReferenceExpression) : seq<string> = seq { }
 
