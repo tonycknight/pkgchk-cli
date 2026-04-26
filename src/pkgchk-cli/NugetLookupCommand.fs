@@ -27,11 +27,18 @@ type NugetLookupCommand(nuget: INugetClient) =
                     | "" -> nuget.GetLatestMetadataAsync(name)
                     | _ -> nuget.GetMetadataAsync(name, version)
 
-                return m |> Option.ofNull
+                return
+                    match m |> Option.ofNull with
+                    | Some m -> [| m |]
+                    | None -> [||]
             with ex ->
-                return None
+                return [||]
         }
 
+    let versions (settings: NugetLookupCommandSettings) =
+        match settings.AllVersions with
+        | true -> versions settings.PackageId settings.PreRelease
+        | false -> metadata settings.PackageId settings.PackageVersion
 
     override _.Validate
         (context: CommandContext, settings: NugetLookupCommandSettings)
@@ -47,23 +54,18 @@ type NugetLookupCommand(nuget: INugetClient) =
             if settings.NoBanner |> not then
                 CliCommands.renderBanner nuget
 
-            if settings.AllVersions then
-                let! versions = versions settings.PackageId settings.PreRelease
+            let! versions = versions settings
 
-                return
-                    match versions with
-                    | [||] -> CliCommands.returnError "The package metadata was not found."
-                    | _ ->
+            return
+                match versions with
+                | [||] -> CliCommands.returnError "The package metadata was not found."
+                | xs ->
+                    match settings.AllVersions with
+                    | true ->
                         [ Console.metadataVersionsTable versions ] |> CliCommands.renderTables
                         CliCommands.returnCode true
-            else
-                let! metadata = metadata settings.PackageId settings.PackageVersion
+                    | false ->
+                        [ Console.metadataSingleTable (Array.head xs) ] |> CliCommands.renderTables
+                        CliCommands.returnCode true
 
-                match metadata with
-                | None -> return CliCommands.returnError "The package metadata was not found."
-
-                | Some m ->
-                    [ Console.metadataSingleTable m ] |> CliCommands.renderTables
-
-                    return CliCommands.returnCode true
         }
