@@ -263,7 +263,7 @@ module Context =
         | ([| "" |], _) -> None
         | (_, [||]) -> Some true
         | (hitLicences, licences) -> licences |> Licences.isMemberOf hitLicences |> Some
-            
+
 
     let isDisllowedLicence (context: OptionsContext) (hit: pkgchk.ScaHit) =
         match (Licences.licence hit |> Array.map String.toLower, context.disallowedLicences) with

@@ -63,7 +63,7 @@ module LicencesTests =
     let ``isMemberOf returns true on match`` (licences: string, referenceLicences: string) =
         let licences = licences.Split('|')
         let referenceLicences = referenceLicences.Split('|')
-        
+
         let result = referenceLicences |> pkgchk.Licences.isMemberOf licences
 
         result |> should be True
@@ -74,7 +74,7 @@ module LicencesTests =
     let ``isMemberOf returns false on mismatch`` (licences: string, referenceLicences: string) =
         let licences = licences.Split('|')
         let referenceLicences = referenceLicences.Split('|')
-        
+
         let result = referenceLicences |> pkgchk.Licences.isMemberOf licences
 
         result |> should be False

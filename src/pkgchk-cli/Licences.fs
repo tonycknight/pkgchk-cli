@@ -59,10 +59,10 @@ module Licences =
         |> Array.ofSeq
 
     let isMemberOf (licences: seq<string>) referenceLicences =
-        let referenceLicences = referenceLicences |> HashSet.ofSeq StringComparer.InvariantCultureIgnoreCase
-        
+        let referenceLicences =
+            referenceLicences |> HashSet.ofSeq StringComparer.InvariantCultureIgnoreCase
+
         licences
         |> Seq.filter (fun l -> l |> HashSet.contains referenceLicences)
         |> Seq.isEmpty
         |> not
-        
