@@ -279,21 +279,24 @@ module Console =
         }
         |> Seq.filter String.isNotEmpty
         |> String.join Environment.NewLine
+        |> Markup.Escape
 
     let metadataPackageDetails (metadata: PackageMetadata) =
         seq {
             nugetLinkPkgVsn metadata.Id metadata.Version |> lightcyan
-            metadata.Description |> lightgrey |> italic
+            metadata.Description |> Markup.Escape |> lightgrey |> italic
         }
         |> String.join Environment.NewLine
 
-    let metadataAuthors (metadata: PackageMetadata) = metadata.Authors |> cyan |> italic
+    let metadataAuthors (metadata: PackageMetadata) =
+        metadata.Authors |> Markup.Escape |> cyan |> italic
 
     let metadataProject (metadata: PackageMetadata) =
         metadata.ProjectUrl
         |> Option.ofNull
         |> Option.map _.ToString()
         |> Option.defaultValue ""
+        |> Markup.Escape
         |> green
 
     let metadataReadme (metadata: PackageMetadata) =
@@ -301,9 +304,11 @@ module Console =
         |> Option.ofNull
         |> Option.map _.ToString()
         |> Option.defaultValue ""
+        |> Markup.Escape
         |> green
 
-    let metadataTags (metadata: PackageMetadata) = metadata.Tags |> grey |> italic
+    let metadataTags (metadata: PackageMetadata) =
+        metadata.Tags |> Markup.Escape |> grey |> italic
 
     let metadataSingleTable (metadata: PackageMetadata) =
         let table = table () |> tableColumn "" |> tableColumn ""
