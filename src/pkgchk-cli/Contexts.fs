@@ -258,6 +258,7 @@ module Context =
         hits |> Seq.filter (included &&>> (excluded >> not))
 
     let licence (hit: ScaHit) =
+        // TODO: extract from expression
         let get (meta: NugetPackageMetadata) =
             match (meta.license, meta.licenseUrl) with
             | ("", Some url)
