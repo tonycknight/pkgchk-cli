@@ -257,27 +257,15 @@ module Context =
 
         hits |> Seq.filter (included &&>> (excluded >> not))
 
-    let licence (hit: ScaHit) =
-        // TODO: extract from expression
-        let get (meta: NugetPackageMetadata) =
-            match (meta.license, meta.licenseUrl) with
-            | ("", Some url)
-            | (null, Some url) -> url
-            | (x, _) -> x
-            |> Option.ofNull
-            |> Option.defaultValue ""
-
-        hit.metadata |> Option.map get
-
     let isAllowedLicence (context: OptionsContext) (hit: pkgchk.ScaHit) =
-        match (licence hit |> Option.map String.toLower, context.allowedLicences) with
+        match (Licences.licence hit |> Option.map String.toLower, context.allowedLicences) with
         | (None, _) -> None
         | (Some "", _) -> None
         | (Some _, [||]) -> Some true
         | (Some l, licences) -> licences |> Seq.map String.toLower |> Seq.contains l |> Some
 
     let isDisllowedLicence (context: OptionsContext) (hit: pkgchk.ScaHit) =
-        match (licence hit |> Option.map String.toLower, context.disallowedLicences) with
+        match (Licences.licence hit |> Option.map String.toLower, context.disallowedLicences) with
         | (None, _) -> None
         | (Some "", _) -> None
         | (Some _, [||]) -> Some false

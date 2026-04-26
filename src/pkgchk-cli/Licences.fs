@@ -1,7 +1,6 @@
 namespace pkgchk
 
 open System
-open System.Linq
 open Spdx.Expressions
 
 type private LicenseVisitor() =
@@ -43,3 +42,15 @@ module Licences =
             v.Visit(null, spdxExpr)
         with :? SpdxParseException ->
             [ expression ]
+
+    let licence (hit: ScaHit) =
+        // TODO: extract from expression
+        let get (meta: NugetPackageMetadata) =
+            match (meta.license, meta.licenseUrl) with
+            | ("", Some url)
+            | (null, Some url) -> url
+            | (x, _) -> x
+            |> Option.ofNull
+            |> Option.defaultValue ""
+
+        hit.metadata |> Option.map get
