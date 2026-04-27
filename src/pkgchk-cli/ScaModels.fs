@@ -25,6 +25,22 @@ type NugetPackageMetadata =
       requireLicenseAcceptance: bool
       totalDownloads: int64 option }
 
+    static member empty =
+        { id = ""
+          version = ""
+          description = ""
+          title = ""
+          summary = ""
+          authors = ""
+          tags = ""
+          projectUrl = None
+          license = ""
+          licenseUrl = None
+          readmeUrl = None
+          published = None
+          requireLicenseAcceptance = false
+          totalDownloads = None }
+
 type ScaHit =
     { kind: ScaHitKind
       framework: string
