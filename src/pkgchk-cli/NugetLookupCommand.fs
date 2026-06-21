@@ -69,11 +69,16 @@ type NugetLookupCommand(nuget: INugetClient) =
                                 let! xs = versions settings
                                 metadata <- xs
 
-                                if settings.ScanPackage && metadata |> Array.isEmpty |> not then
+                                if settings.ScanPackageAutomation && metadata |> Array.isEmpty |> not then
                                     ctx.Status("Scanning package...") |> ignore
                                     let vsn = Seq.head metadata
 
-                                    let! xs = PackageScanning.scanPackage nuget settings.PackageId vsn.Version
+                                    let! xs = 
+                                        if String.IsNullOrWhiteSpace settings.OutputDirectory then
+                                            PackageAutomationScanning.scanPackage nuget settings.PackageId vsn.Version
+                                        else
+                                            PackageAutomationScanning.scanPackage2 nuget settings.PackageId vsn.Version settings.OutputDirectory
+
                                     packageScan <- xs
                             }
                     )
@@ -86,7 +91,7 @@ type NugetLookupCommand(nuget: INugetClient) =
                     | true -> [ Console.metadataVersionsTable metadata ] |> CliCommands.renderTables
                     | false -> [ Console.metadataSingleTable (Array.head xs) ] |> CliCommands.renderTables
 
-                    match settings.ScanPackage with
+                    match settings.ScanPackageAutomation with
                     | false -> ignore 0
                     | true -> [ Console.packageScanTable packageScan ] |> CliCommands.renderTables
 

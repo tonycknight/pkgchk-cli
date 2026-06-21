@@ -434,7 +434,7 @@ module Console =
 
         table
 
-    let packageScanTable (scans: PackageBuildProperty[]) =
+    let packageScanTable (scans: PackageAutomationProperty[]) =
         match scans with
         | [||] ->
             let table = table () |> tableColumn ""

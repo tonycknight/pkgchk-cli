@@ -3,7 +3,7 @@ namespace pkgchk
 open System
 open Tk.Nuget
 
-module PackageScanning =
+module PackageAutomationScanning =
     let private findHits patterns name path =
         patterns
         |> Seq.collect (Io.findFiles path)
@@ -27,6 +27,15 @@ module PackageScanning =
         |> Seq.collect (fun f -> f path)
         |> Seq.distinctBy (fun s -> s.path)
 
+    let scanPackage2 (nuget: INugetClient) name version outputDir =
+        task {
+            let! packagePath = nuget.DownloadNugetPackageAsync(name, version, outputDir, true)
+
+            let hits = scanPackageElements packagePath
+
+            return hits |> Array.ofSeq
+        }
+
     let scanPackage (nuget: INugetClient) name version =
         task {
 
@@ -36,10 +45,8 @@ module PackageScanning =
                 path <- Io.tempDirectoryPath () |> Io.randomDirectory
                 path <- path |> Io.createDirectory |> _.FullName
 
-                let! packagePath = nuget.DownloadNugetPackageAsync(name, version, path, true)
-
-                let hits = scanPackageElements packagePath
-
+                let! hits = scanPackage2 nuget name version path
+                                
                 return hits |> Array.ofSeq
 
             finally
