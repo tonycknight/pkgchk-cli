@@ -127,7 +127,7 @@ module TestUtils =
 
         $"{runPkgChkArgs outDir} {severityArgs}"
 
-    let runPkgChkLookupArgs (packageId: string) (version: string) (all: bool) (prerelease: bool) =
+    let runPkgChkLookupArgs (packageId: string) (version: string) (all: bool) (prerelease: bool) (scanAutomation: bool) =
         let args =
             seq {
                 if version <> "" then
@@ -138,7 +138,9 @@ module TestUtils =
 
                 if prerelease then
                     "--prerelease"
-
+                
+                if scanAutomation then
+                    "--scan-package"
             }
             |> pkgchk.String.join " "
 

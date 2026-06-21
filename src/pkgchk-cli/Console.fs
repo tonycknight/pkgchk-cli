@@ -451,7 +451,7 @@ module Console =
             table
         | scans ->
             let table = table () |> tableColumn "" |> tableColumn ""
-            table.AddRow [| orange ":warning:  Package automation found"; "" |] |> ignore
+            table.AddRow [| orange ":warning:  Package automation found."; "" |] |> ignore
 
             scans
             |> Seq.map (fun s -> [| cyan s.propertyType; yellow s.path |])
