@@ -38,6 +38,7 @@
     <EmbeddedResource Include="ScaSampleEmpty.json" />
     <EmbeddedResource Include="PackageDependencyTreeSample.json" />
     <Compile Include="TestDataGenerators.fs" />
+    <Compile Include="ExceptionTest.fs" />
     <Compile Include="StringsTests.fs" />
     <Compile Include="DotNetArgsTests.fs" />
     <Compile Include="DotNetParsingTests.fs" />
