@@ -2,7 +2,6 @@ namespace pkgchk.tests.integration
 
 open Xunit
 
-[<Collection("Integration tests")>]
 type PackageLookupTests(output: ITestOutputHelper) =
 
     [<Fact>]

@@ -2,7 +2,6 @@
 
 open Xunit
 
-[<Collection("Integration tests")>]
 type VulnerablePackageTests(output: ITestOutputHelper) =
 
     let execSuccess = execSuccess output
