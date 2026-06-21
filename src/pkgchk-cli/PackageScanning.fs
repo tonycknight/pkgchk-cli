@@ -11,32 +11,19 @@ module PackageScanning =
             { name = Io.fileName p
               path = Io.relativePath path p
               propertyType = name })
-        |> Array.ofSeq
-
-    let private scanBuildProps = findHits [ "./build/*.props" ] "Build property"
-    let private scanBuildTargets = findHits [ "./build/*.targets" ] "Build target"
-    let private scanTools = findHits [ "./tools/" ] "Tool"
-    let private scanPowershell = findHits [ "*.ps1" ] "Powershell script"
-    let private scanShellScripts = findHits [ "*.cmd"; "*.sh" ] "Shell script"
-    let private scanJavascriptScripts = findHits [ "*.js" ] "Javascript file"
-    let private scanAnalyzers = findHits [ "./analyzers/*.dll" ] "Analyzer"
-
-    let private scanBuildTransitiveTargets =
-        findHits [ "./buildtransitive/*.targets" ] "Build Transitive target"
-
-    let private scanBuildTransitiveProps =
-        findHits [ "./buildtransitive/*.props" ] "Build Transitive property"
 
     let private scanPackageElements (path: string) =
-        [ scanBuildProps
-          scanBuildTargets
-          scanPowershell
-          scanShellScripts
-          scanJavascriptScripts
-          scanTools
-          scanAnalyzers
-          scanBuildTransitiveTargets
-          scanBuildTransitiveProps ]
+        seq {
+            findHits [ "./build/*.props" ] "Build property"
+            findHits [ "./build/*.targets" ] "Build target"
+            findHits [ "*.ps1" ] "Powershell script"
+            findHits [ "*.cmd"; "*.sh" ] "Shell script"
+            findHits [ "*.js" ] "Javascript file"
+            findHits [ "./tools/" ] "Tool"
+            findHits [ "./analyzers/*.dll" ] "Analyzer"
+            findHits [ "./buildtransitive/*.targets" ] "Build Transitive target"
+            findHits [ "./buildtransitive/*.props" ] "Build Transitive property"
+        }
         |> Seq.collect (fun f -> f path)
         |> Seq.distinctBy (fun s -> s.path)
 
