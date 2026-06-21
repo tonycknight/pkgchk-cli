@@ -351,7 +351,7 @@ module Console =
                 |> String.join Environment.NewLine
 
             table.AddRow [| grey "Deprecation"; lines |] |> ignore
-
+        
         if metadata.Vulnerabilities |> Seq.isEmpty |> not then
 
             let message =
@@ -366,7 +366,7 @@ module Console =
                 |> String.join Environment.NewLine
 
             table.AddRow [| grey "Vulnerabilities"; message |] |> ignore
-
+        
         table
 
     let metadataVersionsTable (versions: PackageMetadata[]) =
@@ -439,13 +439,13 @@ module Console =
         | [||] ->
             let table = table () |> tableColumn ""
 
-            table.AddRow [| green "No package properties, targets analysers or scripts found." |]
+            table.AddRow [| green ":check_mark_button: No package automation found." |]
             |> ignore
 
             table
         | scans ->
             let table = table () |> tableColumn "" |> tableColumn ""
-            table.AddRow [| "Package properties found"; "" |] |> ignore
+            table.AddRow [| orange ":warning:  Package automation found"; "" |] |> ignore
 
             scans
             |> Seq.map (fun s -> [| cyan s.propertyType; yellow s.path |])

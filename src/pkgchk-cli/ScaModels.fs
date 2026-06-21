@@ -84,7 +84,7 @@ type ReportFormat =
 type PackageAutomationProperty =
     { name: string
       path: string
-      // TODO: fullPath: string
+      fullPath: string
       propertyType: string }
 
 module ScaModels =

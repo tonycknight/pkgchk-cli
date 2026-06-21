@@ -10,6 +10,7 @@ module PackageAutomationScanning =
         |> Seq.map (fun p ->
             { name = Io.fileName p
               path = Io.relativePath path p
+              fullPath = p
               propertyType = name })
 
     let private scanPackageElements (path: string) =
