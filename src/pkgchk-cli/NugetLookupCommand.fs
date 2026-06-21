@@ -36,6 +36,25 @@ type NugetLookupCommand(nuget: INugetClient) =
                 return [||]
         }
 
+    let scanPackage name version =
+        task {
+            
+            let mutable path = ""
+            try
+                path <- Io.tempDirectoryPath () |> Io.randomDirectory
+                path <- path |> Io.createDirectory |> _.FullName
+                                
+                let! packagePath = nuget.DownloadNugetPackageAsync(name, version, path, true)
+                
+                // TODO: scan it
+
+                return [||]
+                    
+            finally
+                if path <> "" then
+                    path |> Exception.iter Io.deleteDirectory ignore
+        }
+
     let versions (settings: NugetLookupCommandSettings) =
         match settings.AllVersions with
         | true -> versions settings.PackageId settings.PreRelease
@@ -56,6 +75,7 @@ type NugetLookupCommand(nuget: INugetClient) =
                 CliCommands.renderBanner nuget
 
             let mutable metadata: PackageMetadata[] = [||]
+            let mutable packageScan = [||]
 
             do!
                 AnsiConsole
@@ -63,11 +83,17 @@ type NugetLookupCommand(nuget: INugetClient) =
                     .Spinner(Spinner.Known.Dots12)
                     .StartAsync(
                         "Looking up package metadata...",
-                        fun _ ->
+                        fun ctx ->
                             task {
                                 let! xs = versions settings
                                 metadata <- xs
-                                ignore 0
+
+                                if settings.ScanPackage && metadata |> Array.isEmpty |> not then
+                                    ctx.Status("Scanning package...") |> ignore
+                                    let vsn = metadata |> Array.last
+
+                                    let! xs = scanPackage settings.PackageId vsn.Version
+                                    packageScan <- xs
                             }
                     )
 
