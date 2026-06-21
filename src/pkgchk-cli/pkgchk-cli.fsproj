@@ -70,6 +70,7 @@
     <Compile Include="Licences.fs" />
     <Compile Include="Contexts.fs" />
     <Compile Include="Github.fs" />
+    <Compile Include="PackageScanning.fs" />
     <Compile Include="DotNet.fs" />
     <Compile Include="Reporting.fs" />
     <Compile Include="PackageScanCommand.fs" />

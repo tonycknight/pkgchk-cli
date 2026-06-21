@@ -36,25 +36,6 @@ type NugetLookupCommand(nuget: INugetClient) =
                 return [||]
         }
 
-    let scanPackage name version =
-        task {
-            
-            let mutable path = ""
-            try
-                path <- Io.tempDirectoryPath () |> Io.randomDirectory
-                path <- path |> Io.createDirectory |> _.FullName
-                                
-                let! packagePath = nuget.DownloadNugetPackageAsync(name, version, path, true)
-                
-                // TODO: scan it
-
-                return [||]
-                    
-            finally
-                if path <> "" then
-                    path |> Exception.iter Io.deleteDirectory ignore
-        }
-
     let versions (settings: NugetLookupCommandSettings) =
         match settings.AllVersions with
         | true -> versions settings.PackageId settings.PreRelease
@@ -90,9 +71,9 @@ type NugetLookupCommand(nuget: INugetClient) =
 
                                 if settings.ScanPackage && metadata |> Array.isEmpty |> not then
                                     ctx.Status("Scanning package...") |> ignore
-                                    let vsn = metadata |> Array.last
+                                    let vsn = Seq.head metadata
 
-                                    let! xs = scanPackage settings.PackageId vsn.Version
+                                    let! xs = PackageScanning.scanPackage nuget settings.PackageId vsn.Version
                                     packageScan <- xs
                             }
                     )
@@ -103,10 +84,11 @@ type NugetLookupCommand(nuget: INugetClient) =
                 | xs ->
                     match settings.AllVersions with
                     | true ->
-                        [ Console.metadataVersionsTable metadata ] |> CliCommands.renderTables
-                        CliCommands.returnCode true
+                        [ Console.metadataVersionsTable metadata ] |> CliCommands.renderTables                        
                     | false ->
                         [ Console.metadataSingleTable (Array.head xs) ] |> CliCommands.renderTables
-                        CliCommands.returnCode true
-
+                    match settings.ScanPackage with
+                    | false -> ignore 0
+                    | true -> [ Console.packageScanTable packageScan ] |> CliCommands.renderTables
+                    CliCommands.returnCode true
         }
