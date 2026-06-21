@@ -433,3 +433,17 @@ module Console =
             table.AddRow [| vsn; lines |] |> ignore)
 
         table
+
+    let packageScanTable (scans: PackageScanHit[])=
+        match scans with
+        | [||] -> 
+            let table = table () |> tableColumn ""
+            table.AddRow [| green "No package properties, targets analysers or scripts found." |] |> ignore
+            table
+        | scans ->
+            let table = table () |> tableColumn "" |> tableColumn ""
+            table.AddRow [| "Package properties found"; "" |] |> ignore
+            scans 
+            |> Seq.map (fun s -> [| cyan s.hitType; yellow s.path; |])
+            |> Seq.iter (table.AddRow >> ignore)
+            table
