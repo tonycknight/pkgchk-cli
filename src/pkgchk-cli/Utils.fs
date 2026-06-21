@@ -11,10 +11,11 @@ module Combinators =
     let (||>>) x y = (fun (v: 'a) -> x v || y v)
 
 module Exception =
-    let iter (func: 'a -> unit) (exHandler: Exception -> unit) (value: 'a)=
+    let iter (func: 'a -> unit) (exHandler: Exception -> unit) (value: 'a) =
         try
             func value
-        with ex -> exHandler ex
+        with ex ->
+            exHandler ex
 
 module String =
     [<DebuggerStepThrough>]
