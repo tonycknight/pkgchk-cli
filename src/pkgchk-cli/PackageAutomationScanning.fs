@@ -31,10 +31,8 @@ module PackageAutomationScanning =
     let scanPackage2 (nuget: INugetClient) name version outputDir =
         task {
             let! packagePath = nuget.DownloadNugetPackageAsync(name, version, outputDir, true)
-
-            let hits = scanPackageElements packagePath
-
-            return hits |> Array.ofSeq
+                        
+            return scanPackageElements packagePath |> Array.ofSeq
         }
 
     let scanPackage (nuget: INugetClient) name version =
