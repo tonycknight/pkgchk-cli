@@ -84,12 +84,11 @@ type PackageLookupTests(output: ITestOutputHelper) =
         |> execSuccessPkgChk output
         |> assertPackagesFound
             [ @"Packageautomationfound."
-              @"build\netstandard2.0\refit.targets"
-              @"analyzers\dotnet\roslyn3.8\cs\InterfaceStubGeneratorV1.dll"
-              @"analyzers\dotnet\roslyn4.1\cs\InterfaceStubGeneratorV2.dll"
-              @"analyzers\dotnet\roslyn5.0\cs\InterfaceStubGeneratorV3.dll"
-              @"buildtransitive\netstandard2.0\refit.targets"
-              @"buildtransitive\netstandard2.0\refit.props" ]
+              @"refit.targets"
+              @"InterfaceStubGeneratorV1.dll"
+              @"InterfaceStubGeneratorV2.dll"
+              @"InterfaceStubGeneratorV3.dll"
+              @"refit.props" ]
 
     [<Theory>]
     [<InlineData("Newtonsoft.Json", "13.0.4")>]
