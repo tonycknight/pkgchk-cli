@@ -434,7 +434,7 @@ module Console =
 
         table
 
-    let packageScanTable (scans: PackageScanHit[])=
+    let packageScanTable (scans: PackageBuildProperty[])=
         match scans with
         | [||] -> 
             let table = table () |> tableColumn ""
@@ -444,6 +444,6 @@ module Console =
             let table = table () |> tableColumn "" |> tableColumn ""
             table.AddRow [| "Package properties found"; "" |] |> ignore
             scans 
-            |> Seq.map (fun s -> [| cyan s.hitType; yellow s.path; |])
+            |> Seq.map (fun s -> [| cyan s.propertyType; yellow s.path; |])
             |> Seq.iter (table.AddRow >> ignore)
             table
