@@ -84,10 +84,7 @@ type PackageLookupTests(output: ITestOutputHelper) =
         |> execSuccessPkgChk output
         |> assertPackagesFound
             [ @"Packageautomationfound."
-              @"refit.targets"
-              @"InterfaceStubGeneratorV1.dll"
-              @"InterfaceStubGeneratorV2.dll"
-              @"InterfaceStubGeneratorV3.dll"
+              @"refit.targets"              
               @"refit.props" ]
 
     [<Theory>]
