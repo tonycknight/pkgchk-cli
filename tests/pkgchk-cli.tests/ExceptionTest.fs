@@ -7,8 +7,7 @@ module ExceptionTest =
     [<Property>]
     let ``iter when exception raised, the handler is triggered`` (value: string) =
         let mutable triggerd = false
-        let f = invalidOp
-
+        
         value |> pkgchk.Exception.iter invalidOp (fun x -> triggerd <- true)
         
         triggerd
