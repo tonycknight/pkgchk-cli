@@ -82,10 +82,7 @@ type PackageLookupTests(output: ITestOutputHelper) =
     let ``Lookup with pacckage ID returns automation`` packageId version1 =
         runPkgChkLookupArgs packageId version1 false false true
         |> execSuccessPkgChk output
-        |> assertPackagesFound
-            [ @"Packageautomationfound."
-              @"refit.targets"              
-              @"refit.props" ]
+        |> assertPackagesFound [ @"Packageautomationfound."; @"refit.targets"; @"refit.props" ]
 
     [<Theory>]
     [<InlineData("Newtonsoft.Json", "13.0.4")>]
