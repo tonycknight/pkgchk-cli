@@ -35,7 +35,8 @@ type PackageLookupTests(output: ITestOutputHelper) =
     [<InlineData("xunit", "zzz")>]
     let ``Lookup with package ID and incorrect version returns error`` packageId version =
 
-        runPkgChkLookupArgs packageId version false false false |> execSysErrorPkgChk output
+        runPkgChkLookupArgs packageId version false false false
+        |> execSysErrorPkgChk output
 
     [<Theory>]
     [<InlineData("xunit", "2.9.3", "2.9.1")>]
@@ -81,11 +82,14 @@ type PackageLookupTests(output: ITestOutputHelper) =
     let ``Lookup with pacckage ID returns automation`` packageId version1 =
         runPkgChkLookupArgs packageId version1 false false true
         |> execSuccessPkgChk output
-        |> assertPackagesFound [ @"Packageautomationfound.";
-                                 @"build\netstandard2.0\refit.targets"; @"analyzers\dotnet\roslyn3.8\cs\InterfaceStubGeneratorV1.dll";
-                                 @"analyzers\dotnet\roslyn4.1\cs\InterfaceStubGeneratorV2.dll"; @"analyzers\dotnet\roslyn5.0\cs\InterfaceStubGeneratorV3.dll";
-                                 @"buildtransitive\netstandard2.0\refit.targets";
-                                 @"buildtransitive\netstandard2.0\refit.props"]
+        |> assertPackagesFound
+            [ @"Packageautomationfound."
+              @"build\netstandard2.0\refit.targets"
+              @"analyzers\dotnet\roslyn3.8\cs\InterfaceStubGeneratorV1.dll"
+              @"analyzers\dotnet\roslyn4.1\cs\InterfaceStubGeneratorV2.dll"
+              @"analyzers\dotnet\roslyn5.0\cs\InterfaceStubGeneratorV3.dll"
+              @"buildtransitive\netstandard2.0\refit.targets"
+              @"buildtransitive\netstandard2.0\refit.props" ]
 
     [<Theory>]
     [<InlineData("Newtonsoft.Json", "13.0.4")>]

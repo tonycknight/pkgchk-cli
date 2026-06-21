@@ -37,15 +37,19 @@ module PackageAutomationScanning =
 
             try
                 if useTempPath then
-                    path <- Io.tempDirectoryPath () |> Io.randomDirectory |> Io.createDirectory |> _.FullName
+                    path <-
+                        Io.tempDirectoryPath ()
+                        |> Io.randomDirectory
+                        |> Io.createDirectory
+                        |> _.FullName
                 else
                     path <- Io.normalise outputDir
 
                 let! packagePath = nuget.DownloadNugetPackageAsync(name, version, path, true)
-                
+
                 return scanPackageElements packagePath |> Array.ofSeq
 
             finally
-                if useTempPath && path <> ""  then
+                if useTempPath && path <> "" then
                     path |> Exception.iter Io.deleteDirectory ignore
         }
