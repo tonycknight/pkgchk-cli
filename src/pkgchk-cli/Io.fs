@@ -54,7 +54,7 @@ module Io =
         if Directory.Exists(directory) then
             try
                 Directory.GetFiles(directory, pattern, SearchOption.AllDirectories)
-            with
-            | :? System.IO.DirectoryNotFoundException -> [||]
+            with :? System.IO.DirectoryNotFoundException ->
+                [||]
         else
             [||]

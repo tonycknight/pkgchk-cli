@@ -82,11 +82,9 @@ type ReportFormat =
     | Json = 1
 
 type PackageBuildProperty =
-    {
-        name: string
-        path: string
-        propertyType: string
-    }
+    { name: string
+      path: string
+      propertyType: string }
 
 module ScaModels =
 

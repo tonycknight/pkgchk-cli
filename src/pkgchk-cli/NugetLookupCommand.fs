@@ -83,12 +83,12 @@ type NugetLookupCommand(nuget: INugetClient) =
                 | [||] -> CliCommands.returnError "The package metadata was not found."
                 | xs ->
                     match settings.AllVersions with
-                    | true ->
-                        [ Console.metadataVersionsTable metadata ] |> CliCommands.renderTables                        
-                    | false ->
-                        [ Console.metadataSingleTable (Array.head xs) ] |> CliCommands.renderTables
+                    | true -> [ Console.metadataVersionsTable metadata ] |> CliCommands.renderTables
+                    | false -> [ Console.metadataSingleTable (Array.head xs) ] |> CliCommands.renderTables
+
                     match settings.ScanPackage with
                     | false -> ignore 0
                     | true -> [ Console.packageScanTable packageScan ] |> CliCommands.renderTables
+
                     CliCommands.returnCode true
         }

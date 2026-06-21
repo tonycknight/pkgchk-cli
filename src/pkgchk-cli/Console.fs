@@ -434,16 +434,21 @@ module Console =
 
         table
 
-    let packageScanTable (scans: PackageBuildProperty[])=
+    let packageScanTable (scans: PackageBuildProperty[]) =
         match scans with
-        | [||] -> 
+        | [||] ->
             let table = table () |> tableColumn ""
-            table.AddRow [| green "No package properties, targets analysers or scripts found." |] |> ignore
+
+            table.AddRow [| green "No package properties, targets analysers or scripts found." |]
+            |> ignore
+
             table
         | scans ->
             let table = table () |> tableColumn "" |> tableColumn ""
             table.AddRow [| "Package properties found"; "" |] |> ignore
-            scans 
-            |> Seq.map (fun s -> [| cyan s.propertyType; yellow s.path; |])
+
+            scans
+            |> Seq.map (fun s -> [| cyan s.propertyType; yellow s.path |])
             |> Seq.iter (table.AddRow >> ignore)
+
             table
