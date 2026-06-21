@@ -2,6 +2,7 @@
 
 open Xunit
 
+[<Collection("Integration tests")>]
 type CleanProjectTests(output: ITestOutputHelper) =
 
     let execSuccess = execSuccess output

@@ -2,6 +2,7 @@ namespace pkgchk.tests.integration
 
 open Xunit
 
+[<Collection("Integration tests")>]
 type PackageLicenceTests(output: ITestOutputHelper) =
 
     let execSuccess = execSuccess output

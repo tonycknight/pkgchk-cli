@@ -2,6 +2,7 @@
 
 open Xunit
 
+[<Collection("Integration tests")>]
 type UpgradePackageTests(output: ITestOutputHelper) =
 
     let execSuccess = execSuccess output
