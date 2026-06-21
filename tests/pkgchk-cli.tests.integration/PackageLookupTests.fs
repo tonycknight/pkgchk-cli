@@ -79,14 +79,14 @@ type PackageLookupTests(output: ITestOutputHelper) =
 
     [<Theory>]
     [<InlineData("refit", "11.2.0")>]
-    let ``Lookup with pacckage ID returns automation`` packageId version1 =
+    let ``Lookup with package ID returns automation`` packageId version1 =
         runPkgChkLookupArgs packageId version1 false false true
         |> execSuccessPkgChk output
         |> assertPackagesFound [ @"Packageautomationfound." ]
 
     [<Theory>]
     [<InlineData("Newtonsoft.Json", "13.0.4")>]
-    let ``Lookup with pacckage ID returns no automation`` packageId version1 =
+    let ``Lookup with package ID returns no automation`` packageId version1 =
         runPkgChkLookupArgs packageId version1 false false true
         |> execSuccessPkgChk output
         |> assertPackagesFound [ @"Nopackageautomationfound." ]
