@@ -81,6 +81,12 @@ type ReportFormat =
     | Markdown = 0
     | Json = 1
 
+type PackageAutomationProperty =
+    { name: string
+      path: string
+      fullPath: string
+      propertyType: string }
+
 module ScaModels =
 
     let hitsByLevels levels (hits: ScaHit list) =

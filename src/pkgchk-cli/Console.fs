@@ -351,6 +351,9 @@ module Console =
                 |> String.join Environment.NewLine
 
             table.AddRow [| grey "Deprecation"; lines |] |> ignore
+        else
+            table.AddRow [| green ":check_mark_button: The package is not deprecated." |]
+            |> ignore
 
         if metadata.Vulnerabilities |> Seq.isEmpty |> not then
 
@@ -366,6 +369,9 @@ module Console =
                 |> String.join Environment.NewLine
 
             table.AddRow [| grey "Vulnerabilities"; message |] |> ignore
+        else
+            table.AddRow [| green ":check_mark_button: No vulnerabilities found." |]
+            |> ignore
 
         table
 
@@ -433,3 +439,22 @@ module Console =
             table.AddRow [| vsn; lines |] |> ignore)
 
         table
+
+    let packageScanTable (scans: PackageAutomationProperty[]) =
+        match scans with
+        | [||] ->
+            let table = table () |> tableColumn ""
+
+            table.AddRow [| green ":check_mark_button: No package automation found." |]
+            |> ignore
+
+            table
+        | scans ->
+            let table = table () |> tableColumn "" |> tableColumn ""
+            table.AddRow [| orange ":warning:  Package automation found."; "" |] |> ignore
+
+            scans
+            |> Seq.map (fun s -> [| cyan s.propertyType; yellow s.path |])
+            |> Seq.iter (table.AddRow >> ignore)
+
+            table

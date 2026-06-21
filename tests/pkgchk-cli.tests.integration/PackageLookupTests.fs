@@ -7,13 +7,13 @@ type PackageLookupTests(output: ITestOutputHelper) =
     [<Fact>]
     let ``Lookup without package ID returns error`` () =
 
-        runPkgChkLookupArgs "" "" false false |> execSysErrorPkgChk output
+        runPkgChkLookupArgs "" "" false false false |> execSysErrorPkgChk output
 
     [<Theory>]
     [<InlineData("xunit", "2.9.3")>]
     let ``Lookup with package ID returns correct info`` packageId version =
 
-        runPkgChkLookupArgs packageId "" false false
+        runPkgChkLookupArgs packageId "" false false false
         |> execSuccessPkgChk output
         |> assertPackagesFound [ version ]
 
@@ -21,7 +21,7 @@ type PackageLookupTests(output: ITestOutputHelper) =
     [<InlineData("xunit", "2.9.3")>]
     let ``Lookup with package ID and version returns correct info`` packageId version =
 
-        runPkgChkLookupArgs packageId version false false
+        runPkgChkLookupArgs packageId version false false false
         |> execSuccessPkgChk output
         |> assertPackagesFound [ version ]
 
@@ -29,20 +29,21 @@ type PackageLookupTests(output: ITestOutputHelper) =
     [<InlineData("zzz")>]
     let ``Lookup with incorrect package ID returns error`` packageId =
 
-        runPkgChkLookupArgs packageId "" false false |> execSysErrorPkgChk output
+        runPkgChkLookupArgs packageId "" false false false |> execSysErrorPkgChk output
 
     [<Theory>]
     [<InlineData("xunit", "zzz")>]
     let ``Lookup with package ID and incorrect version returns error`` packageId version =
 
-        runPkgChkLookupArgs packageId version false false |> execSysErrorPkgChk output
+        runPkgChkLookupArgs packageId version false false false
+        |> execSysErrorPkgChk output
 
     [<Theory>]
     [<InlineData("xunit", "2.9.3", "2.9.1")>]
     [<InlineData("System.Net.Http", "4.3.4", "4.3.0-preview1-24530-04")>]
     let ``Lookup with package ID  with prerelease returns all versions`` packageId version1 version2 =
 
-        runPkgChkLookupArgs packageId "" true true
+        runPkgChkLookupArgs packageId "" true true false
         |> execSuccessPkgChk output
         |> assertPackagesFound [ version1; version2 ]
 
@@ -51,7 +52,7 @@ type PackageLookupTests(output: ITestOutputHelper) =
     [<InlineData("System.Net.Http", "4.3.4", "4.3.0-preview1-24530-04")>]
     let ``Lookup with package ID  without prerelease returns all versions`` packageId version1 version2 =
 
-        runPkgChkLookupArgs packageId "" true false
+        runPkgChkLookupArgs packageId "" true false false
         |> execSuccessPkgChk output
         |> assertPackagesFound [ version1 ]
         |> assertPackagesNotFound [ version2 ]
@@ -61,7 +62,7 @@ type PackageLookupTests(output: ITestOutputHelper) =
     [<InlineData("xunit", true, "2.9.3")>]
     let ``Lookup with package ID returns deprecations`` packageId allVersions version1 =
 
-        runPkgChkLookupArgs packageId version1 allVersions false
+        runPkgChkLookupArgs packageId version1 allVersions false false
         |> execSuccessPkgChk output
         |> assertPackagesFound [ version1 ]
         |> assertPackagesFound [ "Thisversionisdeprecated." ]
@@ -71,7 +72,21 @@ type PackageLookupTests(output: ITestOutputHelper) =
     [<InlineData("System.Net.Http", true, "4.3.1")>]
     let ``Lookup with package ID returns vulnerabilities`` packageId allVersions version1 =
 
-        runPkgChkLookupArgs packageId version1 allVersions false
+        runPkgChkLookupArgs packageId version1 allVersions false false
         |> execSuccessPkgChk output
         |> assertPackagesFound [ version1 ]
         |> assertPackagesFound [ "Thisversionhasknownvulnerabilities." ]
+
+    [<Theory>]
+    [<InlineData("refit", "11.2.0")>]
+    let ``Lookup with package ID returns automation`` packageId version1 =
+        runPkgChkLookupArgs packageId version1 false false true
+        |> execSuccessPkgChk output
+        |> assertPackagesFound [ @"Packageautomationfound." ]
+
+    [<Theory>]
+    [<InlineData("Newtonsoft.Json", "13.0.4")>]
+    let ``Lookup with package ID returns no automation`` packageId version1 =
+        runPkgChkLookupArgs packageId version1 false false true
+        |> execSuccessPkgChk output
+        |> assertPackagesFound [ @"Nopackageautomationfound." ]

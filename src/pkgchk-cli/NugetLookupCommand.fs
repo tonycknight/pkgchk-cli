@@ -56,6 +56,7 @@ type NugetLookupCommand(nuget: INugetClient) =
                 CliCommands.renderBanner nuget
 
             let mutable metadata: PackageMetadata[] = [||]
+            let mutable packageScan = [||]
 
             do!
                 AnsiConsole
@@ -63,11 +64,23 @@ type NugetLookupCommand(nuget: INugetClient) =
                     .Spinner(Spinner.Known.Dots12)
                     .StartAsync(
                         "Looking up package metadata...",
-                        fun _ ->
+                        fun ctx ->
                             task {
                                 let! xs = versions settings
                                 metadata <- xs
-                                ignore 0
+
+                                if settings.ScanPackageAutomation && metadata |> Array.isEmpty |> not then
+                                    ctx.Status("Scanning package...") |> ignore
+                                    let vsn = Seq.head metadata
+
+                                    let! xs =
+                                        PackageAutomationScanning.scanPackage
+                                            nuget
+                                            settings.PackageId
+                                            vsn.Version
+                                            settings.OutputDirectory
+
+                                    packageScan <- xs
                             }
                     )
 
@@ -76,11 +89,12 @@ type NugetLookupCommand(nuget: INugetClient) =
                 | [||] -> CliCommands.returnError "The package metadata was not found."
                 | xs ->
                     match settings.AllVersions with
-                    | true ->
-                        [ Console.metadataVersionsTable metadata ] |> CliCommands.renderTables
-                        CliCommands.returnCode true
-                    | false ->
-                        [ Console.metadataSingleTable (Array.head xs) ] |> CliCommands.renderTables
-                        CliCommands.returnCode true
+                    | true -> [ Console.metadataVersionsTable metadata ] |> CliCommands.renderTables
+                    | false -> [ Console.metadataSingleTable (Array.head xs) ] |> CliCommands.renderTables
 
+                    match settings.ScanPackageAutomation with
+                    | false -> ignore 0
+                    | true -> [ Console.packageScanTable packageScan ] |> CliCommands.renderTables
+
+                    CliCommands.returnCode true
         }

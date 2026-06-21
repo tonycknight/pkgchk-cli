@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>net10.0</TargetFrameworks>
     <RootNamespace>pkgchk.tests</RootNamespace>
 
     <IsPackable>false</IsPackable>
@@ -38,6 +38,7 @@
     <EmbeddedResource Include="ScaSampleEmpty.json" />
     <EmbeddedResource Include="PackageDependencyTreeSample.json" />
     <Compile Include="TestDataGenerators.fs" />
+    <Compile Include="ExceptionTest.fs" />
     <Compile Include="StringsTests.fs" />
     <Compile Include="DotNetArgsTests.fs" />
     <Compile Include="DotNetParsingTests.fs" />

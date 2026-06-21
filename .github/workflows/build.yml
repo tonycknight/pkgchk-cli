@@ -148,7 +148,7 @@ jobs:
       - name: Archive package
         uses: actions/upload-artifact@v7
         with:
-          name: pkgcli-package
+          name: pkgchkcli-package
           path: ./package/*.nupkg
 
   nuget-release:
