@@ -3,6 +3,7 @@
 open System
 open System.Diagnostics
 open FsUnit.Xunit
+open pkgchk.Combinators
 open Xunit
 
 [<AutoOpen>]
@@ -30,7 +31,12 @@ module TestUtils =
     let missingLicencePackage = "FSharp.Core"
 
     let clean80Columns (value: string) =
-        value.Replace(" ", "").Replace(Environment.NewLine, "")
+        let noncontrol =
+            value
+            |> Seq.filter ((Char.IsControl ||>> Char.IsWhiteSpace) >> not)
+            |> Seq.toArray
+
+        new string (noncontrol)
 
     let cmdArgs (cmd: string) =
         let x = cmd.IndexOf(' ')
