@@ -47,7 +47,7 @@ module PackageAutomationScanning =
                 path <- path |> Io.createDirectory |> _.FullName
 
                 let! hits = scanPackage2 nuget name version path
-                                
+
                 return hits |> Array.ofSeq
 
             finally

@@ -351,7 +351,9 @@ module Console =
                 |> String.join Environment.NewLine
 
             table.AddRow [| grey "Deprecation"; lines |] |> ignore
-        
+        else
+            table.AddRow [| green ":check_mark_button: The package is not deprecated." |] |> ignore
+
         if metadata.Vulnerabilities |> Seq.isEmpty |> not then
 
             let message =
@@ -366,7 +368,10 @@ module Console =
                 |> String.join Environment.NewLine
 
             table.AddRow [| grey "Vulnerabilities"; message |] |> ignore
-        
+        else
+            table.AddRow [| green ":check_mark_button: No vulnerabilities found." |]
+            |> ignore
+
         table
 
     let metadataVersionsTable (versions: PackageMetadata[]) =
