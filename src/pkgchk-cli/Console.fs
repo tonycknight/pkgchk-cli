@@ -352,7 +352,8 @@ module Console =
 
             table.AddRow [| grey "Deprecation"; lines |] |> ignore
         else
-            table.AddRow [| green ":check_mark_button: The package is not deprecated." |] |> ignore
+            table.AddRow [| green ":check_mark_button: The package is not deprecated." |]
+            |> ignore
 
         if metadata.Vulnerabilities |> Seq.isEmpty |> not then
 

@@ -28,14 +28,14 @@ module PackageAutomationScanning =
         |> Seq.collect (fun f -> f path)
         |> Seq.distinctBy (fun s -> s.path)
 
-    let scanPackage2 (nuget: INugetClient) name version outputDir =
+    let scanPackage (nuget: INugetClient) name version outputDir =
         task {
             let! packagePath = nuget.DownloadNugetPackageAsync(name, version, outputDir, true)
-                        
+
             return scanPackageElements packagePath |> Array.ofSeq
         }
 
-    let scanPackage (nuget: INugetClient) name version =
+    let scanTempPackage (nuget: INugetClient) name version =
         task {
 
             let mutable path = ""
@@ -44,7 +44,7 @@ module PackageAutomationScanning =
                 path <- Io.tempDirectoryPath () |> Io.randomDirectory
                 path <- path |> Io.createDirectory |> _.FullName
 
-                let! hits = scanPackage2 nuget name version path
+                let! hits = scanPackage nuget name version path
 
                 return hits |> Array.ofSeq
 

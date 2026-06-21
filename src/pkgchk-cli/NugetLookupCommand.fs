@@ -75,9 +75,12 @@ type NugetLookupCommand(nuget: INugetClient) =
 
                                     let! xs =
                                         if String.IsNullOrWhiteSpace settings.OutputDirectory then
-                                            PackageAutomationScanning.scanPackage nuget settings.PackageId vsn.Version
+                                            PackageAutomationScanning.scanTempPackage
+                                                nuget
+                                                settings.PackageId
+                                                vsn.Version
                                         else
-                                            PackageAutomationScanning.scanPackage2
+                                            PackageAutomationScanning.scanPackage
                                                 nuget
                                                 settings.PackageId
                                                 vsn.Version
