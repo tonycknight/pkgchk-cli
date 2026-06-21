@@ -36,9 +36,8 @@ module PackageAutomationScanning =
             let useTempPath = String.IsNullOrWhiteSpace outputDir
 
             try
-                if String.IsNullOrWhiteSpace outputDir then
-                    path <- Io.tempDirectoryPath () |> Io.randomDirectory
-                    path <- path |> Io.createDirectory |> _.FullName                    
+                if useTempPath then
+                    path <- Io.tempDirectoryPath () |> Io.randomDirectory |> Io.createDirectory |> _.FullName
                 else
                     path <- Io.normalise outputDir
 
