@@ -8,7 +8,7 @@ open System.IO
 module Io =
 
     let combine name path = Path.Combine(path, name)
-            
+
     let fullPath (path: string) =
         if not <| Path.IsPathRooted(path) then
             let wd = Environment.CurrentDirectory
@@ -38,10 +38,23 @@ module Io =
         else
             DirectoryInfo(directory)
 
-    let deleteDirectory (path: string) =        
+    let deleteDirectory (path: string) =
         if Directory.Exists(path) then
-            Directory.Delete(path, true) 
-        
+            Directory.Delete(path, true)
+
     let composeFilePath directory fileName =
         let file = fullPath >> combine fileName >> normalise
         file directory
+
+    let fileName (path: string) = Path.GetFileName path
+
+    let relativePath (rootPath: string) (path: string) = Path.GetRelativePath(rootPath, path)
+
+    let findFiles directory pattern =
+        if Directory.Exists(directory) then
+            try
+                Directory.GetFiles(directory, pattern, SearchOption.AllDirectories)
+            with
+            | :? System.IO.DirectoryNotFoundException -> [||]
+        else
+            [||]
