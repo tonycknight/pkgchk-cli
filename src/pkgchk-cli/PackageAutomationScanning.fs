@@ -28,27 +28,25 @@ module PackageAutomationScanning =
         |> Seq.collect (fun f -> f path)
         |> Seq.distinctBy (fun s -> s.path)
 
+
     let scanPackage (nuget: INugetClient) name version outputDir =
-        task {
-            let! packagePath = nuget.DownloadNugetPackageAsync(name, version, outputDir, true)
-
-            return scanPackageElements packagePath |> Array.ofSeq
-        }
-
-    let scanTempPackage (nuget: INugetClient) name version =
         task {
 
             let mutable path = ""
+            let useTempPath = String.IsNullOrWhiteSpace outputDir
 
             try
-                path <- Io.tempDirectoryPath () |> Io.randomDirectory
-                path <- path |> Io.createDirectory |> _.FullName
+                if String.IsNullOrWhiteSpace outputDir then
+                    path <- Io.tempDirectoryPath () |> Io.randomDirectory
+                    path <- path |> Io.createDirectory |> _.FullName                    
+                else
+                    path <- Io.normalise outputDir
 
-                let! hits = scanPackage nuget name version path
-
-                return hits |> Array.ofSeq
+                let! packagePath = nuget.DownloadNugetPackageAsync(name, version, path, true)
+                
+                return scanPackageElements packagePath |> Array.ofSeq
 
             finally
-                if path <> "" then
+                if useTempPath && path <> ""  then
                     path |> Exception.iter Io.deleteDirectory ignore
         }

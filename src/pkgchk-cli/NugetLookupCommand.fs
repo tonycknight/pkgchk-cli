@@ -74,18 +74,12 @@ type NugetLookupCommand(nuget: INugetClient) =
                                     let vsn = Seq.head metadata
 
                                     let! xs =
-                                        if String.IsNullOrWhiteSpace settings.OutputDirectory then
-                                            PackageAutomationScanning.scanTempPackage
-                                                nuget
-                                                settings.PackageId
-                                                vsn.Version
-                                        else
-                                            PackageAutomationScanning.scanPackage
-                                                nuget
-                                                settings.PackageId
-                                                vsn.Version
-                                                settings.OutputDirectory
-
+                                        PackageAutomationScanning.scanPackage
+                                            nuget
+                                            settings.PackageId
+                                            vsn.Version
+                                            settings.OutputDirectory
+                                        
                                     packageScan <- xs
                             }
                     )
