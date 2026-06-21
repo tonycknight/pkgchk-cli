@@ -216,6 +216,11 @@ type NugetLookupCommandSettings() =
     [<DefaultValue(false)>]
     member val PreRelease = false with get, set
 
+    [<CommandOption("--scan-package")>]
+    [<Description("Download and scan the package.")>]
+    [<DefaultValue(false)>]
+    member val ScanPackage = false with get, set
+
     [<CommandOption("--no-banner")>]
     [<Description("Don't show the banner.")>]
     [<DefaultValue(false)>]
