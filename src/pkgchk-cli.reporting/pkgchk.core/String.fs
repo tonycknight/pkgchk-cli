@@ -22,3 +22,9 @@ module String =
     [<DebuggerStepThrough>]
     let nonEmpty (value: string) =
         if String.IsNullOrEmpty value then None else Some value
+
+    [<DebuggerStepThrough>]
+    let append (separator: string) (x: string) (y: string) =
+        if y.Length = 0 then x
+        else if x.Length = 0 then y
+        else $"{y}{separator}{x}"

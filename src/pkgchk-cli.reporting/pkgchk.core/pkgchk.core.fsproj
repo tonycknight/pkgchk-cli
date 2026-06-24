@@ -14,7 +14,7 @@
     <Compile Include="Task.fs" />
     <Compile Include="Json.fs" />
     <Compile Include="Io.fs" />
-    <Compile Include="Markdown.fs" />
+    <Compile Include="Colours.fs" />
   </ItemGroup>
 
 </Project>
