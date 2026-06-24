@@ -11,6 +11,7 @@
     <Compile Include="JsonReporting.fs" />
     <Compile Include="MarkdownReporting.fs" />
     <Compile Include="ConsoleReporting.fs" />
+    <Compile Include="GithubReporting.fs" />
   </ItemGroup>
 
   <ItemGroup>
