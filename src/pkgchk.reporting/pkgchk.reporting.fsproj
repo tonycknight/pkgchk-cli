@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\pkgchk-cli.reporting\pkgchk.core\pkgchk.core.fsproj" />
+    <ProjectReference Include="..\pkgchk.core\pkgchk.core.fsproj" />
   </ItemGroup>
 
 </Project>
