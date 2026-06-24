@@ -8,4 +8,3 @@ module Exception =
             func value
         with ex ->
             exHandler ex
-

@@ -7,4 +7,3 @@ module Environment =
     [<ExcludeFromCodeCoverage>]
     let isRunningGithub =
         System.Environment.GetEnvironmentVariable("GITHUB_ACTIONS") <> null
-
