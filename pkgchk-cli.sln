@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.1.11312.151 d18.0
+VisualStudioVersion = 18.1.11312.151
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "pkgchk-cli", "src\pkgchk-cli\pkgchk-cli.fsproj", "{8FF6F838-0619-400B-B5EA-79597E00E8B7}"
 EndProject
@@ -12,8 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{CC70A61A
 		.github\workflows\build.yml = .github\workflows\build.yml
 		.github\dependabot.yml = .github\dependabot.yml
 		.github\labeler.yml = .github\labeler.yml
-		.github\workflows\pr-checks.yml = .github\workflows\pr-checks.yml
 		pkgchk.config.yml = pkgchk.config.yml
+		.github\workflows\pr-checks.yml = .github\workflows\pr-checks.yml
 		.github\workflows\sca.yml = .github\workflows\sca.yml
 	EndProjectSection
 EndProject
@@ -27,6 +27,10 @@ EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "pkgchk-cli.tests", "tests\pkgchk-cli.tests\pkgchk-cli.tests.fsproj", "{A1CB0936-B4A3-4A24-9AE1-A3B2D2B66488}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "pkgchk-cli.tests.integration", "tests\pkgchk-cli.tests.integration\pkgchk-cli.tests.integration.fsproj", "{29B17E12-FF6A-4262-9BDC-CF8753C9B2A8}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "pkgchk.reporting", "src\pkgchk.reporting\pkgchk.reporting.fsproj", "{0D6BB877-D071-4164-894D-0D7968CB86D6}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "pkgchk.core", "src\pkgchk-cli.reporting\pkgchk.core\pkgchk.core.fsproj", "{BF2B9A73-F8FA-4019-A054-91E73368C47C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -46,6 +50,14 @@ Global
 		{29B17E12-FF6A-4262-9BDC-CF8753C9B2A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{29B17E12-FF6A-4262-9BDC-CF8753C9B2A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{29B17E12-FF6A-4262-9BDC-CF8753C9B2A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D6BB877-D071-4164-894D-0D7968CB86D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D6BB877-D071-4164-894D-0D7968CB86D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D6BB877-D071-4164-894D-0D7968CB86D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D6BB877-D071-4164-894D-0D7968CB86D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF2B9A73-F8FA-4019-A054-91E73368C47C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF2B9A73-F8FA-4019-A054-91E73368C47C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF2B9A73-F8FA-4019-A054-91E73368C47C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF2B9A73-F8FA-4019-A054-91E73368C47C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -54,6 +66,8 @@ Global
 		{8FF6F838-0619-400B-B5EA-79597E00E8B7} = {9030FD14-8EA0-4FD1-A8FA-2639C11CB540}
 		{A1CB0936-B4A3-4A24-9AE1-A3B2D2B66488} = {AC04A561-42B6-4D2E-A091-7B269015534D}
 		{29B17E12-FF6A-4262-9BDC-CF8753C9B2A8} = {AC04A561-42B6-4D2E-A091-7B269015534D}
+		{0D6BB877-D071-4164-894D-0D7968CB86D6} = {9030FD14-8EA0-4FD1-A8FA-2639C11CB540}
+		{BF2B9A73-F8FA-4019-A054-91E73368C47C} = {9030FD14-8EA0-4FD1-A8FA-2639C11CB540}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {59CE1C89-868D-4DAB-A9EC-BE3E1A1207EF}
