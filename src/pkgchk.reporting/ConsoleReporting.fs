@@ -5,8 +5,14 @@ open Spectre.Console.Rendering
 
 module ConsoleReporting =
 
-    let build (console: IAnsiConsole) (context: ReportGeneratorContext) (values: IRenderable seq) =
+    let generate (context: ReportGeneratorOptions) (value: 'a) =
         task {
-            // TODO:
+            // TODO: need to build a representation as a seq of IRenderables
+            return []
+        }
+
+    let build (console: IAnsiConsole) (context: ReportGeneratorOptions) (values: IRenderable seq) =
+        task {
+            values |> Seq.iter console.Write
             return { ReportGenerationResult.outPath = "" }
         }

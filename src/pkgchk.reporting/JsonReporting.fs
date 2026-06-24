@@ -4,10 +4,10 @@ open pkgchk
 
 module JsonReporting =
 
-    let generate (context: ReportGeneratorContext) (value: 'a) =
+    let generate (context: ReportGeneratorOptions) (value: 'a) =
         value |> Json.serialise |> Task.ofResult
 
-    let build (context: ReportGeneratorContext) (value: string) =
+    let build (context: ReportGeneratorOptions) (value: string) =
         task {
             let reportName = $"{context.reportName}.json"
 
