@@ -3,11 +3,11 @@ namespace pkgchk.reporting
 open pkgchk
 
 module GithubReporting =
-    
+
     let generateComment (context: ReportGeneratorOptions) (value: 'a) =
         task {
             // build a markdown representation as a seq of strings
-            // note that the size must not exceed a Github-imposed limit of let maxCommentSize = 65536            
+            // note that the size must not exceed a Github-imposed limit of let maxCommentSize = 65536
             return []
         }
 
@@ -23,6 +23,6 @@ module GithubReporting =
             return []
         }
 
-    // TODO: 
+    // TODO:
     let build (context: ReportGeneratorOptions) (values: string seq) =
-        values |> MarkdownReporting.build context 
+        values |> MarkdownReporting.build context
