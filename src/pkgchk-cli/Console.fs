@@ -163,11 +163,11 @@ module Console =
               |> italic
               meta.description
               |> trimNewLines
-              |> Option.nonEmpty
+              |> String.nonEmpty
               |> Option.map (Markup.Escape >> lightgrey >> italic)
               |> Option.defaultValue ""
               meta.tags
-              |> Option.nonEmpty
+              |> String.nonEmpty
               |> Option.map (String.trim >> Markup.Escape >> grey >> italic)
               |> Option.defaultValue "" ]
             |> List.filter String.isNotEmpty

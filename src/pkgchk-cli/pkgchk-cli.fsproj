@@ -73,6 +73,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\pkgchk.core\pkgchk.core.fsproj" />
   </ItemGroup>
 
 </Project>

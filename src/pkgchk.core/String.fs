@@ -4,6 +4,7 @@ open System
 open System.Diagnostics
 
 module String =
+    
     [<DebuggerStepThrough>]
     let join separator (lines: seq<string>) = String.Join(separator, lines)
 
@@ -36,6 +37,19 @@ module String =
 
     [<DebuggerStepThrough>]
     let trim (value: string) = value.Trim()
+        
+    [<DebuggerStepThrough>]
+    let defaultValue (defaultValue: string) (value: string) =
+        if isNotEmpty value then value else defaultValue
+
+    [<DebuggerStepThrough>]
+    let leading (len: int) (value: string) =
+        let len2 = System.Math.Min(value.Length, len)
+
+        if value.Length <= len2 then
+            value
+        else
+            (value.Substring(0, len2) + "...")
 
     [<DebuggerStepThrough>]
     let nonEmpty (value: string) =
@@ -46,3 +60,25 @@ module String =
         if y.Length = 0 then x
         else if x.Length = 0 then y
         else $"{y}{separator}{x}"
+            
+    [<DebuggerStepThrough>]
+    let escapeMarkup (value: string) = // TODO: to console rendering module...?
+        value.Replace("[", "[[").Replace("]", "]]")
+
+    [<DebuggerStepThrough>]
+    let isInt (value: string) = Int32.TryParse value |> fst
+
+    [<DebuggerStepThrough>]
+    let toInt (value: string) =
+        match Int32.TryParse value with
+        | (true, x) -> x
+        | _ -> 0
+
+    [<DebuggerStepThrough>]
+    let toLower (value: string) = value.ToLowerInvariant()
+        
+    [<DebuggerStepThrough>]
+    let split (delim: char) (value: string) =
+        match value.Split(delim, StringSplitOptions.None) with
+        | [| x; y |] -> (x, y)
+        | _ -> ("", value)

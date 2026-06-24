@@ -131,13 +131,13 @@ module Markdown =
 
             let authors =
                 meta.authors
-                |> Option.nonEmpty
+                |> String.nonEmpty
                 |> Option.map (escape >> colourise Rendering.darkcyan >> italic)
                 |> Option.defaultValue ""
 
             let tags =
                 meta.tags
-                |> Option.nonEmpty
+                |> String.nonEmpty
                 |> Option.map (escape >> colourise Rendering.lightgrey >> italic)
                 |> Option.defaultValue ""
 
@@ -148,7 +148,7 @@ module Markdown =
 
             seq {
                 meta.description
-                |> Option.nonEmpty
+                |> String.nonEmpty
                 |> Option.map (trimlines >> italic)
                 |> Option.defaultValue ""
 
