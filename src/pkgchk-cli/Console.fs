@@ -297,8 +297,7 @@ module Console =
         metadata.Tags |> Markup.Escape |> grey |> italic
 
     let metadataSingleTable (metadata: PackageMetadata) =
-        let table = table () |> tableColumn "" |> tableColumn ""
-
+        
         let rows =
             [ [ "Package"; metadataPackageDetails metadata ]
               if metadata.Authors <> "" then
