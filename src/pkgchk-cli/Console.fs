@@ -301,67 +301,67 @@ module Console =
     let metadataSingleTable (metadata: PackageMetadata) =
         let table = table () |> tableColumn "" |> tableColumn ""
 
-        table.AddRow [| "Package"; metadataPackageDetails metadata |] |> ignore
+        let rows = 
+            [
+                [ "Package"; metadataPackageDetails metadata ]
+                if metadata.Authors <> "" then
+                    [ grey "Authors"; metadataAuthors metadata ] 
 
-        if metadata.Authors <> "" then
-            table.AddRow [| grey "Authors"; metadataAuthors metadata |] |> ignore
+                let licenceLines = metadataLicenceDetails metadata
+                if licenceLines <> "" then
+                    [ grey "Licence"; licenceLines |> yellow ]
+                if metadata.ProjectUrl |> Option.ofNull |> Option.isSome then
+                    [ grey "Project"; metadataProject metadata ]
+                if metadata.ReadmeUrl |> Option.ofNull |> Option.isSome then
+                    [ grey "Readme"; metadataReadme metadata ]
+                if metadata.Tags <> "" then
+                    [ grey "Tags"; metadataTags metadata ]
 
-        let licenceLines = metadataLicenceDetails metadata
+                let deprecation = metadata.Deprecation |> Option.ofNull
+                let message = 
+                    if deprecation |> Option.isSome then
+                        seq {
+                            ":warning:  This version is deprecated." |> error
+                            if deprecation.Value.Description <> "" then
+                                deprecation.Value.Description |> italic |> lightgrey
 
-        if licenceLines <> "" then
-            table.AddRow [| grey "Licence"; licenceLines |> yellow |] |> ignore
+                            if deprecation.Value.AlternatePackage |> Option.ofNull |> Option.isSome then
+                                sprintf
+                                    "Consider using %s %s instead."
+                                    deprecation.Value.AlternatePackage.Name
+                                    deprecation.Value.AlternatePackage.Range
+                                |> Markup.Escape
+                                |> yellow
+                        }
+                        |> String.join Environment.NewLine
+                    else
+                        green ":check_mark_button: The package is not deprecated."
+                [ grey "Deprecation"; message ]
 
-        if metadata.ProjectUrl |> Option.ofNull |> Option.isSome then
-            table.AddRow [| grey "Project"; metadataProject metadata |] |> ignore
+                let message =
+                    if metadata.Vulnerabilities |> Seq.isEmpty |> not then
+                        seq {
+                            ":warning:  This version has known vulnerabilities." |> error
 
-        if metadata.ReadmeUrl |> Option.ofNull |> Option.isSome then
-            table.AddRow [| grey "Readme"; metadataReadme metadata |] |> ignore
+                            yield!
+                                metadata.Vulnerabilities
+                                |> Seq.sortByDescending (fun v -> v.Severity)
+                                |> Seq.map (fun v -> $"{v.Severity.ToString() |> error} {v.AdvisoryUrl |> yellow}")
+                        }
+                        |> String.join Environment.NewLine
+                    else
+                        green ":check_mark_button: No vulnerabilities found."
+                [ grey "Vulnerabilities"; message ]
+            ]
+            
 
-        if metadata.Tags <> "" then
-            table.AddRow [| grey "Tags"; metadataTags metadata |] |> ignore
-
-        let deprecation = metadata.Deprecation |> Option.ofNull
-
-        if deprecation |> Option.isSome then
-            let lines =
-                seq {
-                    ":warning:  This version is deprecated." |> error
-                    deprecation.Value.Description |> italic |> lightgrey
-
-                    if deprecation.Value.AlternatePackage |> Option.ofNull |> Option.isSome then
-                        sprintf
-                            "Consider using %s %s instead."
-                            deprecation.Value.AlternatePackage.Name
-                            deprecation.Value.AlternatePackage.Range
-                        |> Markup.Escape
-                        |> yellow
-                }
-                |> String.join Environment.NewLine
-
-            table.AddRow [| grey "Deprecation"; lines |] |> ignore
-        else
-            table.AddRow [| green ":check_mark_button: The package is not deprecated." |]
-            |> ignore
-
-        if metadata.Vulnerabilities |> Seq.isEmpty |> not then
-
-            let message =
-                seq {
-                    ":warning:  This version has known vulnerabilities." |> error
-
-                    yield!
-                        metadata.Vulnerabilities
-                        |> Seq.sortByDescending (fun v -> v.Severity)
-                        |> Seq.map (fun v -> $"{v.Severity.ToString() |> error} {v.AdvisoryUrl |> yellow}")
-                }
-                |> String.join Environment.NewLine
-
-            table.AddRow [| grey "Vulnerabilities"; message |] |> ignore
-        else
-            table.AddRow [| green ":check_mark_button: No vulnerabilities found." |]
-            |> ignore
-
-        table
+        let table = 
+            { ReportTable.empty with 
+                border = false
+                showHeaders = false
+                columns = [ ""; "" ]
+                rows = rows }
+        table |> pkgchk.reporting.Console.table 
 
     let metadataVersionsTable (versions: PackageMetadata[]) =
         let table = table () |> tableColumn "" |> tableColumn ""
