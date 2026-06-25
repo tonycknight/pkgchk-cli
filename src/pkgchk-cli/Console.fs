@@ -296,8 +296,7 @@ module Console =
     let metadataTags (metadata: PackageMetadata) =
         metadata.Tags |> Markup.Escape |> grey |> italic
 
-    let metadataSingleTable (metadata: PackageMetadata) =
-        
+    let packageMetadataTableRows (metadata: PackageMetadata) =
         let rows =
             [ [ "Package"; metadataPackageDetails metadata ]
               if metadata.Authors <> "" then
@@ -316,7 +315,16 @@ module Console =
 
               if metadata.Tags <> "" then
                   [ grey "Tags"; metadataTags metadata ]
+            ]
 
+        { ReportTable.empty with
+            columns = [ ""; "" ]
+            rows = rows }
+
+    let metadataSingleTable (metadata: PackageMetadata) =
+        
+        let rows =
+            [ 
               let message =
                   match metadata.Deprecation |> Option.ofNull with
                   | Some deprecation ->
@@ -357,10 +365,8 @@ module Console =
               [ grey "Vulnerabilities"; message ] ]
 
 
-        let table =
-            { ReportTable.empty with
-                columns = [ ""; "" ]
-                rows = rows }
+        let table = packageMetadataTableRows metadata
+        let table = { table with rows = table.rows @ rows }
 
         table |> pkgchk.reporting.Console.table
 
