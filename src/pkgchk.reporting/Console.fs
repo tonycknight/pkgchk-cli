@@ -26,3 +26,13 @@ module Console =
         | true -> Colours.lightgrey
         | _ -> Colours.grey
         |> markup
+
+    let table (value: pkgchk.reporting.Table) =
+        let table = new Table()
+        table.Border <- match value.border with | false -> TableBorder.None | true -> TableBorder.Minimalist
+        table.ShowHeaders <- value.showHeaders
+
+        value.columns |> Seq.iter (fun c -> table.AddColumn(c) |> ignore)
+        value.rows |> Seq.iter (fun r -> r |> Array.ofSeq |> table.AddRow |> ignore)
+
+        table
