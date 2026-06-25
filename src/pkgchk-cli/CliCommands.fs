@@ -24,9 +24,7 @@ module CliCommands =
             |> List.map (fun f -> $"[link={f}]{f}[/]")
             |> String.joinPretty ", " " & "
 
-        $"{System.Environment.NewLine}Report file(s) {msg} built."
-        |> italic
-        |> console
+        $"{System.Environment.NewLine}Report file(s) {msg} built." |> italic |> console
 
     let returnCode isSuccess =
         match isSuccess with

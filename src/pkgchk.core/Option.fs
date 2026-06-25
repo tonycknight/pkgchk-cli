@@ -4,7 +4,7 @@ open System
 open System.Diagnostics
 
 module Option =
-    
+
     [<DebuggerStepThrough>]
     let nullDefault<'a> (defaultValue: 'a) (value: 'a) =
         if obj.ReferenceEquals(value, null) then

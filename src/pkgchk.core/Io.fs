@@ -9,8 +9,8 @@ module Io =
 
     let join (name: string) path = Path.Join(path, name)
 
-    let fullPath (path: string) = Path.GetFullPath(path) 
-    
+    let fullPath (path: string) = Path.GetFullPath(path)
+
     let fileName (path: string) = Path.GetFileName path
 
     let relativePath (rootPath: string) (path: string) = Path.GetRelativePath(rootPath, path)
@@ -22,7 +22,7 @@ module Io =
         let guid = Guid.NewGuid().ToString("N")
         path |> join guid |> fullPath
 
-    let writeFile (path: string) (lines: string seq) = 
+    let writeFile (path: string) (lines: string seq) =
         let dir = Path.GetDirectoryName path
         Directory.CreateDirectory dir |> ignore
         File.WriteAllText(path, lines |> String.joinLines)

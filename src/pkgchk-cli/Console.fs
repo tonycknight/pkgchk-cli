@@ -5,6 +5,7 @@ open System.Collections.Concurrent
 open pkgchk.reporting.Console
 open Spectre.Console
 open Tk.Nuget
+type ReportTable = pkgchk.reporting.Table
 
 module Console =
     
@@ -76,8 +77,15 @@ module Console =
         |> Seq.singleton
 
     let projectTable (project: string) =
-        let table = table () |> tableColumn ""
-        $"Project {project}" |> colouriseProject |> Array.singleton |> table.AddRow
+        let table = 
+            { ReportTable.empty with 
+                border = false
+                showHeaders = false
+                columns = [ "" ]
+                rows = [ [ (colouriseProject $"Project {project}") ] ] }
+              
+        pkgchk.reporting.Console.table table
+        
 
     let hitPackage (hit: ScaHit) =
         match hit.kind with

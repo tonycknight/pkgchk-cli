@@ -29,7 +29,12 @@ module Console =
 
     let table (value: pkgchk.reporting.Table) =
         let table = new Table()
-        table.Border <- match value.border with | false -> TableBorder.None | true -> TableBorder.Minimalist
+
+        table.Border <-
+            match value.border with
+            | false -> TableBorder.None
+            | true -> TableBorder.Minimalist
+
         table.ShowHeaders <- value.showHeaders
 
         value.columns |> Seq.iter (fun c -> table.AddColumn(c) |> ignore)

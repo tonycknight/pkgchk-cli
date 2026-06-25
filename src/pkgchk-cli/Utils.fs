@@ -14,4 +14,3 @@ module ReturnCodes =
 
     [<Literal>]
     let sysError = 2
-

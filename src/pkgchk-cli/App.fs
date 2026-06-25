@@ -64,21 +64,14 @@ module App =
         seq {
             cyan packageId
 
-            version ()
-            |> Option.defaultValue "unknown"
-            |> yellow
-            |> sprintf "Version %s"
+            version () |> Option.defaultValue "unknown" |> yellow |> sprintf "Version %s"
 
             repo |> cyan |> sprintf "For more information, see %s" |> italic
 
             "Thank you for using my software." |> grey |> italic
 
             if Option.isSome upgVsn then
-                sprintf
-                    "%s%s %s"
-                    Environment.NewLine
-                    (orange "A new version is available:")
-                    (cyan upgVsn.Value)
+                sprintf "%s%s %s" Environment.NewLine (orange "A new version is available:") (cyan upgVsn.Value)
 
             ""
         }

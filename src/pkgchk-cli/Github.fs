@@ -116,9 +116,7 @@ module Github =
 
             let! _ = (comment |> setPrComment context.services.trace client repo prId)
 
-            $"{comment.title} PR report sent to Github."
-            |> italic
-            |> CliCommands.console
+            $"{comment.title} PR report sent to Github." |> italic |> CliCommands.console
         }
 
     let sendCheck (context: ApplicationContext) isSuccess (comment: GithubComment) =
@@ -131,7 +129,5 @@ module Github =
 
             let! _ = comment |> createCheck trace client repo context.github.commit isSuccess
 
-            $"Check '{comment.title}' sent to Github."
-            |> italic
-            |> CliCommands.console
+            $"Check '{comment.title}' sent to Github." |> italic |> CliCommands.console
         }
