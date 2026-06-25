@@ -2,20 +2,6 @@ namespace pkgchk.reporting
 
 open pkgchk
 
-type MarkdownTable =
-    { columns: string list
-      rows: string list list }
-
-    static member empty =
-        { MarkdownTable.columns = []
-          rows = [] }
-
-    static member addColumn name table =
-        { table with
-            columns = name :: table.columns }
-
-    static member addRow row table = { table with rows = row :: table.rows }
-
 module Markdown =
 
     let hdr1 (value: string) = $"# {value}"
@@ -23,7 +9,7 @@ module Markdown =
     let hdr3 (value: string) = $"### {value}"
     let dividor () = "---"
 
-    let table (value: MarkdownTable) =
+    let table (value: Table) =
         let surround line = $"| {line} |"
         let columnCount = Seq.length value.columns
 

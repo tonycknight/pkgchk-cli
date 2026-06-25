@@ -24,3 +24,21 @@ type ReportGenerator<'a, 'b> =
 
             return! repData |> this.build this.options
         }
+
+type Table =
+    { border: bool
+      showHeaders: bool
+      columns: string list
+      rows: string list list }
+
+    static member empty =
+        { Table.columns = []
+          border = false
+          showHeaders = false
+          rows = [] }
+
+    static member addColumn name table =
+        { table with
+            columns = name :: table.columns }
+
+    static member addRow row table = { table with rows = row :: table.rows }
