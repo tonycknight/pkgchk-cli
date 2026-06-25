@@ -428,21 +428,22 @@ module Console =
 
         table
 
-    let packageScanTable (scans: PackageAutomationProperty[]) =
-        match scans with
-        | [||] ->
-            let table = table () |> tableColumn ""
-
-            table.AddRow [| green ":check_mark_button: No package automation found." |]
-            |> ignore
-
-            table
-        | scans ->
-            let table = table () |> tableColumn "" |> tableColumn ""
-            table.AddRow [| orange ":warning:  Package automation found."; "" |] |> ignore
-
-            scans
-            |> Seq.map (fun s -> [| cyan s.propertyType; yellow s.path |])
-            |> Seq.iter (table.AddRow >> ignore)
-
-            table
+    let packageScanTable (scans: PackageAutomationProperty[]) =        
+        let table =
+            match scans with
+            | [||] ->            
+                { ReportTable.empty with 
+                    border = false
+                    showHeaders = false
+                    columns = [ "" ]
+                    rows = 
+                        [  [ green ":check_mark_button: No package automation found." ] ] }                
+            | scans ->                        
+                { ReportTable.empty with 
+                    border = false
+                    showHeaders = false
+                    columns = [ ""; "" ]
+                    rows = 
+                        [ yield [ orange ":warning:  Package automation found."; "" ]
+                          yield! scans |> Seq.map (fun s -> [ cyan s.propertyType; yellow s.path ]) ] }                
+        table |> pkgchk.reporting.Console.table
