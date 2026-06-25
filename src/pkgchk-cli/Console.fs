@@ -5,10 +5,11 @@ open System.Collections.Concurrent
 open pkgchk.reporting.Console
 open Spectre.Console
 open Tk.Nuget
+
 type ReportTable = pkgchk.reporting.Table
 
 module Console =
-    
+
     let table () =
         let table = new Table()
         table.Border <- TableBorder.None
@@ -77,15 +78,13 @@ module Console =
         |> Seq.singleton
 
     let projectTable (project: string) =
-        let table = 
-            { ReportTable.empty with 
-                border = false
-                showHeaders = false
+        let table =
+            { ReportTable.empty with
                 columns = [ "" ]
                 rows = [ [ (colouriseProject $"Project {project}") ] ] }
-              
+
         pkgchk.reporting.Console.table table
-        
+
 
     let hitPackage (hit: ScaHit) =
         match hit.kind with
@@ -215,9 +214,10 @@ module Console =
         table.AddRow title
 
     let noscanHeadlineTable () =
-        let table = table () |> tableColumn ""
-
-        [| green "Nothing found!" |] |> table.AddRow
+        { ReportTable.empty with
+            columns = [ "" ]
+            rows = [ [ green "Nothing found!" ] ] }
+        |> pkgchk.reporting.Console.table
 
     let severitySettingsTable severities =
         let table = table () |> tableColumn ""
@@ -245,11 +245,9 @@ module Console =
            fmtSeverity value.kind value.severity
            fmtCount value.count |]
 
-    let hitSummaryTable (counts: seq<ScaHitSummary>) =        
-        let table = 
-            { ReportTable.empty with 
-                border = false
-                showHeaders = false
+    let hitSummaryTable (counts: seq<ScaHitSummary>) =
+        let table =
+            { ReportTable.empty with
                 columns = [ "Kind"; "Severity"; "Counts" ]
                 rows = counts |> Seq.map (hitSummaryRow >> List.ofSeq) |> List.ofSeq }
 
@@ -301,68 +299,71 @@ module Console =
     let metadataSingleTable (metadata: PackageMetadata) =
         let table = table () |> tableColumn "" |> tableColumn ""
 
-        let rows = 
-            [
-                [ "Package"; metadataPackageDetails metadata ]
-                if metadata.Authors <> "" then
-                    [ grey "Authors"; metadataAuthors metadata ] 
+        let rows =
+            [ [ "Package"; metadataPackageDetails metadata ]
+              if metadata.Authors <> "" then
+                  [ grey "Authors"; metadataAuthors metadata ]
 
-                let licenceLines = metadataLicenceDetails metadata
-                if licenceLines <> "" then
-                    [ grey "Licence"; licenceLines |> yellow ]
-                if metadata.ProjectUrl |> Option.ofNull |> Option.isSome then
-                    [ grey "Project"; metadataProject metadata ]
-                if metadata.ReadmeUrl |> Option.ofNull |> Option.isSome then
-                    [ grey "Readme"; metadataReadme metadata ]
-                if metadata.Tags <> "" then
-                    [ grey "Tags"; metadataTags metadata ]
-                
-                let message = 
-                    match metadata.Deprecation |> Option.ofNull with
-                    | Some deprecation ->
-                    
-                        seq {
-                            ":warning:  This version is deprecated." |> error
-                            if deprecation.Description <> "" then
-                                deprecation.Description |> italic |> lightgrey
+              let licenceLines = metadataLicenceDetails metadata
 
-                            if deprecation.AlternatePackage |> Option.ofNull |> Option.isSome then
-                                sprintf
-                                    "Consider using %s %s instead."
-                                    deprecation.AlternatePackage.Name
-                                    deprecation.AlternatePackage.Range
-                                |> Markup.Escape
-                                |> yellow
-                        }
-                        |> String.join Environment.NewLine
-                    | _ ->green ":check_mark_button: The package is not deprecated."
-                [ grey "Deprecation"; message ]
+              if licenceLines <> "" then
+                  [ grey "Licence"; licenceLines |> yellow ]
 
-                let message =
-                    match metadata.Vulnerabilities |> List.ofSeq with
-                    | [] -> green ":check_mark_button: No vulnerabilities found."
-                    | xs -> 
-                        seq {
-                            ":warning:  This version has known vulnerabilities." |> error
+              if metadata.ProjectUrl |> Option.ofNull |> Option.isSome then
+                  [ grey "Project"; metadataProject metadata ]
 
-                            yield!
-                                xs
-                                |> Seq.sortByDescending (fun v -> v.Severity)
-                                |> Seq.map (fun v -> $"{v.Severity.ToString() |> error} {v.AdvisoryUrl |> yellow}")
-                        }
-                        |> String.join Environment.NewLine
-                    
-                [ grey "Vulnerabilities"; message ]
-            ]
-            
+              if metadata.ReadmeUrl |> Option.ofNull |> Option.isSome then
+                  [ grey "Readme"; metadataReadme metadata ]
 
-        let table = 
-            { ReportTable.empty with 
-                border = false
-                showHeaders = false
+              if metadata.Tags <> "" then
+                  [ grey "Tags"; metadataTags metadata ]
+
+              let message =
+                  match metadata.Deprecation |> Option.ofNull with
+                  | Some deprecation ->
+
+                      seq {
+                          ":warning:  This version is deprecated." |> error
+
+                          if deprecation.Description <> "" then
+                              deprecation.Description |> italic |> lightgrey
+
+                          if deprecation.AlternatePackage |> Option.ofNull |> Option.isSome then
+                              sprintf
+                                  "Consider using %s %s instead."
+                                  deprecation.AlternatePackage.Name
+                                  deprecation.AlternatePackage.Range
+                              |> Markup.Escape
+                              |> yellow
+                      }
+                      |> String.join Environment.NewLine
+                  | _ -> green ":check_mark_button: The package is not deprecated."
+
+              [ grey "Deprecation"; message ]
+
+              let message =
+                  match metadata.Vulnerabilities |> List.ofSeq with
+                  | [] -> green ":check_mark_button: No vulnerabilities found."
+                  | xs ->
+                      seq {
+                          ":warning:  This version has known vulnerabilities." |> error
+
+                          yield!
+                              xs
+                              |> Seq.sortByDescending (fun v -> v.Severity)
+                              |> Seq.map (fun v -> $"{v.Severity.ToString() |> error} {v.AdvisoryUrl |> yellow}")
+                      }
+                      |> String.join Environment.NewLine
+
+              [ grey "Vulnerabilities"; message ] ]
+
+
+        let table =
+            { ReportTable.empty with
                 columns = [ ""; "" ]
                 rows = rows }
-        table |> pkgchk.reporting.Console.table 
+
+        table |> pkgchk.reporting.Console.table
 
     let metadataVersionsTable (versions: PackageMetadata[]) =
         let table = table () |> tableColumn "" |> tableColumn ""
@@ -429,22 +430,16 @@ module Console =
 
         table
 
-    let packageScanTable (scans: PackageAutomationProperty[]) =        
-        let table =
-            match scans with
-            | [||] ->            
-                { ReportTable.empty with 
-                    border = false
-                    showHeaders = false
-                    columns = [ "" ]
-                    rows = 
-                        [  [ green ":check_mark_button: No package automation found." ] ] }                
-            | scans ->                        
-                { ReportTable.empty with 
-                    border = false
-                    showHeaders = false
-                    columns = [ ""; "" ]
-                    rows = 
-                        [ yield [ orange ":warning:  Package automation found."; "" ]
-                          yield! scans |> Seq.map (fun s -> [ cyan s.propertyType; yellow s.path ]) ] }                
-        table |> pkgchk.reporting.Console.table
+    let packageScanTable (scans: PackageAutomationProperty[]) =
+        match scans with
+        | [||] ->
+            { ReportTable.empty with
+                columns = [ green ":check_mark_button: No package automation found." ]
+                showHeaders = true }
+
+        | scans ->
+            { ReportTable.empty with
+                columns = [ orange ":warning:  Package automation found."; "" ]
+                showHeaders = true
+                rows = scans |> Seq.map (fun s -> [ cyan s.propertyType; yellow s.path ]) |> List.ofSeq }
+        |> pkgchk.reporting.Console.table

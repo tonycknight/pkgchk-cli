@@ -33,7 +33,7 @@ module Console =
         table.Border <-
             match value.border with
             | false -> TableBorder.None
-            | true -> TableBorder.Minimalist
+            | true -> TableBorder.Rounded
 
         table.ShowHeaders <- value.showHeaders
 
