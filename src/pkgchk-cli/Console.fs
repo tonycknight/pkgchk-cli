@@ -316,41 +316,42 @@ module Console =
                     [ grey "Readme"; metadataReadme metadata ]
                 if metadata.Tags <> "" then
                     [ grey "Tags"; metadataTags metadata ]
-
-                let deprecation = metadata.Deprecation |> Option.ofNull
+                
                 let message = 
-                    if deprecation |> Option.isSome then
+                    match metadata.Deprecation |> Option.ofNull with
+                    | Some deprecation ->
+                    
                         seq {
                             ":warning:  This version is deprecated." |> error
-                            if deprecation.Value.Description <> "" then
-                                deprecation.Value.Description |> italic |> lightgrey
+                            if deprecation.Description <> "" then
+                                deprecation.Description |> italic |> lightgrey
 
-                            if deprecation.Value.AlternatePackage |> Option.ofNull |> Option.isSome then
+                            if deprecation.AlternatePackage |> Option.ofNull |> Option.isSome then
                                 sprintf
                                     "Consider using %s %s instead."
-                                    deprecation.Value.AlternatePackage.Name
-                                    deprecation.Value.AlternatePackage.Range
+                                    deprecation.AlternatePackage.Name
+                                    deprecation.AlternatePackage.Range
                                 |> Markup.Escape
                                 |> yellow
                         }
                         |> String.join Environment.NewLine
-                    else
-                        green ":check_mark_button: The package is not deprecated."
+                    | _ ->green ":check_mark_button: The package is not deprecated."
                 [ grey "Deprecation"; message ]
 
                 let message =
-                    if metadata.Vulnerabilities |> Seq.isEmpty |> not then
+                    match metadata.Vulnerabilities |> List.ofSeq with
+                    | [] -> green ":check_mark_button: No vulnerabilities found."
+                    | xs -> 
                         seq {
                             ":warning:  This version has known vulnerabilities." |> error
 
                             yield!
-                                metadata.Vulnerabilities
+                                xs
                                 |> Seq.sortByDescending (fun v -> v.Severity)
                                 |> Seq.map (fun v -> $"{v.Severity.ToString() |> error} {v.AdvisoryUrl |> yellow}")
                         }
                         |> String.join Environment.NewLine
-                    else
-                        green ":check_mark_button: No vulnerabilities found."
+                    
                 [ grey "Vulnerabilities"; message ]
             ]
             
