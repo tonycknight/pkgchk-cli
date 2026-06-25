@@ -18,9 +18,9 @@ type MarkdownTable =
 
 module Markdown =
 
-    let h1 (value: string) = $"# {value}"
-    let h2 (value: string) = $"# {value}"
-    let h3 (value: string) = $"# {value}"
+    let hdr1 (value: string) = $"# {value}"
+    let hdr2 (value: string) = $"## {value}"
+    let hdr3 (value: string) = $"### {value}"
     let dividor () = "---"
 
     let table (value: MarkdownTable) =
