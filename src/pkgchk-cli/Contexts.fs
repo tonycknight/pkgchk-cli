@@ -213,7 +213,7 @@ module Context =
     let loadApplyConfig (context: OptionsContext) =
         match context.configFile with
         | x when x <> "" ->
-            let config = x |> Io.fullPath |> Io.normalise |> Config.load
+            let config = x |> Io.fullPath |> Config.load
             config |> applyConfig context
 
         | _ -> context

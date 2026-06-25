@@ -48,7 +48,6 @@
     <Content Include="ScaVulnerabilitySample.json" />
     <Content Include="PackageDependencyTreeSample.json" />
     <Compile Include="Utils.fs" />
-    <Compile Include="Io.fs" />
     <Compile Include="ScaModels.fs" />
     <Compile Include="Process.fs" />
     <Compile Include="Configuration.fs" />

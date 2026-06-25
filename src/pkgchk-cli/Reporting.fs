@@ -20,8 +20,8 @@ module ReportGeneration =
             context.app.report.formats |> Seq.contains fmt
 
         let write name =
-            let directory = Io.composeFilePath context.app.report.reportDirectory
-            Io.writeFile (name |> directory)
+            let path = context.app.report.reportDirectory |> Io.join name
+            Io.writeFile path
 
         let reports =
             [ if required ReportFormat.Markdown then

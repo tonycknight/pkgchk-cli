@@ -43,7 +43,7 @@ module PackageAutomationScanning =
                         |> Io.createDirectory
                         |> _.FullName
                 else
-                    path <- Io.normalise outputDir
+                    path <- Io.fullPath outputDir
 
                 let! packagePath = nuget.DownloadNugetPackageAsync(name, version, path, true)
 
