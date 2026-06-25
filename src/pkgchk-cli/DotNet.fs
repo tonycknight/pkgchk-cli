@@ -218,14 +218,14 @@ module DotNet =
 
             context.options.projectPath
             |> DotNetArgs.restoreArgs
-            |> Process.createProcess
+            |> Process.createDotnet
             |> runRestoreProcParse (Process.run context.services.trace)
 
     let scan (context: DotNetScanContext) =
         context.services.trace "Scanning..."
 
         DotNetArgs.scanArgs context
-        |> Array.map (fun (args, parser) -> (Process.createProcess args, parser))
+        |> Array.map (fun (args, parser) -> (Process.createDotnet args, parser))
         |> Array.map (fun (proc, parser) ->
             match proc |> (Process.run context.services.trace) with
             | Choice1Of2 json -> parser json

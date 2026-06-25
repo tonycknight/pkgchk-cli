@@ -7,11 +7,11 @@ open System.Diagnostics.CodeAnalysis
 [<ExcludeFromCodeCoverage>]
 module Process =
 
-    let createProcess args =
+    let create filename args =
         let p = new Process()
 
         p.StartInfo.UseShellExecute <- false
-        p.StartInfo.FileName <- "dotnet"
+        p.StartInfo.FileName <- filename
         p.StartInfo.Arguments <- args
         p.StartInfo.CreateNoWindow <- true
         p.StartInfo.WindowStyle <- ProcessWindowStyle.Hidden
@@ -19,6 +19,8 @@ module Process =
         p.StartInfo.RedirectStandardOutput <- true
         p.StartInfo.WorkingDirectory <- Environment.CurrentDirectory
         p
+
+    let createDotnet args = create "dotnet" args
 
     let run log (proc: Process) =
         try
