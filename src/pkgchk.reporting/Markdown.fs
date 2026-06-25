@@ -6,7 +6,7 @@ type MarkdownTable =
     { columns: string list
       rows: string list list }
 
-    static member Default =
+    static member empty =
         { MarkdownTable.columns = []
           rows = [] }
 
