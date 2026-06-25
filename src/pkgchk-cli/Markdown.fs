@@ -41,7 +41,7 @@ module Markdown =
     let link url = hyperlink url url
 
     let pkgFramework (hit: ScaHit) =
-        hit.framework |> colourise Rendering.cornflowerblue
+        hit.framework |> colourise Colours.cornflowerblue
 
     let formatReasonColour value =
         value |> colourise (Rendering.reasonColour value)
@@ -66,7 +66,7 @@ module Markdown =
             ""
 
             $"_Built on {now} UTC by [{App.packageId.ToLower()}]({App.repo}) Thank you for using my software._"
-            |> colourise Rendering.grey
+            |> colourise Colours.grey
 
             ""
             "---"
@@ -121,24 +121,24 @@ module Markdown =
         match hit.metadata with
         | None -> seq { }
         | Some meta ->
-            let append = append (sprintf " %s " "-" |> colourise Rendering.grey)
+            let append = append (sprintf " %s " "-" |> colourise Colours.grey)
 
             let licence =
                 (match (meta.license |> Option.ofNull, meta.licenseUrl) with
-                 | (Some x, _) when x <> "" -> x |> escape |> colourise Rendering.yellow |> italic
-                 | (_, Some l) when l <> "" -> l |> escape |> link |> colourise Rendering.yellow |> italic
+                 | (Some x, _) when x <> "" -> x |> escape |> colourise Colours.yellow |> italic
+                 | (_, Some l) when l <> "" -> l |> escape |> link |> colourise Colours.yellow |> italic
                  | _ -> "")
 
             let authors =
                 meta.authors
                 |> String.nonEmpty
-                |> Option.map (escape >> colourise Rendering.darkcyan >> italic)
+                |> Option.map (escape >> colourise Colours.darkcyan >> italic)
                 |> Option.defaultValue ""
 
             let tags =
                 meta.tags
                 |> String.nonEmpty
-                |> Option.map (escape >> colourise Rendering.lightgrey >> italic)
+                |> Option.map (escape >> colourise Colours.lightgrey >> italic)
                 |> Option.defaultValue ""
 
             let project =

@@ -5,42 +5,6 @@ module Rendering =
     [<Literal>]
     let nugetPrefix = "https://www.nuget.org/packages"
 
-    [<Literal>]
-    let white = "white"
-
-    [<Literal>]
-    let lightgrey = "#A0A0A0"
-
-    [<Literal>]
-    let green = "lime"
-
-    [<Literal>]
-    let cyan = "cyan"
-
-    [<Literal>]
-    let lightcyan = "#d7ffff"
-
-    [<Literal>]
-    let darkcyan = "#00af87"
-
-    [<Literal>]
-    let yellow = "yellow"
-
-    [<Literal>]
-    let orange = "#f57a51"
-
-    [<Literal>]
-    let cornflowerblue = "#6495ed"
-
-    [<Literal>]
-    let lightcornflowerblue = "#4475ed"
-
-    [<Literal>]
-    let red = "red"
-
-    [<Literal>]
-    let grey = "grey"
-
     let formatHitKind =
         function
         | ScaHitKind.VulnerabilityTransitive -> "Vulnerable transitive"
@@ -60,17 +24,17 @@ module Rendering =
 
     let reasonColour =
         function
-        | "Critical Bugs" -> red
-        | "Legacy" -> yellow
-        | _ -> cyan
+        | "Critical Bugs" -> Colours.red
+        | "Legacy" -> Colours.yellow
+        | _ -> Colours.cyan
 
     let severityColour =
         function
-        | "High" -> red
-        | "Critical" -> red
-        | "Critical Bugs" -> red
-        | "Moderate" -> orange
-        | _ -> yellow
+        | "High" -> Colours.red
+        | "Critical" -> Colours.red
+        | "Critical Bugs" -> Colours.red
+        | "Moderate" -> Colours.orange
+        | _ -> Colours.yellow
 
     let severityStyle =
         function

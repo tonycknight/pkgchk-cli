@@ -11,21 +11,21 @@ module Console =
 
     let markup (style: string) (value: string) = $"[{style}]{value}[/]"
     let italic = markup "italic"
-    let white = markup Rendering.white
-    let green = markup Rendering.green
-    let cyan = markup Rendering.cyan
-    let lightcyan = markup Rendering.lightcyan
-    let darkcyan = markup Rendering.darkcyan
-    let yellow = markup Rendering.yellow
-    let orange = markup Rendering.orange
-    let blue = markup Rendering.cornflowerblue
-    let error = markup Rendering.red
-    let lightgrey = markup Rendering.lightgrey
+    let white = markup Colours.white
+    let green = markup Colours.green
+    let cyan = markup Colours.cyan
+    let lightcyan = markup Colours.lightcyan
+    let darkcyan = markup Colours.darkcyan
+    let yellow = markup Colours.yellow
+    let orange = markup Colours.orange
+    let blue = markup Colours.cornflowerblue
+    let error = markup Colours.red
+    let lightgrey = markup Colours.lightgrey
 
     let grey =
         match Environment.isRunningGithub with
-        | true -> Rendering.lightgrey
-        | _ -> Rendering.grey
+        | true -> Colours.lightgrey
+        | _ -> Colours.grey
         |> markup
 
     let table () =
@@ -47,7 +47,7 @@ module Console =
 
         value |> markup code
 
-    let colouriseProject = markup $"bold {Rendering.yellow}"
+    let colouriseProject = markup $"bold {Colours.yellow}"
 
     let nugetLinkPkgVsn package version =
         let url = $"{Rendering.nugetPrefix}/{package}/{version}"
@@ -68,8 +68,8 @@ module Console =
 
         let switchColour value =
             match value with
-            | Rendering.cornflowerblue -> Rendering.lightcornflowerblue
-            | _ -> Rendering.cornflowerblue
+            | Colours.cornflowerblue -> Colours.lightcornflowerblue
+            | _ -> Colours.cornflowerblue
 
         fun (hit: ScaHit) ->
             let t = last.[""]
@@ -105,7 +105,7 @@ module Console =
         | ScaHitKind.Vulnerability
         | ScaHitKind.Dependency
         | ScaHitKind.DependencyTransitive ->
-            $"{hitFramework hit} {nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> markup Rendering.lightcyan}"
+            $"{hitFramework hit} {nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> markup Colours.lightcyan}"
         | ScaHitKind.Deprecated ->
             $"{hitFramework hit} {nugetLinkPkgVsn hit.packageId hit.resolvedVersion |> lightcyan}"
         | x -> failwith $"Unrecognised value {x}"
