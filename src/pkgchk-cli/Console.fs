@@ -296,30 +296,26 @@ module Console =
     let metadataTags (metadata: PackageMetadata) =
         metadata.Tags |> Markup.Escape |> grey |> italic
 
-    let packageMetadataTableRows (metadata: PackageMetadata) =
-        let rows =
-            [ [ "Package"; metadataPackageDetails metadata ]
-              if metadata.Authors <> "" then
-                  [ grey "Authors"; metadataAuthors metadata ]
+    let packageMetadataTableRows (metadata: PackageMetadata) =        
+        
+        [   [ "Package"; metadataPackageDetails metadata ]
+            if metadata.Authors <> "" then
+                [ grey "Authors"; metadataAuthors metadata ]
 
-              let licenceLines = metadataLicenceDetails metadata
+            let licenceLines = metadataLicenceDetails metadata
 
-              if licenceLines <> "" then
-                  [ grey "Licence"; licenceLines |> yellow ]
+            if licenceLines <> "" then
+                [ grey "Licence"; licenceLines |> yellow ]
 
-              if metadata.ProjectUrl |> Option.ofNull |> Option.isSome then
-                  [ grey "Project"; metadataProject metadata ]
+            if metadata.ProjectUrl |> Option.ofNull |> Option.isSome then
+                [ grey "Project"; metadataProject metadata ]
 
-              if metadata.ReadmeUrl |> Option.ofNull |> Option.isSome then
-                  [ grey "Readme"; metadataReadme metadata ]
+            if metadata.ReadmeUrl |> Option.ofNull |> Option.isSome then
+                [ grey "Readme"; metadataReadme metadata ]
 
-              if metadata.Tags <> "" then
-                  [ grey "Tags"; metadataTags metadata ]
-            ]
-
-        { ReportTable.empty with
-            columns = [ ""; "" ]
-            rows = rows }
+            if metadata.Tags <> "" then
+                [ grey "Tags"; metadataTags metadata ]
+        ]
 
     let metadataSingleTable (metadata: PackageMetadata) =
         
@@ -365,8 +361,11 @@ module Console =
               [ grey "Vulnerabilities"; message ] ]
 
 
-        let table = packageMetadataTableRows metadata
-        let table = { table with rows = table.rows @ rows }
+        
+        let table = 
+            { ReportTable.empty with 
+                columns = [ ""; "" ]
+                rows = packageMetadataTableRows metadata @ rows }
 
         table |> pkgchk.reporting.Console.table
 
