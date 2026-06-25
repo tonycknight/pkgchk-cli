@@ -52,7 +52,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
             if results.hitCounts |> List.isEmpty |> not then
                 results.hitCounts |> Console.hitSummaryTable
             else
-                pkgchk.Console.green "No upgrades found!" |> CliCommands.console
+                pkgchk.reporting.Console.green "No upgrades found!" |> CliCommands.console
         }
 
     let results (context: ApplicationContext) (hits: seq<ScaHit>) =

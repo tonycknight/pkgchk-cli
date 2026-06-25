@@ -4,6 +4,7 @@ open System
 open System.Diagnostics.CodeAnalysis
 open System.Reflection
 open Microsoft.Extensions.DependencyInjection
+open pkgchk.reporting.Console
 open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]
@@ -61,23 +62,23 @@ module App =
         let upgVsn = (upgradeVersion nuget).Result
 
         seq {
-            Console.cyan packageId
+            cyan packageId
 
             version ()
             |> Option.defaultValue "unknown"
-            |> Console.yellow
+            |> yellow
             |> sprintf "Version %s"
 
-            repo |> Console.cyan |> sprintf "For more information, see %s" |> Console.italic
+            repo |> cyan |> sprintf "For more information, see %s" |> italic
 
-            "Thank you for using my software." |> Console.grey |> Console.italic
+            "Thank you for using my software." |> grey |> italic
 
             if Option.isSome upgVsn then
                 sprintf
                     "%s%s %s"
                     Environment.NewLine
-                    (Console.orange "A new version is available:")
-                    (Console.cyan upgVsn.Value)
+                    (orange "A new version is available:")
+                    (cyan upgVsn.Value)
 
             ""
         }

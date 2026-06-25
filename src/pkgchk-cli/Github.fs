@@ -2,6 +2,7 @@
 
 open System
 open System.Diagnostics.CodeAnalysis
+open pkgchk.reporting.Console
 open Octokit
 
 type GithubComment =
@@ -116,7 +117,7 @@ module Github =
             let! _ = (comment |> setPrComment context.services.trace client repo prId)
 
             $"{comment.title} PR report sent to Github."
-            |> Console.italic
+            |> italic
             |> CliCommands.console
         }
 
@@ -131,6 +132,6 @@ module Github =
             let! _ = comment |> createCheck trace client repo context.github.commit isSuccess
 
             $"Check '{comment.title}' sent to Github."
-            |> Console.italic
+            |> italic
             |> CliCommands.console
         }

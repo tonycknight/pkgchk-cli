@@ -1,14 +1,16 @@
 ﻿namespace pkgchk
 
+open pkgchk.reporting.Console
+
 module CliCommands =
 
     let console = Spectre.Console.AnsiConsole.MarkupLine
 
     let trace traceLogging =
-        if traceLogging then Console.grey >> console else ignore
+        if traceLogging then grey >> console else ignore
 
-    let returnError error =
-        error |> Console.error |> console
+    let returnError msg =
+        msg |> error |> console
         ReturnCodes.sysError
 
     let renderTables (values: seq<Spectre.Console.Table>) =
@@ -23,7 +25,7 @@ module CliCommands =
             |> String.joinPretty ", " " & "
 
         $"{System.Environment.NewLine}Report file(s) {msg} built."
-        |> Console.italic
+        |> italic
         |> console
 
     let returnCode isSuccess =

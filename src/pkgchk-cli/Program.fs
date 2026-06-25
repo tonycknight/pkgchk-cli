@@ -46,5 +46,5 @@ module Program =
         try
             app.Run(argv)
         with ex ->
-            ex.Message |> String.escapeMarkup |> Console.error |> console
+            ex.Message |> String.escapeMarkup |> pkgchk.reporting.Console.error |> console
             ReturnCodes.sysError

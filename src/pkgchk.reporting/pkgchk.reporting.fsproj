@@ -8,8 +8,9 @@
   <ItemGroup>
     <Compile Include="Models.fs" />
     <Compile Include="Markdown.fs" />
-    <Compile Include="JsonReporting.fs" />
     <Compile Include="MarkdownReporting.fs" />
+    <Compile Include="JsonReporting.fs" />
+    <Compile Include="Console.fs" />
     <Compile Include="ConsoleReporting.fs" />
     <Compile Include="GithubReporting.fs" />
   </ItemGroup>
