@@ -296,32 +296,30 @@ module Console =
     let metadataTags (metadata: PackageMetadata) =
         metadata.Tags |> Markup.Escape |> grey |> italic
 
-    let packageMetadataTableRows (metadata: PackageMetadata) =        
-        
-        [   [ "Package"; metadataPackageDetails metadata ]
-            if metadata.Authors <> "" then
-                [ grey "Authors"; metadataAuthors metadata ]
+    let packageMetadataTableRows (metadata: PackageMetadata) =
 
-            let licenceLines = metadataLicenceDetails metadata
+        [ [ "Package"; metadataPackageDetails metadata ]
+          if metadata.Authors <> "" then
+              [ grey "Authors"; metadataAuthors metadata ]
 
-            if licenceLines <> "" then
-                [ grey "Licence"; licenceLines |> yellow ]
+          let licenceLines = metadataLicenceDetails metadata
 
-            if metadata.ProjectUrl |> Option.ofNull |> Option.isSome then
-                [ grey "Project"; metadataProject metadata ]
+          if licenceLines <> "" then
+              [ grey "Licence"; licenceLines |> yellow ]
 
-            if metadata.ReadmeUrl |> Option.ofNull |> Option.isSome then
-                [ grey "Readme"; metadataReadme metadata ]
+          if metadata.ProjectUrl |> Option.ofNull |> Option.isSome then
+              [ grey "Project"; metadataProject metadata ]
 
-            if metadata.Tags <> "" then
-                [ grey "Tags"; metadataTags metadata ]
-        ]
+          if metadata.ReadmeUrl |> Option.ofNull |> Option.isSome then
+              [ grey "Readme"; metadataReadme metadata ]
+
+          if metadata.Tags <> "" then
+              [ grey "Tags"; metadataTags metadata ] ]
 
     let metadataSingleTable (metadata: PackageMetadata) =
-        
+
         let rows =
-            [ 
-              let message =
+            [ let message =
                   match metadata.Deprecation |> Option.ofNull with
                   | Some deprecation ->
 
@@ -361,78 +359,61 @@ module Console =
               [ grey "Vulnerabilities"; message ] ]
 
 
-        
-        let table = 
-            { ReportTable.empty with 
+
+        let table =
+            { ReportTable.empty with
                 columns = [ ""; "" ]
                 rows = packageMetadataTableRows metadata @ rows }
 
         table |> pkgchk.reporting.Console.table
 
     let metadataVersionsTable (versions: PackageMetadata[]) =
-        let table = table () |> tableColumn "" |> tableColumn ""
 
         let metadata =
             match versions |> Seq.filter (fun v -> v.IsPrerelease |> not) |> Seq.tryHead with
             | Some v -> v
             | None -> versions |> Seq.head
 
-        // emit the details of this version to describe the package as a whole
-        table.AddRow [| "Package"; metadataPackageDetails metadata |] |> ignore
+        let versionRows =
+            versions
+            |> Seq.rev
+            |> Seq.map (fun v ->
+                let lines =
+                    seq {
+                        let mutable safe = true
 
-        if metadata.Authors <> "" then
-            table.AddRow [| grey "Authors"; metadataAuthors metadata |] |> ignore
+                        match (v.Published.HasValue, v.IsPrerelease) with
+                        | (true, true) ->
+                            $"Published {v.Published.Value.Date:``yyyy-MM-dd``}"
+                            + (yellow " Prerelease version")
+                        | (true, false) -> $"Published {v.Published.Value.Date:``yyyy-MM-dd``}"
+                        | (false, true) -> yellow "Prerelease version"
+                        | _ -> ""
 
-        let licenceLines = metadataLicenceDetails metadata
+                        if v.Deprecation |> Option.ofNull |> Option.isSome then
+                            error ":warning:  This version is deprecated."
+                            safe <- false
 
-        if licenceLines <> "" then
-            table.AddRow [| grey "Licence"; licenceLines |> yellow |] |> ignore
+                        if v.Vulnerabilities |> Seq.isEmpty |> not then
+                            error ":warning:  This version has known vulnerabilities."
+                            safe <- false
 
-        if metadata.ProjectUrl |> Option.ofNull |> Option.isSome then
-            table.AddRow [| grey "Project"; metadataProject metadata |] |> ignore
+                        if safe then
+                            green ":check_mark_button: No known vulnerabilities or deprecations."
 
-        if metadata.ReadmeUrl |> Option.ofNull |> Option.isSome then
-            table.AddRow [| grey "Readme"; metadataReadme metadata |] |> ignore
+                    }
+                    |> String.join Environment.NewLine
 
-        if metadata.Tags <> "" then
-            table.AddRow [| grey "Tags"; metadataTags metadata |] |> ignore
+                let vsn = nugetLinkPkgVsnOnly metadata.Id v.Version |> cyan
+                [ vsn; lines ])
+            |> List.ofSeq
 
-        // now enumerate the versions
-        table.AddRow [| "Versions"; "" |] |> ignore
+        let table =
+            { ReportTable.empty with
+                columns = [ ""; "" ]
+                rows = packageMetadataTableRows metadata @ ([ "Versions"; "" ] :: versionRows) }
 
-        versions
-        |> Seq.rev
-        |> Seq.iter (fun v ->
-            let lines =
-                seq {
-                    let mutable safe = true
-
-                    match (v.Published.HasValue, v.IsPrerelease) with
-                    | (true, true) ->
-                        $"Published {v.Published.Value.Date:``yyyy-MM-dd``}"
-                        + (yellow " Prerelease version")
-                    | (true, false) -> $"Published {v.Published.Value.Date:``yyyy-MM-dd``}"
-                    | (false, true) -> yellow "Prerelease version"
-                    | _ -> ""
-
-                    if v.Deprecation |> Option.ofNull |> Option.isSome then
-                        error ":warning:  This version is deprecated."
-                        safe <- false
-
-                    if v.Vulnerabilities |> Seq.isEmpty |> not then
-                        error ":warning:  This version has known vulnerabilities."
-                        safe <- false
-
-                    if safe then
-                        green ":check_mark_button: No known vulnerabilities or deprecations."
-
-                }
-                |> String.join Environment.NewLine
-
-            let vsn = nugetLinkPkgVsnOnly metadata.Id v.Version |> cyan
-            table.AddRow [| vsn; lines |] |> ignore)
-
-        table
+        table |> pkgchk.reporting.Console.table
 
     let packageScanTable (scans: PackageAutomationProperty[]) =
         match scans with
