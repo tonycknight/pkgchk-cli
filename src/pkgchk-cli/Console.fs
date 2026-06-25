@@ -245,15 +245,15 @@ module Console =
            fmtSeverity value.kind value.severity
            fmtCount value.count |]
 
-    let hitSummaryTable (counts: seq<ScaHitSummary>) =
-        let table =
-            table () |> tableColumn "Kind" |> tableColumn "Severity" |> tableColumn "Counts"
+    let hitSummaryTable (counts: seq<ScaHitSummary>) =        
+        let table = 
+            { ReportTable.empty with 
+                border = false
+                showHeaders = false
+                columns = [ "Kind"; "Severity"; "Counts" ]
+                rows = counts |> Seq.map (hitSummaryRow >> List.ofSeq) |> List.ofSeq }
 
-        let rows = counts |> Seq.map hitSummaryRow
-
-        rows |> Seq.iter (table.AddRow >> ignore)
-
-        table
+        pkgchk.reporting.Console.table table
 
 
     let metadataLicenceDetails (metadata: PackageMetadata) =
