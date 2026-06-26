@@ -4,25 +4,24 @@ open System.Threading.Tasks
 
 type ReportGeneratorOptions =
     { reportDirectory: string
-      reportName: string
-      imageUri: string }
+      reportName: string }
 
 type ReportGenerationResult = { outPath: string }
 
 type ReportGeneratorFunc<'a, 'b> = ReportGeneratorOptions -> 'a -> Task<'b>
 type ReportBuilderFunc<'a> = ReportGeneratorOptions -> 'a -> Task<ReportGenerationResult>
 
-type ReportGenerator<'a, 'b> =
+type ReportGeneration<'a, 'b> =
     { generate: ReportGeneratorFunc<'a, 'b>
       build: ReportBuilderFunc<'b>
       options: ReportGeneratorOptions
       data: 'a }
 
-    member this.Generate() =
-        task {
-            let! repData = this.data |> this.generate this.options
+    static member gen (context: ReportGeneration<'a, 'b>) =
+        task {            
+            let! repData = context.data |> context.generate context.options
 
-            return! repData |> this.build this.options
+            return! repData |> context.build context.options
         }
 
 type Table =
