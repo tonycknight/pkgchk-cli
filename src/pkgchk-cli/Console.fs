@@ -75,7 +75,7 @@ module Console =
         |> String.joinPretty ", " " or "
         |> sprintf "Vulnerabilities found matching %s"
         |> italic
-        |> Seq.singleton
+        |> Seq.singleton // TODO: this is absurd
 
     let projectTable (project: string) =
         let table =
@@ -220,6 +220,7 @@ module Console =
         |> pkgchk.reporting.Console.table
 
     let severitySettingsTable severities =
+        // TODO: convert to new form
         let table = table () |> tableColumn ""
 
         let row = formatSeverities severities |> Array.ofSeq
@@ -296,30 +297,32 @@ module Console =
     let metadataTags (metadata: PackageMetadata) =
         metadata.Tags |> Markup.Escape |> grey |> italic
 
-    let packageMetadataTableRows (metadata: PackageMetadata) =
+    let packageMetadataTableRows (metadata: PackageMetadata) =        
+        
+        [   [ "Package"; metadataPackageDetails metadata ]
+            if metadata.Authors <> "" then
+                [ grey "Authors"; metadataAuthors metadata ]
 
-        [ [ "Package"; metadataPackageDetails metadata ]
-          if metadata.Authors <> "" then
-              [ grey "Authors"; metadataAuthors metadata ]
+            let licenceLines = metadataLicenceDetails metadata
 
-          let licenceLines = metadataLicenceDetails metadata
+            if licenceLines <> "" then
+                [ grey "Licence"; licenceLines |> yellow ]
 
-          if licenceLines <> "" then
-              [ grey "Licence"; licenceLines |> yellow ]
+            if metadata.ProjectUrl |> Option.ofNull |> Option.isSome then
+                [ grey "Project"; metadataProject metadata ]
 
-          if metadata.ProjectUrl |> Option.ofNull |> Option.isSome then
-              [ grey "Project"; metadataProject metadata ]
+            if metadata.ReadmeUrl |> Option.ofNull |> Option.isSome then
+                [ grey "Readme"; metadataReadme metadata ]
 
-          if metadata.ReadmeUrl |> Option.ofNull |> Option.isSome then
-              [ grey "Readme"; metadataReadme metadata ]
-
-          if metadata.Tags <> "" then
-              [ grey "Tags"; metadataTags metadata ] ]
+            if metadata.Tags <> "" then
+                [ grey "Tags"; metadataTags metadata ]
+        ]
 
     let metadataSingleTable (metadata: PackageMetadata) =
-
+        
         let rows =
-            [ let message =
+            [ 
+              let message =
                   match metadata.Deprecation |> Option.ofNull with
                   | Some deprecation ->
 
@@ -359,57 +362,58 @@ module Console =
               [ grey "Vulnerabilities"; message ] ]
 
 
-
-        let table =
-            { ReportTable.empty with
+        
+        let table = 
+            { ReportTable.empty with 
                 columns = [ ""; "" ]
                 rows = packageMetadataTableRows metadata @ rows }
 
         table |> pkgchk.reporting.Console.table
 
     let metadataVersionsTable (versions: PackageMetadata[]) =
-
+        
         let metadata =
             match versions |> Seq.filter (fun v -> v.IsPrerelease |> not) |> Seq.tryHead with
             | Some v -> v
             | None -> versions |> Seq.head
-
-        let versionRows =
+        
+        let versionRows =            
             versions
             |> Seq.rev
-            |> Seq.map (fun v ->
-                let lines =
-                    seq {
-                        let mutable safe = true
+            |> Seq.map 
+                (fun v ->   
+                    let lines =
+                        seq {
+                            let mutable safe = true
 
-                        match (v.Published.HasValue, v.IsPrerelease) with
-                        | (true, true) ->
-                            $"Published {v.Published.Value.Date:``yyyy-MM-dd``}"
-                            + (yellow " Prerelease version")
-                        | (true, false) -> $"Published {v.Published.Value.Date:``yyyy-MM-dd``}"
-                        | (false, true) -> yellow "Prerelease version"
-                        | _ -> ""
+                            match (v.Published.HasValue, v.IsPrerelease) with
+                            | (true, true) ->
+                                $"Published {v.Published.Value.Date:``yyyy-MM-dd``}"
+                                + (yellow " Prerelease version")
+                            | (true, false) -> $"Published {v.Published.Value.Date:``yyyy-MM-dd``}"
+                            | (false, true) -> yellow "Prerelease version"
+                            | _ -> ""
 
-                        if v.Deprecation |> Option.ofNull |> Option.isSome then
-                            error ":warning:  This version is deprecated."
-                            safe <- false
+                            if v.Deprecation |> Option.ofNull |> Option.isSome then
+                                error ":warning:  This version is deprecated."
+                                safe <- false
 
-                        if v.Vulnerabilities |> Seq.isEmpty |> not then
-                            error ":warning:  This version has known vulnerabilities."
-                            safe <- false
+                            if v.Vulnerabilities |> Seq.isEmpty |> not then
+                                error ":warning:  This version has known vulnerabilities."
+                                safe <- false
 
-                        if safe then
-                            green ":check_mark_button: No known vulnerabilities or deprecations."
+                            if safe then
+                                green ":check_mark_button: No known vulnerabilities or deprecations."
 
-                    }
-                    |> String.join Environment.NewLine
+                        }
+                        |> String.join Environment.NewLine
 
-                let vsn = nugetLinkPkgVsnOnly metadata.Id v.Version |> cyan
-                [ vsn; lines ])
+                    let vsn = nugetLinkPkgVsnOnly metadata.Id v.Version |> cyan
+                    [ vsn; lines ] )
             |> List.ofSeq
-
-        let table =
-            { ReportTable.empty with
+                
+        let table = 
+            { ReportTable.empty with 
                 columns = [ ""; "" ]
                 rows = packageMetadataTableRows metadata @ ([ "Versions"; "" ] :: versionRows) }
 
