@@ -77,13 +77,9 @@ module Console =
         |> italic        
 
     let projectTable (project: string) =
-        let table =            
-            { ReportTable.empty with
-                columns = [ "" ]
-                rows = [ [ (colouriseProject $"Project {project}") ] ] }
-
-        pkgchk.reporting.Console.table table
-
+        colouriseProject $"Project {project}"
+        |> ReportTable.singleRow
+        |> pkgchk.reporting.Console.table
 
     let hitPackage (hit: ScaHit) =
         match hit.kind with
