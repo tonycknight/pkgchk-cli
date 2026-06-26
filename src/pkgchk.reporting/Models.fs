@@ -41,7 +41,7 @@ type Table =
         { Table.columns = [ "" ]
           border = false
           showHeaders = false
-          rows = [ [row]] }
+          rows = [ [ row ] ] }
 
     static member addColumn name table =
         { table with
