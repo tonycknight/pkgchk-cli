@@ -37,6 +37,12 @@ type Table =
           showHeaders = false
           rows = [] }
 
+    static member singleRow row =
+        { Table.columns = [ "" ]
+          border = false
+          showHeaders = false
+          rows = [ [row]] }
+
     static member addColumn name table =
         { table with
             columns = name :: table.columns }

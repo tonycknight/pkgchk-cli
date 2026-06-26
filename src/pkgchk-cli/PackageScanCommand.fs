@@ -56,7 +56,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 results.hitCounts |> Console.vulnerabilityHeadlineTable
                 headlineSet <- true
 
-            if results.hitCounts |> List.isEmpty |> not then
+            if results.hitCounts |>  List.isEmpty |> not then
                 context.options.severities |> Console.severitySettingsTable
                 results.hitCounts |> Console.hitSummaryTable
 

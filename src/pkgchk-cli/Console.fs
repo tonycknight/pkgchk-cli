@@ -74,11 +74,10 @@ module Console =
         |> List.ofSeq
         |> String.joinPretty ", " " or "
         |> sprintf "Vulnerabilities found matching %s"
-        |> italic
-        |> Seq.singleton // TODO: this is absurd
+        |> italic        
 
     let projectTable (project: string) =
-        let table =
+        let table =            
             { ReportTable.empty with
                 columns = [ "" ]
                 rows = [ [ (colouriseProject $"Project {project}") ] ] }
@@ -214,18 +213,14 @@ module Console =
         table.AddRow title
 
     let noscanHeadlineTable () =
-        { ReportTable.empty with
-            columns = [ "" ]
-            rows = [ [ green "Nothing found!" ] ] }
+        green "Nothing found!"
+        |> ReportTable.singleRow
         |> pkgchk.reporting.Console.table
 
-    let severitySettingsTable severities =
-        // TODO: convert to new form
-        let table = table () |> tableColumn ""
-
-        let row = formatSeverities severities |> Array.ofSeq
-
-        table.AddRow row
+    let severitySettingsTable severities =        
+        formatSeverities severities 
+        |> ReportTable.singleRow
+        |> pkgchk.reporting.Console.table
 
     let hitSummaryRow (value: ScaHitSummary) =
         let fmtSeverity kind severity =
