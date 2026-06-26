@@ -78,7 +78,7 @@ type NugetLookupCommand(nuget: INugetClient) =
                                             nuget
                                             settings.PackageId
                                             vsn.Version
-                                            settings.OutputDirectory
+                                            settings.PackageOutputDirectory
 
                                     packageScan <- xs
                             }
