@@ -1,25 +1,8 @@
 ﻿namespace pkgchk
 
+open pkgchk.reporting.Markdown
+
 module Markdown =
-
-    let italic (value: string) = $"_{value}_"
-
-    let escape (value: string) =
-        value.Replace('\r', ' ').Replace('\n', ' ')
-
-    let trimlines (value: string) =
-        value.Split([| '\n'; '\r' |], System.StringSplitOptions.RemoveEmptyEntries)
-        |> Seq.map String.trim
-        |> Seq.filter String.isNotEmpty
-        |> String.join " "
-
-    let append (separator: string) (x: string) (y: string) =
-        if y.Length = 0 then x
-        else if x.Length = 0 then y
-        else $"{y}{separator}{x}"
-
-    let colourise colour value =
-        $"<span style='color:{colour}'>{value}</span>"
 
     let formatSeverityColour value =
         value |> colourise (Rendering.severityColour value)
@@ -27,18 +10,12 @@ module Markdown =
     let formatSeverity value =
         $"{Rendering.severityEmote value} {formatSeverityColour value}"
 
-    let imgLink uri = $"![image]({uri})"
-
     let nugetLinkPkgVsn package version =
         $"[{package} {version}]({Rendering.nugetLink (package, version)})"
 
     let nugetLinkPkgSuggestion package suggestion =
         let url = Rendering.nugetLink (package, "")
         $"[{suggestion}]({url})"
-
-    let hyperlink name url = $"[{name}]({url})"
-
-    let link url = hyperlink url url
 
     let pkgFramework (hit: ScaHit) =
         hit.framework |> colourise Colours.cornflowerblue
@@ -120,7 +97,7 @@ module Markdown =
         match hit.metadata with
         | None -> seq { }
         | Some meta ->
-            let append = append (sprintf " %s " "-" |> colourise Colours.grey)
+            let append = String.append (sprintf " %s " "-" |> colourise Colours.grey)
 
             let licence =
                 (match (meta.license |> Option.ofNull, meta.licenseUrl) with
@@ -148,7 +125,7 @@ module Markdown =
             seq {
                 meta.description
                 |> String.nonEmpty
-                |> Option.map (trimlines >> italic)
+                |> Option.map (String.trimlines >> italic)
                 |> Option.defaultValue ""
 
                 project |> append licence |> append authors |> append tags
@@ -224,7 +201,7 @@ module Markdown =
             yield! titleScan countSummary
 
             if String.isNotEmpty imageUri then
-                yield imgLink imageUri
+                yield image imageUri
 
             yield! formatHitCounts (severities, countSummary)
             yield! formatHits hits
@@ -236,7 +213,7 @@ module Markdown =
             yield! titleUpgrades hits
 
             if String.isNotEmpty imageUri then
-                yield imgLink imageUri
+                yield image imageUri
 
             yield! formatHits hits
             yield! footer

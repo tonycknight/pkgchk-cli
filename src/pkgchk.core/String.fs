@@ -82,3 +82,10 @@ module String =
         match value.Split(delim, StringSplitOptions.None) with
         | [| x; y |] -> (x, y)
         | _ -> ("", value)
+
+    [<DebuggerStepThrough>]
+    let trimlines (value: string) =
+        value.Split([| '\n'; '\r' |], System.StringSplitOptions.RemoveEmptyEntries)
+        |> Seq.map trim
+        |> Seq.filter isNotEmpty
+        |> join " "

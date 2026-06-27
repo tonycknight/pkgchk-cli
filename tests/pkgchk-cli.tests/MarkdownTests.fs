@@ -2,6 +2,7 @@
 
 open System
 open FsCheck.Xunit
+open pkgchk.reporting.Markdown
 open pkgchk.Markdown
 
 module MarkdownTests =
@@ -59,8 +60,8 @@ module MarkdownTests =
         && result.EndsWith($"({pkgchk.Rendering.nugetLink (packageId, String.Empty)})")
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
-    let ``imgLink biulds link`` (uri: string) =
-        let result = pkgchk.Markdown.imgLink uri
+    let ``image builds link`` (uri: string) =
+        let result = pkgchk.reporting.Markdown.image uri
 
         result = $"![image]({uri})"
 
