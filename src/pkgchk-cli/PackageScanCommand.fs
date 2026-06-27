@@ -1,9 +1,9 @@
 ﻿namespace pkgchk
 
 open System.Diagnostics.CodeAnalysis
+open pkgchk.Markdown
 open pkgchk.reporting
 open pkgchk.reporting.Markdown
-open pkgchk.Markdown
 open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]

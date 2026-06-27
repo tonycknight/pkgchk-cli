@@ -2,7 +2,10 @@
 
 open System.Diagnostics.CodeAnalysis
 open pkgchk.Github
+open pkgchk.Markdown
 open pkgchk.reporting
+open pkgchk.reporting.Markdown
+
 open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]
@@ -25,8 +28,19 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                 ReportTable.singleRow (Console.green "No upgrades found!") |> Console.table
         }
 
+    let markdown (hits, imageUri) =
+        seq {
+            yield! titleUpgrades hits
+
+            if String.isNotEmpty imageUri then
+                yield image imageUri
+
+            yield! formatHits hits
+            yield! footer
+        }
+
     let genMarkdownReport (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
-        (results.hits, imageUri) |> Markdown.generateUpgrades
+        (results.hits, imageUri) |> markdown
 
     let genReports (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
         let ctx =
@@ -61,7 +75,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
             | MarkdownFile ->
                 { ((results.hits, (context |> Context.reportImage results.isGoodScan))
                    |> MarkdownReporting.gen options) with
-                    generate = fun _ data -> Markdown.generateUpgrades data |> Task.ofResult }
+                    generate = fun _ data -> markdown data |> Task.ofResult }
                 |> ReportGeneration.gen
             | _ -> ReportGenerationResult.Null |> Task.ofResult)
         |> Task.iter

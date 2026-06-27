@@ -195,21 +195,3 @@ module Markdown =
         |> Seq.groupBy (fun h -> h.projectPath)
         |> Seq.sortBy fst
         |> Seq.collect formatHitGroup
-
-    let generateUpgrades (hits, imageUri) =
-        seq {
-            yield! titleUpgrades hits
-
-            if String.isNotEmpty imageUri then
-                yield image imageUri
-
-            yield! formatHits hits
-            yield! footer
-        }
-
-    let generateList hits =
-        seq {
-            yield! titleList ()
-            yield! formatHits hits
-            yield! footer
-        }

@@ -1,8 +1,9 @@
 ﻿namespace pkgchk
 
+open System.Diagnostics.CodeAnalysis
+open pkgchk.Markdown
 open pkgchk.Github
 open pkgchk.reporting
-open System.Diagnostics.CodeAnalysis
 open Spectre.Console.Cli
 open Tk.Nuget
 
@@ -22,6 +23,13 @@ type PackageLicenceCommand(nuget: INugetClient) =
             | [] -> Console.noscanHeadlineTable ()
             | hits -> hits |> Console.hitsTable
         } |> Seq.map Console.toRenderable
+
+    let markdown hits =
+        seq {
+            yield! titleList ()
+            yield! formatHits hits
+            yield! footer
+        }
     
     let render (context: ApplicationContext, results: ApplicationScanResults) =
         let options =
@@ -43,7 +51,7 @@ type PackageLicenceCommand(nuget: INugetClient) =
             | JsonFile -> results.hits |> JsonReporting.gen options |> ReportGeneration.gen
             | MarkdownFile ->
                 { (results.hits |> MarkdownReporting.gen options) with
-                    generate = fun _ data -> Markdown.generateList data |> Task.ofResult }
+                    generate = fun _ data -> markdown data |> Task.ofResult }
                 |> ReportGeneration.gen
             | _ -> ReportGenerationResult.Null |> Task.ofResult)
         |> Task.iter
@@ -81,7 +89,7 @@ type PackageLicenceCommand(nuget: INugetClient) =
           isGoodScan = filteredHits |> List.isEmpty }
 
     let genComment (context: ApplicationContext, results: ApplicationScanResults) =
-        let markdown = results.hits |> Markdown.generateList |> String.joinLines
+        let markdown = results.hits |> markdown |> String.joinLines
 
         if markdown.Length < Github.maxCommentSize then
             GithubComment.create context.github.summaryTitle markdown
