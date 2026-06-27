@@ -50,14 +50,6 @@ type PackageListCommand(nuget: INugetClient) =
             | _ -> ReportGenerationResult.Null |> Task.ofResult)
         |> Task.iter
 
-    let reportKinds (context: ApplicationContext) =
-        let kinds = [ RenderKind.ConsoleRender ]
-
-        if context.report.reportDirectory <> "" then
-            kinds @ (context.report.formats |> Seq.map ScaModels.toRenderKind |> List.ofSeq)
-        else
-            kinds
-
     let dotnetContext (context: ApplicationContext) =
         { DotNetScanContext.services = context.services
           projectPath = context.options.projectPath
@@ -111,7 +103,7 @@ type PackageListCommand(nuget: INugetClient) =
 
                     let renderResults =
                         (context, results)
-                        |> genReports (reportKinds context)
+                        |> genReports ((Context.renderKinds context))
                         |> Task.result
                         |> ConsoleReporting.renderReportFiles
 

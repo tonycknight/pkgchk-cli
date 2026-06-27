@@ -230,6 +230,14 @@ module Context =
         | true -> context.report.goodImageUri
         | false -> context.report.badImageUri
 
+    let renderKinds (context: ApplicationContext) =
+        let kinds = [ pkgchk.reporting.RenderKind.ConsoleRender ]
+
+        if context.report.reportDirectory <> "" then
+            kinds @ (context.report.formats |> Seq.map ScaModels.toRenderKind |> List.ofSeq)
+        else
+            kinds
+
     let filterPackages (context: OptionsContext) (hits: seq<pkgchk.ScaHit>) =
 
         let isIdMatch (hit: ScaHit) (map: string) =

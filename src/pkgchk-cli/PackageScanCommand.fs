@@ -102,15 +102,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
         { ApplicationScanResults.hits = hits
           hitCounts = errorHits |> ScaModels.hitCountSummary |> List.ofSeq
           isGoodScan = errorHits |> List.isEmpty }
-
-    let reportKinds (context: ApplicationContext) =
-        let kinds = [ RenderKind.ConsoleRender ]
-
-        if context.report.reportDirectory <> "" then
-            kinds @ (context.report.formats |> Seq.map ScaModels.toRenderKind |> List.ofSeq)
-        else
-            kinds
-
+              
     override _.Validate
         (context: CommandContext, settings: PackageScanCommandSettings)
         : Spectre.Console.ValidationResult =
@@ -140,7 +132,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                                         
                     let renderResults =
                         (context, results)
-                        |> render (reportKinds context)
+                        |> render (Context.renderKinds context)
                         |> Task.result
                         |> ConsoleReporting.renderReportFiles
 
