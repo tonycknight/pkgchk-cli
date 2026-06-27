@@ -53,7 +53,6 @@ module Markdown =
     let formatSeverities severities =
         severities
         |> Seq.map formatSeverityColour
-        |> List.ofSeq
         |> String.joinPretty ", " " or "
         |> sprintf "__Vulnerabilities found matching %s__"
 

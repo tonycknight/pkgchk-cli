@@ -12,7 +12,7 @@ module String =
     let joinLines (lines: seq<string>) = join Environment.NewLine lines
 
     [<DebuggerStepThrough>]
-    let joinPretty separator finalSeparator (values: string list) =
+    let joinPretty separator finalSeparator (values: string seq) =
 
         let rec concat (values: string list) (accum: System.Text.StringBuilder) =
             let suffix (sep: string) (accum: System.Text.StringBuilder) =
@@ -27,7 +27,7 @@ module String =
                 let accum = accum |> suffix separator
                 accum.Append(h) |> concat t
 
-        concat values (new System.Text.StringBuilder())
+        concat (List.ofSeq values) (new System.Text.StringBuilder())
 
     [<DebuggerStepThrough>]
     let isEmpty = String.IsNullOrWhiteSpace

@@ -71,7 +71,6 @@ module Console =
     let formatSeverities severities =
         severities
         |> Seq.map colouriseSeverity
-        |> List.ofSeq
         |> String.joinPretty ", " " or "
         |> sprintf "Vulnerabilities found matching %s"
         |> italic
