@@ -17,14 +17,14 @@ module CliCommands =
         values |> Seq.iter Spectre.Console.AnsiConsole.Write
 
     let renderBanner (nuget: Tk.Nuget.INugetClient) = nuget |> App.banner |> console
-
-    let renderReportLines (reportFiles: string list) =
+    // TODO: remove
+    let renderReportLines (reportFiles: string seq) =
         let msg =
             reportFiles
-            |> List.map (fun f -> $"[link={f}]{f}[/]")
+            |> Seq.map (fun f -> $"[link={f}]{f}[/]" |> cyan)
             |> String.joinPretty ", " " & "
-
-        $"{System.Environment.NewLine}Report file(s) {msg} built." |> italic |> console
+        if msg.Length > 0 then
+            $"{System.Environment.NewLine}Report file(s) {msg} built." |> italic |> console
 
     let returnCode isSuccess =
         match isSuccess with

@@ -4,6 +4,7 @@ open pkgchk
 open Spectre.Console
 
 module Console =
+    let console = Spectre.Console.AnsiConsole.MarkupLine
     let toRenderable x =
         x :> Spectre.Console.Rendering.IRenderable
 

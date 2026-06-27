@@ -34,7 +34,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
     let genReports (kinds: ReportKind seq) (context: ApplicationContext, results: ApplicationScanResults, imageUri) =                
         let options = { ReportGeneratorOptions.reportDirectory = context.report.reportDirectory; name = "pkgchk_scan" }
-
+        let console = Spectre.Console.AnsiConsole.Console
         task {
             let mutable reportResults = []
             for kind in kinds do
@@ -44,7 +44,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                         {   ReportGeneration.data = (context, results)
                             options = options
                             generate = fun _ data -> consoleTable data |> Seq.map Console.toRenderable |> List.ofSeq |> Task.ofResult
-                            build = ConsoleReporting.build Spectre.Console.AnsiConsole.Console }
+                            build = ConsoleReporting.build console }
                         |> ReportGeneration.gen
                     | JsonFile ->                             
                         {   ReportGeneration.data = results.hits
@@ -95,6 +95,11 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
           hitCounts = errorHits |> ScaModels.hitCountSummary |> List.ofSeq
           isGoodScan = errorHits |> List.isEmpty }
 
+    let reportKinds (context: ApplicationContext) =
+        let kinds = [ ReportKind.ConsoleRender ]        
+        if context.report.reportDirectory <> "" then kinds @ (context.report.formats |> Seq.map ScaModels.toReportKind |> List.ofSeq)
+        else kinds
+
     override _.Validate
         (context: CommandContext, settings: PackageScanCommandSettings)
         : Spectre.Console.ValidationResult =
@@ -126,22 +131,12 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
                     let reportImg = context |> Context.reportImage results.isGoodScan
 
-                    (context, results, reportImg) 
-                    |> genReports [ ReportKind.ConsoleRender ]
-                    |> Task.result
-                    |> ignore
-                    
-                    if context.report.reportDirectory <> "" then
-                        context.services.trace "Building reports..."
-                        let kinds = context.report.formats |> Seq.map ScaModels.toReportKind
-
+                    let renderResults =
                         (context, results, reportImg) 
-                        |> genReports kinds
-                        |> Task.result 
-                        |> List.map (function | OutputFile path -> path | _ -> "" ) 
-                        |> List.filter (fun s -> s <> "")
-                        |> CliCommands.renderReportLines
-
+                        |> genReports (reportKinds context)
+                        |> Task.result
+                        |> ConsoleReporting.renderReportFiles
+                                                            
                     if Context.hasGithubParameters context then
                         context.services.trace "Building Github reports..."
 
