@@ -34,17 +34,17 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
             return reportResults
         }
         
+    // TODO: move this to genReports above
     let genComment (context: ApplicationContext, (results: ApplicationScanResults), imageUri) =
+        
+        let options = { ReportGeneratorOptions.empty with name = context.github.summaryTitle }
+        
+        {   ReportGeneration.data = (results.hits, results.hitCounts, context.options.severities, imageUri) 
+            options = options
+            generate = fun _ data -> data |> Markdown.generateScan |> Task.ofResult
+            build = GithubReporting.buildComment }
+        |> ReportGeneration.gen |> Task.result
 
-        let markdown = 
-            (results.hits, results.hitCounts, context.options.severities, imageUri) 
-            |> Markdown.generateScan
-            |> String.joinLines
-
-        if markdown.Length < Github.maxCommentSize then
-            GithubComment.create context.github.summaryTitle markdown
-        else
-            GithubComment.create context.github.summaryTitle "_The report is too big for Github - Please check logs_"
 
     let appContext (settings: PackageScanCommandSettings) =
 

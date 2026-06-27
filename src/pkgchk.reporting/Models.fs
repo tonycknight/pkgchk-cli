@@ -5,6 +5,7 @@ open System.Threading.Tasks
 type ReportGeneratorOptions =
     { reportDirectory: string
       name: string }
+    static member empty = { ReportGeneratorOptions.reportDirectory = ""; name = "" }
 
 type ReportGenerationResult =
     | Null
