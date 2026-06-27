@@ -46,7 +46,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 Console.noscanHeadlineTable ()
         }
 
-    let render (kinds: RenderKind seq) (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
+    let render (kinds: RenderKind seq) (context: ApplicationContext, results: ApplicationScanResults) =
         let options =
             { ReportGeneratorOptions.empty with
                 reportDirectory = context.report.reportDirectory
@@ -61,7 +61,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 |> ReportGeneration.gen
             | JsonFile -> results.hits |> JsonReporting.gen options |> ReportGeneration.gen
             | MarkdownFile ->
-                { ((results.hits, results.hitCounts, context.options.severities, imageUri)
+                { ((results.hits, results.hitCounts, context.options.severities, (context |> Context.reportImage results.isGoodScan))
                    |> MarkdownReporting.gen options) with
                     generate = fun _ data -> markdown data |> Task.ofResult }
                 |> ReportGeneration.gen
@@ -137,11 +137,9 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                     let! results = DotNet.getHits scanResults |> results context |> DotNet.enrichHits context
 
                     context.services.trace "Rendering..."
-
-                    let reportImg = context |> Context.reportImage results.isGoodScan
-
+                                        
                     let renderResults =
-                        (context, results, reportImg)
+                        (context, results)
                         |> render (reportKinds context)
                         |> Task.result
                         |> ConsoleReporting.renderReportFiles
@@ -149,6 +147,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                     if Context.hasGithubParameters context then
                         context.services.trace "Building Github reports..."
 
+                        let reportImg = context |> Context.reportImage results.isGoodScan
                         let comment = genComment (context, results, reportImg)
 
                         if String.isNotEmpty context.github.prId then
