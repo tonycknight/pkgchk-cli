@@ -50,6 +50,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
         let options =
             { ReportGeneratorOptions.empty with
                 reportDirectory = context.report.reportDirectory
+                trace = context.services.trace
                 name = "pkgchk-scan" }
 
         context.options.renderKinds
@@ -80,6 +81,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
         let options =
             { ReportGeneratorOptions.empty with
+                trace = context.services.trace
                 name = context.github.summaryTitle }
 
         { ReportGeneration.data = (results.hits, results.hitCounts, context.options.severities, imageUri)

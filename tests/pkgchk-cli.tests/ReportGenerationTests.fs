@@ -30,6 +30,7 @@ module ReportGenerationTests =
           OptionsContext.suppressBanner = false
           OptionsContext.suppressRestore = false
           OptionsContext.breakOnUpgrades = false
+          OptionsContext.renderKinds = [||]
           OptionsContext.projectPath = ""
           OptionsContext.configFile = ""
           OptionsContext.scanVulnerabilities = false

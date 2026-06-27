@@ -43,6 +43,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
         let options =
             { ReportGeneratorOptions.empty with
                 reportDirectory = context.report.reportDirectory
+                trace = context.services.trace
                 name = "pkgchk-upgrades" }
 
         context.options.renderKinds
