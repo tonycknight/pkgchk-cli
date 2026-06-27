@@ -34,17 +34,16 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
     let genReports (kinds: RenderKind seq) (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
         let options =
-            { ReportGeneratorOptions.reportDirectory = context.report.reportDirectory
-              name = "pkgchk-scan" }
+            { ReportGeneratorOptions.empty with
+                reportDirectory = context.report.reportDirectory
+                name = "pkgchk-scan" }
 
         kinds
         |> Seq.map (function
             | ConsoleRender ->
-                { ReportGeneration.data = (context, results)
-                  options = options
-                  generate =
-                    fun _ data -> consoleTable data |> Seq.map Console.toRenderable |> List.ofSeq |> Task.ofResult
-                  build = ConsoleReporting.build context.services.console }
+                { ((context, results) |> ConsoleReporting.gen options) with
+                    generate =
+                        fun _ data -> consoleTable data |> Seq.map Console.toRenderable |> List.ofSeq |> Task.ofResult }
                 |> ReportGeneration.gen
             | JsonFile -> results.hits |> JsonReporting.gen options |> ReportGeneration.gen
             | MarkdownFile ->

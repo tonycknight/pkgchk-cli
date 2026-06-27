@@ -31,17 +31,16 @@ type PackageListCommand(nuget: INugetClient) =
 
     let genReports (kinds: RenderKind seq) (context: ApplicationContext, results: ApplicationScanResults) =
         let options =
-            { ReportGeneratorOptions.reportDirectory = context.report.reportDirectory
-              name = "pkgchk-dependencies" }
+            { ReportGeneratorOptions.empty with
+                reportDirectory = context.report.reportDirectory
+                name = "pkgchk-dependencies" }
 
         kinds
         |> Seq.map (function
             | ConsoleRender ->
-                { ReportGeneration.data = results
-                  options = options
-                  generate =
-                    fun _ data -> consoleTable data |> Seq.map Console.toRenderable |> List.ofSeq |> Task.ofResult
-                  build = ConsoleReporting.build context.services.console }
+                { (results |> ConsoleReporting.gen options) with
+                    generate =
+                        fun _ data -> consoleTable data |> Seq.map Console.toRenderable |> List.ofSeq |> Task.ofResult }
                 |> ReportGeneration.gen
             | JsonFile -> results.hits |> JsonReporting.gen options |> ReportGeneration.gen
             | MarkdownFile ->

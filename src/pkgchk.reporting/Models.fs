@@ -4,11 +4,13 @@ open System.Threading.Tasks
 
 type ReportGeneratorOptions =
     { reportDirectory: string
-      name: string }
+      name: string
+      console: Spectre.Console.IAnsiConsole }
 
     static member empty =
         { ReportGeneratorOptions.reportDirectory = ""
-          name = "" }
+          name = ""
+          console = Spectre.Console.AnsiConsole.Console }
 
 type RenderKind =
     | JsonFile

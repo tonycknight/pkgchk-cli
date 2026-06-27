@@ -13,11 +13,17 @@ module ConsoleReporting =
             return []
         }
 
-    let build (console: IAnsiConsole) (context: ReportGeneratorOptions) (values: IRenderable seq) =
+    let build (context: ReportGeneratorOptions) (values: IRenderable seq) =
         task {
-            values |> Seq.iter console.Write
+            values |> Seq.iter context.console.Write
             return ReportGenerationResult.Null
         }
+
+    let gen options (value: 'a) =
+        { ReportGeneration.data = value
+          options = options
+          generate = generate
+          build = build }
 
     let renderReportFiles (results) =
         let render reportFiles =
