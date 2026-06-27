@@ -19,3 +19,9 @@ module JsonReporting =
 
             return ReportGenerationResult.OutputFile path
         }
+
+    let gen options (value: 'a) =
+        { ReportGeneration.data = value
+          options = options
+          generate = generate
+          build = build }

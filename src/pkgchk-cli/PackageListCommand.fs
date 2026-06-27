@@ -43,12 +43,7 @@ type PackageListCommand(nuget: INugetClient) =
                     fun _ data -> consoleTable data |> Seq.map Console.toRenderable |> List.ofSeq |> Task.ofResult
                   build = ConsoleReporting.build context.services.console }
                 |> ReportGeneration.gen
-            | JsonFile ->
-                { ReportGeneration.data = results.hits
-                  options = options
-                  generate = JsonReporting.generate
-                  build = JsonReporting.build }
-                |> ReportGeneration.gen
+            | JsonFile -> results.hits |> JsonReporting.gen options |> ReportGeneration.gen
             | MarkdownFile ->
                 { ReportGeneration.data = results.hits
                   options = options
