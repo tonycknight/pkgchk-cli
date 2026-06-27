@@ -9,13 +9,13 @@ open Tk.Nuget
 [<ExcludeFromCodeCoverage>]
 type PackageListCommand(nuget: INugetClient) =
     inherit AsyncCommand<PackageListCommandSettings>()
-        
+
     let appContext (settings: PackageListCommandSettings) =
         let context = Context.listContext (nuget, settings)
 
         { context with
             options = Context.loadApplyConfig context.options }
-            
+
     let consoleTable (results: ApplicationScanResults) =
         seq {
             match results.hits with
@@ -29,53 +29,43 @@ type PackageListCommand(nuget: INugetClient) =
     let genMarkdownReport (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
         results.hits |> Markdown.generateList
 
-    let genReports (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
-        let ctx =
-            { ReportGenerationContext.app = context
-              results = results
-              reportName = "pkgchk-dependencies"
-              imageUri = imageUri
-              genMarkdown = genMarkdownReport
-              genJson = ReportGeneration.jsonReport }
+    let genReports (kinds: RenderKind seq) (context: ApplicationContext, results: ApplicationScanResults) =
+        let options =
+            { ReportGeneratorOptions.reportDirectory = context.report.reportDirectory
+              name = "pkgchk-dependencies" }
 
-        ReportGeneration.reports ctx
+        kinds
+        |> Seq.map (function
+            | ConsoleRender ->
+                { ReportGeneration.data = results
+                  options = options
+                  generate =
+                    fun _ data -> consoleTable data |> Seq.map Console.toRenderable |> List.ofSeq |> Task.ofResult
+                  build = ConsoleReporting.build context.services.console }
+                |> ReportGeneration.gen
+            | JsonFile ->
+                { ReportGeneration.data = results.hits
+                  options = options
+                  generate = JsonReporting.generate
+                  build = JsonReporting.build }
+                |> ReportGeneration.gen
+            | MarkdownFile ->
+                { ReportGeneration.data = results.hits
+                  options = options
+                  generate = fun _ data -> Markdown.generateList data |> Task.ofResult
+                  build = MarkdownReporting.build }
+                |> ReportGeneration.gen
+            | _ -> ReportGenerationResult.Null |> Task.ofResult)
+        |> Task.waitAll
 
-    let genReports2 (kinds: RenderKind seq) (context: ApplicationContext, results: ApplicationScanResults) =
-        let options = { ReportGeneratorOptions.reportDirectory = context.report.reportDirectory; name = "pkgchk-dependencies" }
-        
-        task {
-            let mutable reportResults = []
-            for kind in kinds do
-                let! r = 
-                    match kind with
-                    | ConsoleRender ->
-                        {   ReportGeneration.data = results
-                            options = options
-                            generate = fun _ data -> consoleTable data |> Seq.map Console.toRenderable |> List.ofSeq |> Task.ofResult
-                            build = ConsoleReporting.build context.services.console }
-                        |> ReportGeneration.gen
-                    | JsonFile ->                             
-                        {   ReportGeneration.data = results.hits
-                            options = options
-                            generate = JsonReporting.generate; build = JsonReporting.build }
-                        |> ReportGeneration.gen
-                    | MarkdownFile -> 
-                        {   ReportGeneration.data = results.hits
-                            options = options
-                            generate = fun _ data -> Markdown.generateList data |> Task.ofResult
-                            build = MarkdownReporting.build }
-                        |> ReportGeneration.gen                                
-                    | _ -> ReportGenerationResult.Null |> Task.ofResult
-
-                reportResults <- r :: reportResults
-                
-            return reportResults
-        }
 
     let reportKinds (context: ApplicationContext) =
-        let kinds = [ RenderKind.ConsoleRender ]        
-        if context.report.reportDirectory <> "" then kinds @ (context.report.formats |> Seq.map ScaModels.toRenderKind |> List.ofSeq)
-        else kinds        
+        let kinds = [ RenderKind.ConsoleRender ]
+
+        if context.report.reportDirectory <> "" then
+            kinds @ (context.report.formats |> Seq.map ScaModels.toRenderKind |> List.ofSeq)
+        else
+            kinds
 
     let dotnetContext (context: ApplicationContext) =
         { DotNetScanContext.services = context.services
@@ -130,7 +120,7 @@ type PackageListCommand(nuget: INugetClient) =
 
                     let renderResults =
                         (context, results)
-                        |> genReports2 (reportKinds context)
+                        |> genReports (reportKinds context)
                         |> Task.result
                         |> ConsoleReporting.renderReportFiles
 

@@ -3,7 +3,7 @@
 open FsCheck.Xunit
 // TODO: move
 module GithubCommentTests =
-    
+
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``create produces comment`` (title: string, body: string) =
         let r = pkgchk.Github.GithubComment.create title body

@@ -5,7 +5,10 @@ open System.Threading.Tasks
 type ReportGeneratorOptions =
     { reportDirectory: string
       name: string }
-    static member empty = { ReportGeneratorOptions.reportDirectory = ""; name = "" }
+
+    static member empty =
+        { ReportGeneratorOptions.reportDirectory = ""
+          name = "" }
 
 type RenderKind =
     | JsonFile
@@ -15,7 +18,7 @@ type RenderKind =
 
 type ReportGenerationResult =
     | Null
-    | OutputFile of path : string
+    | OutputFile of path: string
     | GithubComment of comment: pkgchk.Github.GithubComment
 
 type ReportGeneratorFunc<'a, 'b> = ReportGeneratorOptions -> 'a -> Task<'b>
@@ -27,8 +30,8 @@ type ReportGeneration<'a, 'b> =
       options: ReportGeneratorOptions
       data: 'a }
 
-    static member gen (context: ReportGeneration<'a, 'b>) =
-        task {            
+    static member gen(context: ReportGeneration<'a, 'b>) =
+        task {
             let! repData = context.data |> context.generate context.options
 
             return! repData |> context.build context.options

@@ -23,6 +23,7 @@ module CliCommands =
             reportFiles
             |> Seq.map (fun f -> $"[link={f}]{f}[/]" |> cyan)
             |> String.joinPretty ", " " & "
+
         if msg.Length > 0 then
             $"{System.Environment.NewLine}Report file(s) {msg} built." |> italic |> console
 

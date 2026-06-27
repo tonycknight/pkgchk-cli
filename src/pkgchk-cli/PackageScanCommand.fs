@@ -13,8 +13,8 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
         let context = Context.scanContext (nuget, settings)
 
         { context with
-            options = Context.loadApplyConfig context.options }                
-    
+            options = Context.loadApplyConfig context.options }
+
     let consoleTable (context: ApplicationContext, results: ApplicationScanResults) =
         seq {
             results.hits |> Console.hitsTable
@@ -32,50 +32,61 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 Console.noscanHeadlineTable ()
         }
 
-    let genReports (kinds: RenderKind seq) (context: ApplicationContext, results: ApplicationScanResults, imageUri) =                
-        let options = { ReportGeneratorOptions.reportDirectory = context.report.reportDirectory; name = "pkgchk_scan" }
-        
+    let genReports (kinds: RenderKind seq) (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
+        let options =
+            { ReportGeneratorOptions.reportDirectory = context.report.reportDirectory
+              name = "pkgchk_scan" }
+
         task {
             let mutable reportResults = []
+
             for kind in kinds do
-                let! r = 
+                let! r =
                     match kind with
                     | ConsoleRender ->
-                        {   ReportGeneration.data = (context, results)
-                            options = options
-                            generate = fun _ data -> consoleTable data |> Seq.map Console.toRenderable |> List.ofSeq |> Task.ofResult
-                            build = ConsoleReporting.build context.services.console }
+                        { ReportGeneration.data = (context, results)
+                          options = options
+                          generate =
+                            fun _ data ->
+                                consoleTable data |> Seq.map Console.toRenderable |> List.ofSeq |> Task.ofResult
+                          build = ConsoleReporting.build context.services.console }
                         |> ReportGeneration.gen
-                    | JsonFile ->                             
-                        {   ReportGeneration.data = results.hits
-                            options = options
-                            generate = JsonReporting.generate; build = JsonReporting.build }
+                    | JsonFile ->
+                        { ReportGeneration.data = results.hits
+                          options = options
+                          generate = JsonReporting.generate
+                          build = JsonReporting.build }
                         |> ReportGeneration.gen
-                    | MarkdownFile -> 
-                        {   ReportGeneration.data = (results.hits, results.hitCounts, context.options.severities, imageUri)
-                            options = options
-                            generate = fun _ data -> Markdown.generateScan data |> Task.ofResult
-                            build = MarkdownReporting.build }
-                        |> ReportGeneration.gen                                
+                    | MarkdownFile ->
+                        { ReportGeneration.data =
+                            (results.hits, results.hitCounts, context.options.severities, imageUri)
+                          options = options
+                          generate = fun _ data -> Markdown.generateScan data |> Task.ofResult
+                          build = MarkdownReporting.build }
+                        |> ReportGeneration.gen
                     | _ -> ReportGenerationResult.Null |> Task.ofResult
 
                 reportResults <- r :: reportResults
-                
+
             return reportResults
         }
-        
+
     // TODO: move this to genReports above
     let genComment (context: ApplicationContext, (results: ApplicationScanResults), imageUri) =
-        
-        let options = { ReportGeneratorOptions.empty with name = context.github.summaryTitle }
-        
-        {   ReportGeneration.data = (results.hits, results.hitCounts, context.options.severities, imageUri) 
-            options = options
-            generate = fun _ data -> data |> Markdown.generateScan |> Task.ofResult
-            build = GithubReporting.buildComment }
-        |> ReportGeneration.gen 
+
+        let options =
+            { ReportGeneratorOptions.empty with
+                name = context.github.summaryTitle }
+
+        { ReportGeneration.data = (results.hits, results.hitCounts, context.options.severities, imageUri)
+          options = options
+          generate = fun _ data -> data |> Markdown.generateScan |> Task.ofResult
+          build = GithubReporting.buildComment }
+        |> ReportGeneration.gen
         |> Task.result
-        |> (function | GithubComment c -> c | _ -> invalidOp "Unrecognised value")
+        |> (function
+        | GithubComment c -> c
+        | _ -> invalidOp "Unrecognised value")
 
     let dotnetContext (context: ApplicationContext) =
         { DotNetScanContext.services = context.services
@@ -96,9 +107,12 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
           isGoodScan = errorHits |> List.isEmpty }
 
     let reportKinds (context: ApplicationContext) =
-        let kinds = [ RenderKind.ConsoleRender ]        
-        if context.report.reportDirectory <> "" then kinds @ (context.report.formats |> Seq.map ScaModels.toRenderKind |> List.ofSeq)
-        else kinds
+        let kinds = [ RenderKind.ConsoleRender ]
+
+        if context.report.reportDirectory <> "" then
+            kinds @ (context.report.formats |> Seq.map ScaModels.toRenderKind |> List.ofSeq)
+        else
+            kinds
 
     override _.Validate
         (context: CommandContext, settings: PackageScanCommandSettings)
@@ -130,11 +144,11 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                     let reportImg = context |> Context.reportImage results.isGoodScan
 
                     let renderResults =
-                        (context, results, reportImg) 
+                        (context, results, reportImg)
                         |> genReports (reportKinds context)
                         |> Task.result
                         |> ConsoleReporting.renderReportFiles
-                                                            
+
                     if Context.hasGithubParameters context then
                         context.services.trace "Building Github reports..."
 

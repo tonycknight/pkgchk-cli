@@ -26,10 +26,13 @@ module GithubReporting =
 
     let buildComment (context: ReportGeneratorOptions) (body: string seq) =
         let body = body |> String.joinLines
-        let body = 
-            if body.Length < Github.maxCommentSize then body
-            else "_The report is too big for Github - Please check logs_"
-                    
+
+        let body =
+            if body.Length < Github.maxCommentSize then
+                body
+            else
+                "_The report is too big for Github - Please check logs_"
+
         GithubComment.create context.name body
         |> ReportGenerationResult.GithubComment
         |> Task.ofResult

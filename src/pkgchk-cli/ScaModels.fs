@@ -91,8 +91,8 @@ module ScaModels =
 
     let toRenderKind (fmt: ReportFormat) =
         match fmt with
-        | ReportFormat.Json -> pkgchk.reporting.RenderKind.JsonFile 
-        | ReportFormat.Markdown -> pkgchk.reporting.RenderKind.MarkdownFile 
+        | ReportFormat.Json -> pkgchk.reporting.RenderKind.JsonFile
+        | ReportFormat.Markdown -> pkgchk.reporting.RenderKind.MarkdownFile
         | _ -> invalidOp "Unrecognised value"
 
     let hitsByLevels levels (hits: ScaHit list) =
