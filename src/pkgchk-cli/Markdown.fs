@@ -196,18 +196,6 @@ module Markdown =
         |> Seq.sortBy fst
         |> Seq.collect formatHitGroup
 
-    let generateScan (hits, countSummary, severities, imageUri) =
-        seq {
-            yield! titleScan countSummary
-
-            if String.isNotEmpty imageUri then
-                yield image imageUri
-
-            yield! formatHitCounts (severities, countSummary)
-            yield! formatHits hits
-            yield! footer
-        }
-
     let generateUpgrades (hits, imageUri) =
         seq {
             yield! titleUpgrades hits

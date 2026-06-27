@@ -2,6 +2,8 @@
 
 open System.Diagnostics.CodeAnalysis
 open pkgchk.reporting
+open pkgchk.reporting.Markdown
+open pkgchk.Markdown
 open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]
@@ -15,7 +17,19 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
         { context with
             options = Context.loadApplyConfig context.options }
 
-    let consoleTable (context: ApplicationContext, results: ApplicationScanResults) =
+    let markdown (hits, countSummary, severities, imageUri) =
+        seq {
+            yield! titleScan countSummary
+
+            if String.isNotEmpty imageUri then
+                yield image imageUri
+
+            yield! formatHitCounts (severities, countSummary)
+            yield! formatHits hits
+            yield! footer
+        }
+
+    let consoleTables (context: ApplicationContext, results: ApplicationScanResults) =
         seq {
             results.hits |> Console.hitsTable
             let mutable headlineSet = false
@@ -32,7 +46,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 Console.noscanHeadlineTable ()
         }
 
-    let genReports (kinds: RenderKind seq) (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
+    let render (kinds: RenderKind seq) (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
         let options =
             { ReportGeneratorOptions.empty with
                 reportDirectory = context.report.reportDirectory
@@ -43,18 +57,18 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
             | ConsoleRender ->
                 { ((context, results) |> ConsoleReporting.gen options) with
                     generate =
-                        fun _ data -> consoleTable data |> Seq.map Console.toRenderable |> List.ofSeq |> Task.ofResult }
+                        fun _ data -> consoleTables data |> Seq.map Console.toRenderable |> List.ofSeq |> Task.ofResult }
                 |> ReportGeneration.gen
             | JsonFile -> results.hits |> JsonReporting.gen options |> ReportGeneration.gen
             | MarkdownFile ->
                 { ((results.hits, results.hitCounts, context.options.severities, imageUri)
                    |> MarkdownReporting.gen options) with
-                    generate = fun _ data -> Markdown.generateScan data |> Task.ofResult }
+                    generate = fun _ data -> markdown data |> Task.ofResult }
                 |> ReportGeneration.gen
             | _ -> ReportGenerationResult.Null |> Task.ofResult)
         |> Task.iter
 
-    // TODO: move this to genReports above
+    // TODO: move this to render above
     let genComment (context: ApplicationContext, (results: ApplicationScanResults), imageUri) =
 
         let options =
@@ -63,7 +77,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
         { ReportGeneration.data = (results.hits, results.hitCounts, context.options.severities, imageUri)
           options = options
-          generate = fun _ data -> data |> Markdown.generateScan |> Task.ofResult
+          generate = fun _ data -> data |> markdown |> Task.ofResult
           build = GithubReporting.buildComment }
         |> ReportGeneration.gen
         |> Task.result
@@ -122,13 +136,13 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 else
                     let! results = DotNet.getHits scanResults |> results context |> DotNet.enrichHits context
 
-                    context.services.trace "Building display..."
+                    context.services.trace "Rendering..."
 
                     let reportImg = context |> Context.reportImage results.isGoodScan
 
                     let renderResults =
                         (context, results, reportImg)
-                        |> genReports (reportKinds context)
+                        |> render (reportKinds context)
                         |> Task.result
                         |> ConsoleReporting.renderReportFiles
 
