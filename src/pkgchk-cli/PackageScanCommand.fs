@@ -12,7 +12,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
         let options = { ReportGeneratorOptions.reportDirectory = context.report.reportDirectory; reportName = "pkgchk_scan" }
 
         task {
-            let mutable reportFiles = []
+            let mutable reportResults = []
             for format in context.report.formats do
                 let! r = 
                     match format with
@@ -28,9 +28,9 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                             build = MarkdownReporting.build }
                         |> ReportGeneration.gen
                     | _ -> invalidOp $"Unrecognised format {format}"
-                reportFiles <- r.outPath :: reportFiles
+                reportResults <- r :: reportResults
                 
-            return reportFiles
+            return reportResults
         }
         
     let genComment (context: ApplicationContext, (results: ApplicationScanResults), imageUri) =
@@ -123,7 +123,12 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                     if context.report.reportDirectory <> "" then
                         context.services.trace "Building reports..."
 
-                        (context, results, reportImg) |> genReports |> Task.result |> CliCommands.renderReportLines
+                        (context, results, reportImg) 
+                        |> genReports 
+                        |> Task.result 
+                        |> List.map (function | OutputFile path -> path | _ -> "" ) 
+                        |> List.filter (fun s -> s <> "")
+                        |> CliCommands.renderReportLines
 
                     if Context.hasGithubParameters context then
                         context.services.trace "Building Github reports..."

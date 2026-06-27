@@ -20,5 +20,5 @@ module MarkdownReporting =
                 |> Io.join reportName
                 |> Io.writeLinesAsync values
 
-            return { ReportGenerationResult.outPath = path }
+            return ReportGenerationResult.OutputFile path
         }

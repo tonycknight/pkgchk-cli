@@ -14,5 +14,5 @@ module ConsoleReporting =
     let build (console: IAnsiConsole) (context: ReportGeneratorOptions) (values: IRenderable seq) =
         task {
             values |> Seq.iter console.Write
-            return { ReportGenerationResult.outPath = "" }
+            return ReportGenerationResult.Null
         }

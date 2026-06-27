@@ -17,5 +17,5 @@ module JsonReporting =
                 |> Io.join reportName
                 |> Io.writeLinesAsync [ value ]
 
-            return { ReportGenerationResult.outPath = path }
+            return ReportGenerationResult.OutputFile path
         }

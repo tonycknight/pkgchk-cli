@@ -6,7 +6,10 @@ type ReportGeneratorOptions =
     { reportDirectory: string
       reportName: string }
 
-type ReportGenerationResult = { outPath: string } // TODO: make a DU
+type ReportGenerationResult =
+    | Null
+    | OutputFile of path : string
+    // TODO: | GithubComment of comment: GithubComment
 
 type ReportGeneratorFunc<'a, 'b> = ReportGeneratorOptions -> 'a -> Task<'b>
 type ReportBuilderFunc<'a> = ReportGeneratorOptions -> 'a -> Task<ReportGenerationResult>
