@@ -9,7 +9,7 @@ type ReportGeneratorOptions =
 type ReportGenerationResult =
     | Null
     | OutputFile of path : string
-    // TODO: | GithubComment of comment: GithubComment
+    | GithubComment of comment: pkgchk.Github.GithubComment
 
 type ReportGeneratorFunc<'a, 'b> = ReportGeneratorOptions -> 'a -> Task<'b>
 type ReportBuilderFunc<'a> = ReportGeneratorOptions -> 'a -> Task<ReportGenerationResult>

@@ -3,15 +3,8 @@
 open System
 open System.Diagnostics.CodeAnalysis
 open pkgchk.reporting.Console
+open pkgchk.Github
 open Octokit
-
-type GithubComment =
-    { title: string
-      body: string }
-
-    static member create title body =
-        { GithubComment.title = (String.defaultValue "pkgchk summary" title)
-          body = body }
 
 module Github =
 

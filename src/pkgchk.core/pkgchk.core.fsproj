@@ -17,6 +17,7 @@
     <Compile Include="Io.fs" />
     <Compile Include="Colours.fs" />
     <Compile Include="Process.fs" />
+    <Compile Include="Github.fs" />
   </ItemGroup>
 
 </Project>

@@ -7,7 +7,7 @@ open NSubstitute
 open Octokit
 open Xunit
 
-type GithubComment = pkgchk.GithubComment
+type GithubComment = pkgchk.Github.GithubComment
 
 module GithubTests =
 

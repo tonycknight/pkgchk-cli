@@ -1,5 +1,6 @@
 ﻿namespace pkgchk
 
+open pkgchk.Github
 open System.Diagnostics.CodeAnalysis
 open Spectre.Console.Cli
 open Tk.Nuget
