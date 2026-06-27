@@ -2,7 +2,6 @@ namespace pkgchk.reporting
 
 open pkgchk
 open Spectre.Console
-open Spectre.Console.Rendering
 
 module Console =
     let toRenderable x =

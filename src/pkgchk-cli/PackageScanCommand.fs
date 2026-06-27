@@ -15,7 +15,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
         { context with
             options = Context.loadApplyConfig context.options }                
     
-    let consoleTable (context: ApplicationContext) (results: ApplicationScanResults) =
+    let consoleTable (context: ApplicationContext, results: ApplicationScanResults) =
         seq {
             results.hits |> Console.hitsTable
             let mutable headlineSet = false
@@ -40,6 +40,12 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
             for kind in kinds do
                 let! r = 
                     match kind with
+                    | ConsoleRender ->
+                        {   ReportGeneration.data = (context, results)
+                            options = options
+                            generate = fun _ data -> consoleTable data |> Seq.map Console.toRenderable |> List.ofSeq |> Task.ofResult
+                            build = ConsoleReporting.build Spectre.Console.AnsiConsole.Console }
+                        |> ReportGeneration.gen
                     | JsonFile ->                             
                         {   ReportGeneration.data = results.hits
                             options = options
@@ -118,7 +124,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
                     context.services.trace "Building display..."
 
-                    consoleTable context results |> CliCommands.renderTables
+                    consoleTable (context, results) |> CliCommands.renderTables
 
                     let reportImg = context |> Context.reportImage results.isGoodScan
 
