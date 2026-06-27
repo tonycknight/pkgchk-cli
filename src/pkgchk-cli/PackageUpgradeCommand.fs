@@ -8,6 +8,22 @@ open Spectre.Console.Cli
 type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
     inherit AsyncCommand<PackageUpgradeCommandSettings>()
 
+    let appContext (settings: PackageUpgradeCommandSettings) =
+        let context = Context.upgradesContext (nuget, settings)
+
+        { context with
+            options = Context.loadApplyConfig context.options }
+
+    let consoleTable (results: ApplicationScanResults) =
+        seq {
+            results.hits |> Console.hitsTable
+
+            if results.hitCounts |> List.isEmpty |> not then
+                results.hitCounts |> Console.hitSummaryTable
+            else
+                pkgchk.reporting.Console.green "No upgrades found!" |> CliCommands.console
+        }
+
     let genMarkdownReport (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
         (results.hits, imageUri) |> Markdown.generateUpgrades
 
@@ -31,12 +47,6 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
         else
             GithubComment.create context.github.summaryTitle "_The report is too big for Github - Please check logs_"
 
-    let appContext (settings: PackageUpgradeCommandSettings) =
-        let context = Context.upgradesContext (nuget, settings)
-
-        { context with
-            options = Context.loadApplyConfig context.options }
-
     let dotnetContext (context: ApplicationContext) =
         { DotNetScanContext.services = context.services
           projectPath = context.options.projectPath
@@ -45,16 +55,6 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
           includeDeprecations = false
           includeDependencies = false
           includeOutdated = true }
-
-    let consoleTable (results: ApplicationScanResults) =
-        seq {
-            results.hits |> Console.hitsTable
-
-            if results.hitCounts |> List.isEmpty |> not then
-                results.hitCounts |> Console.hitSummaryTable
-            else
-                pkgchk.reporting.Console.green "No upgrades found!" |> CliCommands.console
-        }
 
     let results (context: ApplicationContext) (hits: seq<ScaHit>) =
         let hits = hits |> Context.filterPackages context.options |> List.ofSeq
