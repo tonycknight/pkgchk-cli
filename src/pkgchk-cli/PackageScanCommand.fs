@@ -37,39 +37,29 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
             { ReportGeneratorOptions.reportDirectory = context.report.reportDirectory
               name = "pkgchk_scan" }
 
-        task {
-            let mutable reportResults = []
-
-            for kind in kinds do
-                let! r =
-                    match kind with
-                    | ConsoleRender ->
-                        { ReportGeneration.data = (context, results)
-                          options = options
-                          generate =
-                            fun _ data ->
-                                consoleTable data |> Seq.map Console.toRenderable |> List.ofSeq |> Task.ofResult
-                          build = ConsoleReporting.build context.services.console }
-                        |> ReportGeneration.gen
-                    | JsonFile ->
-                        { ReportGeneration.data = results.hits
-                          options = options
-                          generate = JsonReporting.generate
-                          build = JsonReporting.build }
-                        |> ReportGeneration.gen
-                    | MarkdownFile ->
-                        { ReportGeneration.data =
-                            (results.hits, results.hitCounts, context.options.severities, imageUri)
-                          options = options
-                          generate = fun _ data -> Markdown.generateScan data |> Task.ofResult
-                          build = MarkdownReporting.build }
-                        |> ReportGeneration.gen
-                    | _ -> ReportGenerationResult.Null |> Task.ofResult
-
-                reportResults <- r :: reportResults
-
-            return reportResults
-        }
+        kinds
+        |> Seq.map (function
+            | ConsoleRender ->
+                { ReportGeneration.data = (context, results)
+                  options = options
+                  generate =
+                    fun _ data -> consoleTable data |> Seq.map Console.toRenderable |> List.ofSeq |> Task.ofResult
+                  build = ConsoleReporting.build context.services.console }
+                |> ReportGeneration.gen
+            | JsonFile ->
+                { ReportGeneration.data = results.hits
+                  options = options
+                  generate = JsonReporting.generate
+                  build = JsonReporting.build }
+                |> ReportGeneration.gen
+            | MarkdownFile ->
+                { ReportGeneration.data = (results.hits, results.hitCounts, context.options.severities, imageUri)
+                  options = options
+                  generate = fun _ data -> Markdown.generateScan data |> Task.ofResult
+                  build = MarkdownReporting.build }
+                |> ReportGeneration.gen
+            | _ -> ReportGenerationResult.Null |> Task.ofResult)
+        |> Task.iter
 
     // TODO: move this to genReports above
     let genComment (context: ApplicationContext, (results: ApplicationScanResults), imageUri) =

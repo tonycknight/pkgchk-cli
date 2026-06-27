@@ -56,8 +56,7 @@ type PackageListCommand(nuget: INugetClient) =
                   build = MarkdownReporting.build }
                 |> ReportGeneration.gen
             | _ -> ReportGenerationResult.Null |> Task.ofResult)
-        |> Task.waitAll
-
+        |> Task.iter
 
     let reportKinds (context: ApplicationContext) =
         let kinds = [ RenderKind.ConsoleRender ]
