@@ -27,7 +27,8 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                             generate = fun _ data -> Markdown.generateScan data |> Task.ofResult
                             build = MarkdownReporting.build }
                         |> ReportGeneration.gen
-                    | _ -> invalidOp $"Unrecognised format {kind}" // TODO: just ignore
+                    | _ -> ReportGenerationResult.Null |> Task.ofResult
+
                 reportResults <- r :: reportResults
                 
             return reportResults
