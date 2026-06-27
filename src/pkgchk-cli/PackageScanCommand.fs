@@ -1,27 +1,44 @@
 ﻿namespace pkgchk
 
 open System.Diagnostics.CodeAnalysis
+open pkgchk.reporting
 open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]
 type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
     inherit AsyncCommand<PackageScanCommandSettings>()
 
-    let genMarkdownReport (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
-        (results.hits, results.hitCounts, context.options.severities, imageUri)
-        |> Markdown.generateScan
+    let genMarkdownReport  (context: ApplicationContext, results: ApplicationScanResults, imageUri) =        
+        fun (options: ReportGeneratorOptions) x ->            
+            (results.hits, results.hitCounts, context.options.severities, imageUri)
+            |> Markdown.generateScan
+            |> Task.ofResult
+        
+    let genReports (context: ApplicationContext, results: ApplicationScanResults, imageUri) =                
+        let options = { ReportGeneratorOptions.reportDirectory = context.report.reportDirectory; reportName = "pkgchk_scan" }
 
-    let genReports (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
-        let ctx =
-            { ReportGenerationContext.app = context
-              results = results
-              reportName = "pkgchk"
-              imageUri = imageUri
-              genMarkdown = genMarkdownReport
-              genJson = ReportGeneration.jsonReport }
-
-        ReportGeneration.reports ctx
-
+        task {
+            let mutable reportFiles = []
+            for format in context.report.formats do
+                let! r = 
+                    match format with
+                    | ReportFormat.Json ->                             
+                        {   ReportGeneration.data = results.hits
+                            options = options
+                            generate = JsonReporting.generate; build = JsonReporting.build }
+                        |> ReportGeneration.gen
+                    | ReportFormat.Markdown -> 
+                        {   ReportGeneration.data = (results.hits, results.hitCounts, context.options.severities, imageUri)
+                            options = options
+                            generate = genMarkdownReport (context, results, imageUri); // TODO: 
+                            build = MarkdownReporting.build }
+                        |> ReportGeneration.gen
+                    | _ -> invalidOp $"Unrecognised format {format}"
+                reportFiles <- r.outPath :: reportFiles
+                
+            return reportFiles
+        }
+        
     let genComment (context: ApplicationContext, (results: ApplicationScanResults), imageUri) =
 
         let markdown = (context, results, imageUri) |> genMarkdownReport |> String.joinLines
@@ -109,7 +126,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                     if context.report.reportDirectory <> "" then
                         context.services.trace "Building reports..."
 
-                        (context, results, reportImg) |> genReports |> CliCommands.renderReportLines
+                        (context, results, reportImg) |> genReports |> Task.result |> CliCommands.renderReportLines
 
                     if Context.hasGithubParameters context then
                         context.services.trace "Building Github reports..."
