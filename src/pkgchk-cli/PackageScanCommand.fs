@@ -1,7 +1,6 @@
 ﻿namespace pkgchk
 
 open System.Diagnostics.CodeAnalysis
-open pkgchk.Github
 open pkgchk.reporting
 open Spectre.Console.Cli
 
@@ -43,8 +42,10 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
             options = options
             generate = fun _ data -> data |> Markdown.generateScan |> Task.ofResult
             build = GithubReporting.buildComment }
-        |> ReportGeneration.gen |> Task.result
-
+        |> ReportGeneration.gen 
+        |> Task.result
+        |> (function | GithubComment c -> c | _ -> invalidOp "Unrecognised value")
+        
 
     let appContext (settings: PackageScanCommandSettings) =
 
