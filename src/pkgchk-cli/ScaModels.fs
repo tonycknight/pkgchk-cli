@@ -89,6 +89,12 @@ type PackageAutomationProperty =
 
 module ScaModels =
 
+    let toReportKind (fmt: ReportFormat) =
+        match fmt with
+        | ReportFormat.Json -> pkgchk.reporting.ReportKind.JsonFile 
+        | ReportFormat.Markdown -> pkgchk.reporting.ReportKind.MarkdownFile 
+        | _ -> invalidOp "Unrecognised value"
+
     let hitsByLevels levels (hits: ScaHit list) =
         let levels = levels |> HashSet.ofSeq StringComparer.InvariantCultureIgnoreCase
 

@@ -8,26 +8,26 @@ open Spectre.Console.Cli
 type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
     inherit AsyncCommand<PackageScanCommandSettings>()
                 
-    let genReports (context: ApplicationContext, results: ApplicationScanResults, imageUri) =                
+    let genReports (kinds: ReportKind seq) (context: ApplicationContext, results: ApplicationScanResults, imageUri) =                
         let options = { ReportGeneratorOptions.reportDirectory = context.report.reportDirectory; name = "pkgchk_scan" }
 
         task {
             let mutable reportResults = []
-            for format in context.report.formats do
+            for kind in kinds do
                 let! r = 
-                    match format with
-                    | ReportFormat.Json ->                             
+                    match kind with
+                    | JsonFile ->                             
                         {   ReportGeneration.data = results.hits
                             options = options
                             generate = JsonReporting.generate; build = JsonReporting.build }
                         |> ReportGeneration.gen
-                    | ReportFormat.Markdown -> 
+                    | MarkdownFile -> 
                         {   ReportGeneration.data = (results.hits, results.hitCounts, context.options.severities, imageUri)
                             options = options
                             generate = fun _ data -> Markdown.generateScan data |> Task.ofResult
                             build = MarkdownReporting.build }
                         |> ReportGeneration.gen
-                    | _ -> invalidOp $"Unrecognised format {format}"
+                    | _ -> invalidOp $"Unrecognised format {kind}" // TODO: just ignore
                 reportResults <- r :: reportResults
                 
             return reportResults
@@ -124,9 +124,10 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
                     if context.report.reportDirectory <> "" then
                         context.services.trace "Building reports..."
+                        let kinds = context.report.formats |> Seq.map ScaModels.toReportKind
 
                         (context, results, reportImg) 
-                        |> genReports 
+                        |> genReports kinds
                         |> Task.result 
                         |> List.map (function | OutputFile path -> path | _ -> "" ) 
                         |> List.filter (fun s -> s <> "")
