@@ -11,6 +11,8 @@ type ReportKind =
     | JsonFile
     | MarkdownFile
     | GithubComment
+    | GithubPrComment
+    | GithubCheck
     | ConsoleRender
 
 type ReportGenerationResult =

@@ -7,7 +7,31 @@ open Spectre.Console.Cli
 [<ExcludeFromCodeCoverage>]
 type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
     inherit AsyncCommand<PackageScanCommandSettings>()
-                
+
+    let appContext (settings: PackageScanCommandSettings) =
+
+        let context = Context.scanContext (nuget, settings)
+
+        { context with
+            options = Context.loadApplyConfig context.options }                
+    
+    let consoleTable (context: ApplicationContext) (results: ApplicationScanResults) =
+        seq {
+            results.hits |> Console.hitsTable
+            let mutable headlineSet = false
+
+            if context.options.scanVulnerabilities || context.options.scanDeprecations then
+                results.hitCounts |> Console.vulnerabilityHeadlineTable
+                headlineSet <- true
+
+            if results.hitCounts |> List.isEmpty |> not then
+                context.options.severities |> Console.severitySettingsTable
+                results.hitCounts |> Console.hitSummaryTable
+
+            else if (not headlineSet) then
+                Console.noscanHeadlineTable ()
+        }
+
     let genReports (kinds: ReportKind seq) (context: ApplicationContext, results: ApplicationScanResults, imageUri) =                
         let options = { ReportGeneratorOptions.reportDirectory = context.report.reportDirectory; name = "pkgchk_scan" }
 
@@ -46,14 +70,6 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
         |> ReportGeneration.gen 
         |> Task.result
         |> (function | GithubComment c -> c | _ -> invalidOp "Unrecognised value")
-        
-
-    let appContext (settings: PackageScanCommandSettings) =
-
-        let context = Context.scanContext (nuget, settings)
-
-        { context with
-            options = Context.loadApplyConfig context.options }
 
     let dotnetContext (context: ApplicationContext) =
         { DotNetScanContext.services = context.services
@@ -63,23 +79,6 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
           includeDeprecations = context.options.scanDeprecations
           includeDependencies = false
           includeOutdated = false }
-
-    let consoleTable (context: ApplicationContext) (results: ApplicationScanResults) =
-        seq {
-            results.hits |> Console.hitsTable
-            let mutable headlineSet = false
-
-            if context.options.scanVulnerabilities || context.options.scanDeprecations then
-                results.hitCounts |> Console.vulnerabilityHeadlineTable
-                headlineSet <- true
-
-            if results.hitCounts |> List.isEmpty |> not then
-                context.options.severities |> Console.severitySettingsTable
-                results.hitCounts |> Console.hitSummaryTable
-
-            else if (not headlineSet) then
-                Console.noscanHeadlineTable ()
-        }
 
     let results (context: ApplicationContext) (hits: seq<ScaHit>) =
         let hits = hits |> Context.filterPackages context.options |> List.ofSeq
