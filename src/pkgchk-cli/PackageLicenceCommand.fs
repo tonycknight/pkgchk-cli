@@ -16,13 +16,14 @@ type PackageLicenceCommand(nuget: INugetClient) =
 
         { context with
             options = Context.loadApplyConfig context.options }
-                        
+
     let consoleTables (results: ApplicationScanResults) =
         seq {
             match results.hits with
             | [] -> Console.noscanHeadlineTable ()
             | hits -> hits |> Console.hitsTable
-        } |> Seq.map Console.toRenderable
+        }
+        |> Seq.map Console.toRenderable
 
     let markdown hits =
         seq {
@@ -30,7 +31,7 @@ type PackageLicenceCommand(nuget: INugetClient) =
             yield! formatHits hits
             yield! footer
         }
-    
+
     let render (context: ApplicationContext, results: ApplicationScanResults) =
         let options =
             { ReportGeneratorOptions.empty with
@@ -42,11 +43,7 @@ type PackageLicenceCommand(nuget: INugetClient) =
         |> Seq.map (function
             | ConsoleRender ->
                 { (results |> ConsoleReporting.gen options) with
-                    generate =
-                        fun _ data ->
-                            consoleTables data
-                            |> List.ofSeq
-                            |> Task.ofResult }
+                    generate = fun _ data -> consoleTables data |> List.ofSeq |> Task.ofResult }
                 |> ReportGeneration.gen
             | JsonFile -> results.hits |> JsonReporting.gen options |> ReportGeneration.gen
             | MarkdownFile ->
@@ -120,7 +117,12 @@ type PackageLicenceCommand(nuget: INugetClient) =
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
 
-                    let! results = scanResults |> DotNet.getHits |> results context |> DotNet.enrichHits context |> Task.map (filterLicenceHits context)
+                    let! results =
+                        scanResults
+                        |> DotNet.getHits
+                        |> results context
+                        |> DotNet.enrichHits context
+                        |> Task.map (filterLicenceHits context)
 
                     context.services.trace "Rendering..."
 

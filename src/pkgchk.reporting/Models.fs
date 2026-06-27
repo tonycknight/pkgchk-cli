@@ -5,13 +5,13 @@ open System.Threading.Tasks
 type ReportGeneratorOptions =
     { reportDirectory: string
       name: string
-      console: Spectre.Console.IAnsiConsole 
+      console: Spectre.Console.IAnsiConsole
       trace: string -> unit }
 
     static member empty =
         { ReportGeneratorOptions.reportDirectory = ""
           name = ""
-          trace = ignore // TODO:
+          trace = ignore
           console = Spectre.Console.AnsiConsole.Console }
 
 type RenderKind =
