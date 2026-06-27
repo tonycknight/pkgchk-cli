@@ -1,6 +1,7 @@
 ﻿namespace pkgchk
 
 open pkgchk.Github
+open pkgchk.reporting
 open System.Diagnostics.CodeAnalysis
 open Spectre.Console.Cli
 open Tk.Nuget
@@ -9,25 +10,46 @@ open Tk.Nuget
 type PackageLicenceCommand(nuget: INugetClient) =
     inherit AsyncCommand<PackageLicenceCommandSettings>()
 
-    let genMarkdownReport (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
-        results.hits |> Markdown.generateList
-
-    let genReports (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
-        let ctx =
-            { ReportGenerationContext.app = context
-              results = results
-              reportName = "pkgchk-licence-scan"
-              imageUri = imageUri
-              genMarkdown = genMarkdownReport
-              genJson = ReportGeneration.jsonReport }
-
-        ReportGeneration.reports ctx
-
     let appContext (settings: PackageLicenceCommandSettings) =
         let context = Context.licenceContext (nuget, settings)
 
         { context with
             options = Context.loadApplyConfig context.options }
+                        
+    let consoleTables (results: ApplicationScanResults) =
+        seq {
+            match results.hits with
+            | [] -> Console.noscanHeadlineTable ()
+            | hits -> hits |> Console.hitsTable
+
+            if results.hitCounts |> List.isEmpty |> not then
+                results.hitCounts |> Console.hitSummaryTable
+        } |> Seq.map Console.toRenderable
+    
+    let render (context: ApplicationContext, results: ApplicationScanResults) =
+        let options =
+            { ReportGeneratorOptions.empty with
+                reportDirectory = context.report.reportDirectory
+                trace = context.services.trace
+                name = "pkgchk-licence-scan" }
+
+        context.options.renderKinds
+        |> Seq.map (function
+            | ConsoleRender ->
+                { (results |> ConsoleReporting.gen options) with
+                    generate =
+                        fun _ data ->
+                            consoleTables data
+                            |> List.ofSeq
+                            |> Task.ofResult }
+                |> ReportGeneration.gen
+            | JsonFile -> results.hits |> JsonReporting.gen options |> ReportGeneration.gen
+            | MarkdownFile ->
+                { (results.hits |> MarkdownReporting.gen options) with
+                    generate = fun _ data -> Markdown.generateList data |> Task.ofResult }
+                |> ReportGeneration.gen
+            | _ -> ReportGenerationResult.Null |> Task.ofResult)
+        |> Task.iter
 
     let dotnetContext (context: ApplicationContext) =
         { DotNetScanContext.services = context.services
@@ -61,18 +83,8 @@ type PackageLicenceCommand(nuget: INugetClient) =
           hitCounts = filteredHits |> ScaModels.hitCountSummary |> List.ofSeq
           isGoodScan = filteredHits |> List.isEmpty }
 
-    let consoleTable (results: ApplicationScanResults) =
-        seq {
-            match results.hits with
-            | [] -> Console.noscanHeadlineTable ()
-            | hits -> hits |> Console.hitsTable
-
-            if results.hitCounts |> List.isEmpty |> not then
-                results.hitCounts |> Console.hitSummaryTable
-        }
-
     let genComment (context: ApplicationContext, results: ApplicationScanResults) =
-        let markdown = (context, results, "") |> genMarkdownReport |> String.joinLines
+        let markdown = results.hits |> Markdown.generateList |> String.joinLines
 
         if markdown.Length < Github.maxCommentSize then
             GithubComment.create context.github.summaryTitle markdown
@@ -107,14 +119,9 @@ type PackageLicenceCommand(nuget: INugetClient) =
 
                     let results = results |> filterLicenceHits context
 
-                    context.services.trace "Building display..."
+                    context.services.trace "Rendering..."
 
-                    results |> consoleTable |> CliCommands.renderTables
-
-                    if context.report.reportDirectory <> "" then
-                        context.services.trace "Building reports..."
-
-                        (context, results, "") |> genReports |> CliCommands.renderReportLines
+                    let! renderResults = (context, results) |> render |> Task.map ConsoleReporting.renderReportFiles
 
                     if Context.hasGithubParameters context then
                         context.services.trace "Building Github reports..."
