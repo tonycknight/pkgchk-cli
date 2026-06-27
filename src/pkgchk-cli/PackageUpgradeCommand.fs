@@ -2,6 +2,7 @@
 
 open System.Diagnostics.CodeAnalysis
 open pkgchk.Github
+open pkgchk.reporting
 open Spectre.Console.Cli
 
 [<ExcludeFromCodeCoverage>]
@@ -14,14 +15,15 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
         { context with
             options = Context.loadApplyConfig context.options }
 
-    let consoleTable (results: ApplicationScanResults) =
+    let consoleTables (results: ApplicationScanResults) =
         seq {
             results.hits |> Console.hitsTable
 
             if results.hitCounts |> List.isEmpty |> not then
                 results.hitCounts |> Console.hitSummaryTable
             else
-                pkgchk.reporting.Console.green "No upgrades found!" |> CliCommands.console
+                ReportTable.singleRow (Console.green "No upgrades found!") 
+                |> Console.table                
         }
 
     let genMarkdownReport (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
@@ -37,6 +39,28 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
               genJson = ReportGeneration.jsonReport }
 
         ReportGeneration.reports ctx
+
+    let render (kinds: RenderKind seq) (context: ApplicationContext, results: ApplicationScanResults) =
+        let options =
+            { ReportGeneratorOptions.empty with
+                reportDirectory = context.report.reportDirectory
+                name = "pkgchk-upgrades" }
+
+        kinds
+        |> Seq.map (function
+            | ConsoleRender ->
+                { (results |> ConsoleReporting.gen options) with
+                    generate =
+                        fun _ data -> consoleTables data |> Seq.map Console.toRenderable |> List.ofSeq |> Task.ofResult }
+                |> ReportGeneration.gen
+            | JsonFile -> results.hits |> JsonReporting.gen options |> ReportGeneration.gen
+            | MarkdownFile ->
+                { ((results.hits, (context |> Context.reportImage results.isGoodScan))
+                   |> MarkdownReporting.gen options) with
+                    generate = fun _ data -> Markdown.generateUpgrades data |> Task.ofResult }
+                |> ReportGeneration.gen
+            | _ -> ReportGenerationResult.Null |> Task.ofResult)
+        |> Task.iter
 
     let genComment (context: ApplicationContext, (results: ApplicationScanResults), reportImg) =
         let markdown =
@@ -89,18 +113,17 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
                     let! results = DotNet.getHits scanResults |> results context |> DotNet.enrichHits context
 
-                    context.services.trace "Building display..."
-                    results |> consoleTable |> CliCommands.renderTables
+                    context.services.trace "Rendering..."
 
-                    let reportImg = context |> Context.reportImage results.isGoodScan
-
-                    if context.report.reportDirectory <> "" then
-                        context.services.trace "Building reports..."
-
-                        (context, results, reportImg) |> genReports |> CliCommands.renderReportLines
+                    let renderResults =
+                        (context, results)
+                        |> render (Context.renderKinds context)
+                        |> Task.result
+                        |> ConsoleReporting.renderReportFiles
 
                     if Context.hasGithubParameters context then
                         context.services.trace "Building Github reports..."
+                        let reportImg = context |> Context.reportImage results.isGoodScan
                         let comment = genComment (context, results, reportImg)
 
                         if String.isNotEmpty context.github.prId then
