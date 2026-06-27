@@ -130,11 +130,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
                     context.services.trace "Rendering..."
                                         
-                    let renderResults =
-                        (context, results)
-                        |> render
-                        |> Task.result
-                        |> ConsoleReporting.renderReportFiles
+                    let! renderResults = (context, results) |> render |> Task.map ConsoleReporting.renderReportFiles
 
                     if Context.hasGithubParameters context then
                         context.services.trace "Building Github reports..."

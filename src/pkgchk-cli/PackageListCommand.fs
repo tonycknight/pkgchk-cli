@@ -29,7 +29,7 @@ type PackageListCommand(nuget: INugetClient) =
     let genMarkdownReport (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
         results.hits |> Markdown.generateList
 
-    let genReports (context: ApplicationContext, results: ApplicationScanResults) =
+    let render (context: ApplicationContext, results: ApplicationScanResults) =
         let options =
             { ReportGeneratorOptions.empty with
                 reportDirectory = context.report.reportDirectory
@@ -101,11 +101,7 @@ type PackageListCommand(nuget: INugetClient) =
 
                     context.services.trace "Building display..."
 
-                    let renderResults =
-                        (context, results)
-                        |> genReports
-                        |> Task.result
-                        |> ConsoleReporting.renderReportFiles
+                    let! renderResults = (context, results) |> render |> Task.map ConsoleReporting.renderReportFiles
 
                     if Context.hasGithubParameters context then
                         context.services.trace "Building Github reports..."
