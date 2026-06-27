@@ -7,12 +7,10 @@ type ReportGeneratorOptions =
       name: string }
     static member empty = { ReportGeneratorOptions.reportDirectory = ""; name = "" }
 
-type ReportKind =
+type RenderKind =
     | JsonFile
     | MarkdownFile
     | GithubComment
-    | GithubPrComment
-    | GithubCheck
     | ConsoleRender
 
 type ReportGenerationResult =

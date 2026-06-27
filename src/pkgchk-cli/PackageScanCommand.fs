@@ -32,7 +32,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 Console.noscanHeadlineTable ()
         }
 
-    let genReports (kinds: ReportKind seq) (context: ApplicationContext, results: ApplicationScanResults, imageUri) =                
+    let genReports (kinds: RenderKind seq) (context: ApplicationContext, results: ApplicationScanResults, imageUri) =                
         let options = { ReportGeneratorOptions.reportDirectory = context.report.reportDirectory; name = "pkgchk_scan" }
         
         task {
@@ -56,7 +56,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                             options = options
                             generate = fun _ data -> Markdown.generateScan data |> Task.ofResult
                             build = MarkdownReporting.build }
-                        |> ReportGeneration.gen
+                        |> ReportGeneration.gen                                
                     | _ -> ReportGenerationResult.Null |> Task.ofResult
 
                 reportResults <- r :: reportResults
@@ -96,8 +96,8 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
           isGoodScan = errorHits |> List.isEmpty }
 
     let reportKinds (context: ApplicationContext) =
-        let kinds = [ ReportKind.ConsoleRender ]        
-        if context.report.reportDirectory <> "" then kinds @ (context.report.formats |> Seq.map ScaModels.toReportKind |> List.ofSeq)
+        let kinds = [ RenderKind.ConsoleRender ]        
+        if context.report.reportDirectory <> "" then kinds @ (context.report.formats |> Seq.map ScaModels.toRenderKind |> List.ofSeq)
         else kinds
 
     override _.Validate
