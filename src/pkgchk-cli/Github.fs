@@ -8,9 +8,6 @@ open Octokit
 
 module Github =
 
-    [<Literal>]
-    let maxCommentSize = 65536
-
     [<ExcludeFromCodeCoverage>]
     let client token =
         let header = new ProductHeaderValue(App.packageId)
