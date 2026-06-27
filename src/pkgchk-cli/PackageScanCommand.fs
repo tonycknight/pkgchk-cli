@@ -47,10 +47,9 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 |> ReportGeneration.gen
             | JsonFile -> results.hits |> JsonReporting.gen options |> ReportGeneration.gen
             | MarkdownFile ->
-                { ReportGeneration.data = (results.hits, results.hitCounts, context.options.severities, imageUri)
-                  options = options
-                  generate = fun _ data -> Markdown.generateScan data |> Task.ofResult
-                  build = MarkdownReporting.build }
+                { ((results.hits, results.hitCounts, context.options.severities, imageUri)
+                   |> MarkdownReporting.gen options) with
+                    generate = fun _ data -> Markdown.generateScan data |> Task.ofResult }
                 |> ReportGeneration.gen
             | _ -> ReportGenerationResult.Null |> Task.ofResult)
         |> Task.iter

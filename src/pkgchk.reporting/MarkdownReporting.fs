@@ -7,7 +7,7 @@ module MarkdownReporting =
     let generate (context: ReportGeneratorOptions) (value: 'a) =
         task {
             // TODO: need to build a markdown representation as a seq of strings
-            return [ "# Report generated here" ]
+            return seq { "# Report generated here" }
         }
 
     let build (context: ReportGeneratorOptions) (values: string seq) =
@@ -22,3 +22,9 @@ module MarkdownReporting =
 
             return ReportGenerationResult.OutputFile path
         }
+
+    let gen options (value: 'a) =
+        { ReportGeneration.data = value
+          options = options
+          generate = generate
+          build = build }

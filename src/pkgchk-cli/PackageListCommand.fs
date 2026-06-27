@@ -44,10 +44,8 @@ type PackageListCommand(nuget: INugetClient) =
                 |> ReportGeneration.gen
             | JsonFile -> results.hits |> JsonReporting.gen options |> ReportGeneration.gen
             | MarkdownFile ->
-                { ReportGeneration.data = results.hits
-                  options = options
-                  generate = fun _ data -> Markdown.generateList data |> Task.ofResult
-                  build = MarkdownReporting.build }
+                { (results.hits |> MarkdownReporting.gen options) with
+                    generate = fun _ data -> Markdown.generateList data |> Task.ofResult }
                 |> ReportGeneration.gen
             | _ -> ReportGenerationResult.Null |> Task.ofResult)
         |> Task.iter
