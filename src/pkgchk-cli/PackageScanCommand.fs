@@ -46,13 +46,13 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 Console.noscanHeadlineTable ()
         }
 
-    let render (kinds: RenderKind seq) (context: ApplicationContext, results: ApplicationScanResults) =
+    let render (context: ApplicationContext, results: ApplicationScanResults) =
         let options =
             { ReportGeneratorOptions.empty with
                 reportDirectory = context.report.reportDirectory
                 name = "pkgchk-scan" }
 
-        kinds
+        context.options.renderKinds
         |> Seq.map (function
             | ConsoleRender ->
                 { ((context, results) |> ConsoleReporting.gen options) with
@@ -132,7 +132,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                                         
                     let renderResults =
                         (context, results)
-                        |> render (Context.renderKinds context)
+                        |> render
                         |> Task.result
                         |> ConsoleReporting.renderReportFiles
 

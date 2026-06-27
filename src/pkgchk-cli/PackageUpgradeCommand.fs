@@ -40,13 +40,13 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
         ReportGeneration.reports ctx
 
-    let render (kinds: RenderKind seq) (context: ApplicationContext, results: ApplicationScanResults) =
+    let render (context: ApplicationContext, results: ApplicationScanResults) =
         let options =
             { ReportGeneratorOptions.empty with
                 reportDirectory = context.report.reportDirectory
                 name = "pkgchk-upgrades" }
 
-        kinds
+        context.options.renderKinds
         |> Seq.map (function
             | ConsoleRender ->
                 { (results |> ConsoleReporting.gen options) with
@@ -117,7 +117,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
                     let renderResults =
                         (context, results)
-                        |> render (Context.renderKinds context)
+                        |> render
                         |> Task.result
                         |> ConsoleReporting.renderReportFiles
 

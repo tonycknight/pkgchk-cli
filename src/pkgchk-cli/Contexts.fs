@@ -22,6 +22,7 @@ type OptionsContext =
       configFile: string
       suppressBanner: bool
       suppressRestore: bool
+      renderKinds: pkgchk.reporting.RenderKind[]
       includePackages: string[]
       excludePackages: string[]
       breakOnUpgrades: bool
@@ -39,6 +40,7 @@ type OptionsContext =
           configFile = ""
           suppressBanner = false
           suppressRestore = false
+          renderKinds = [| pkgchk.reporting.RenderKind.ConsoleRender |]
           includePackages = [||]
           excludePackages = [||]
           breakOnUpgrades = false
@@ -64,6 +66,7 @@ type ApplicationContext =
       services: ServiceContext }
 
 module Context =
+        
     let githubContext (settings: PackageGithubCommandSettings) =
         { GithubContext.commit = settings.GithubCommit
           token = settings.GithubToken
@@ -83,6 +86,7 @@ module Context =
           configFile = settings.ConfigFile
           suppressBanner = settings.NoBanner
           suppressRestore = settings.NoRestore
+          renderKinds = [||] // TODO: renderKinds settings.ReportFormats
           includePackages =
             settings.IncludedPackages
             |> Option.nullDefault [||]
@@ -106,11 +110,26 @@ module Context =
           console = Spectre.Console.AnsiConsole.Console
           nuget = nuget }
 
+    let private applyRenderKinds (context: ApplicationContext) =
+        let renderKinds =
+            let kinds = [ pkgchk.reporting.RenderKind.ConsoleRender ]
+
+            if context.report.reportDirectory <> "" then
+                let reportingKinds = context.report.formats |> Seq.map ScaModels.toRenderKind
+                kinds |> Seq.append reportingKinds                
+            else
+                kinds
+
+        let opts = { context.options with renderKinds = renderKinds |> Array.ofSeq }
+
+        { context with options = opts }
+
     let applicationContext nuget (settings: PackageGithubCommandSettings) (options: OptionsContext) =
         { ApplicationContext.options = options
           github = githubContext settings
           report = reportContext settings
           services = serviceContext (settings, nuget) }
+          |> applyRenderKinds
 
     let scanContext (nuget, settings: PackageScanCommandSettings) =
         let options =
@@ -229,14 +248,6 @@ module Context =
         match ok with
         | true -> context.report.goodImageUri
         | false -> context.report.badImageUri
-
-    let renderKinds (context: ApplicationContext) =
-        let kinds = [ pkgchk.reporting.RenderKind.ConsoleRender ]
-
-        if context.report.reportDirectory <> "" then
-            kinds @ (context.report.formats |> Seq.map ScaModels.toRenderKind |> List.ofSeq)
-        else
-            kinds
 
     let filterPackages (context: OptionsContext) (hits: seq<pkgchk.ScaHit>) =
 

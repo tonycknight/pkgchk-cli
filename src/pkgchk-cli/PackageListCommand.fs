@@ -29,13 +29,13 @@ type PackageListCommand(nuget: INugetClient) =
     let genMarkdownReport (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
         results.hits |> Markdown.generateList
 
-    let genReports (kinds: RenderKind seq) (context: ApplicationContext, results: ApplicationScanResults) =
+    let genReports (context: ApplicationContext, results: ApplicationScanResults) =
         let options =
             { ReportGeneratorOptions.empty with
                 reportDirectory = context.report.reportDirectory
                 name = "pkgchk-dependencies" }
 
-        kinds
+        context.options.renderKinds
         |> Seq.map (function
             | ConsoleRender ->
                 { (results |> ConsoleReporting.gen options) with
@@ -103,7 +103,7 @@ type PackageListCommand(nuget: INugetClient) =
 
                     let renderResults =
                         (context, results)
-                        |> genReports ((Context.renderKinds context))
+                        |> genReports
                         |> Task.result
                         |> ConsoleReporting.renderReportFiles
 
