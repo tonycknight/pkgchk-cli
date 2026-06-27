@@ -21,6 +21,7 @@ module ReportGenerationTests =
 
     let svcContext =
         { ServiceContext.trace = ignore
+          ServiceContext.console = NSubstitute.Substitute.For<Spectre.Console.IAnsiConsole>()
           ServiceContext.nuget = NSubstitute.Substitute.For<Tk.Nuget.INugetClient>() }
 
     let optContext =

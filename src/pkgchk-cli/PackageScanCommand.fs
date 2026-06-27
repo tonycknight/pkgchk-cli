@@ -34,7 +34,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
     let genReports (kinds: ReportKind seq) (context: ApplicationContext, results: ApplicationScanResults, imageUri) =                
         let options = { ReportGeneratorOptions.reportDirectory = context.report.reportDirectory; name = "pkgchk_scan" }
-        let console = Spectre.Console.AnsiConsole.Console
+        
         task {
             let mutable reportResults = []
             for kind in kinds do
@@ -44,7 +44,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                         {   ReportGeneration.data = (context, results)
                             options = options
                             generate = fun _ data -> consoleTable data |> Seq.map Console.toRenderable |> List.ofSeq |> Task.ofResult
-                            build = ConsoleReporting.build console }
+                            build = ConsoleReporting.build context.services.console }
                         |> ReportGeneration.gen
                     | JsonFile ->                             
                         {   ReportGeneration.data = results.hits
@@ -111,8 +111,6 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
             if context.options.suppressBanner |> not then
                 CliCommands.renderBanner nuget
-
-            Context.trace context |> ignore
 
             match DotNet.restore context with
             | Choice2Of2 error -> return error |> CliCommands.returnError

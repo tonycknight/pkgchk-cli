@@ -53,6 +53,7 @@ type OptionsContext =
 
 type ServiceContext =
     { trace: (string -> unit)
+      console: Spectre.Console.IAnsiConsole
       nuget: Tk.Nuget.INugetClient }
 
 type ApplicationContext =
@@ -102,6 +103,7 @@ module Context =
 
     let serviceContext (settings: PackageCommandSettings, nuget) =
         { ServiceContext.trace = CliCommands.trace settings.TraceLogging
+          console = Spectre.Console.AnsiConsole.Console
           nuget = nuget }
 
     let applicationContext nuget (settings: PackageGithubCommandSettings) (options: OptionsContext) =
@@ -271,11 +273,3 @@ module Context =
         | ([| "" |], _) -> None
         | (_, [||]) -> Some false
         | (hitLicences, licences) -> licences |> Licences.isMemberOf hitLicences |> Some
-
-    let trace (context: ApplicationContext) =
-
-        [ "Parameters:"; context |> Json.serialise |> String.escapeMarkup ]
-        |> String.joinLines
-        |> context.services.trace
-
-        context
