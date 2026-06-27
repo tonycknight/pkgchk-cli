@@ -21,9 +21,6 @@ type PackageLicenceCommand(nuget: INugetClient) =
             match results.hits with
             | [] -> Console.noscanHeadlineTable ()
             | hits -> hits |> Console.hitsTable
-
-            if results.hitCounts |> List.isEmpty |> not then
-                results.hitCounts |> Console.hitSummaryTable
         } |> Seq.map Console.toRenderable
     
     let render (context: ApplicationContext, results: ApplicationScanResults) =
@@ -64,7 +61,7 @@ type PackageLicenceCommand(nuget: INugetClient) =
         let hits = hits |> Context.filterPackages context.options |> List.ofSeq
 
         { ApplicationScanResults.hits = hits
-          hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
+          hitCounts = []
           isGoodScan = true }
 
     let filterLicenceHits (context: ApplicationContext) (results: ApplicationScanResults) =
@@ -80,7 +77,7 @@ type PackageLicenceCommand(nuget: INugetClient) =
         let filteredHits = results.hits |> Seq.filter isHit |> List.ofSeq
 
         { ApplicationScanResults.hits = filteredHits
-          hitCounts = filteredHits |> ScaModels.hitCountSummary |> List.ofSeq
+          hitCounts = []
           isGoodScan = filteredHits |> List.isEmpty }
 
     let genComment (context: ApplicationContext, results: ApplicationScanResults) =
@@ -115,9 +112,7 @@ type PackageLicenceCommand(nuget: INugetClient) =
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
 
-                    let! results = scanResults |> DotNet.getHits |> results context |> DotNet.enrichHits context
-
-                    let results = results |> filterLicenceHits context
+                    let! results = scanResults |> DotNet.getHits |> results context |> DotNet.enrichHits context |> Task.map (filterLicenceHits context)
 
                     context.services.trace "Rendering..."
 
