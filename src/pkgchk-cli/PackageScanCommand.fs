@@ -124,10 +124,13 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
                     context.services.trace "Building display..."
 
-                    consoleTable (context, results) |> CliCommands.renderTables
-
                     let reportImg = context |> Context.reportImage results.isGoodScan
 
+                    (context, results, reportImg) 
+                    |> genReports [ ReportKind.ConsoleRender ]
+                    |> Task.result
+                    |> ignore
+                    
                     if context.report.reportDirectory <> "" then
                         context.services.trace "Building reports..."
                         let kinds = context.report.formats |> Seq.map ScaModels.toReportKind
