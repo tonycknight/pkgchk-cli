@@ -10,7 +10,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
     inherit AsyncCommand<PackageScanCommandSettings>()
                 
     let genReports (context: ApplicationContext, results: ApplicationScanResults, imageUri) =                
-        let options = { ReportGeneratorOptions.reportDirectory = context.report.reportDirectory; reportName = "pkgchk_scan" }
+        let options = { ReportGeneratorOptions.reportDirectory = context.report.reportDirectory; name = "pkgchk_scan" }
 
         task {
             let mutable reportResults = []

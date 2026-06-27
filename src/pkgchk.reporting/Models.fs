@@ -4,7 +4,7 @@ open System.Threading.Tasks
 
 type ReportGeneratorOptions =
     { reportDirectory: string
-      reportName: string }
+      name: string }
 
 type ReportGenerationResult =
     | Null

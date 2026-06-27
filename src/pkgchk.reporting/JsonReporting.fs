@@ -9,7 +9,7 @@ module JsonReporting =
 
     let build (context: ReportGeneratorOptions) (value: string) =
         task {
-            let reportName = $"{context.reportName}.json"
+            let reportName = $"{context.name}.json"
 
             let! path =
                 context.reportDirectory

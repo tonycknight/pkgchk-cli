@@ -12,7 +12,7 @@ module MarkdownReporting =
 
     let build (context: ReportGeneratorOptions) (values: string seq) =
         task {
-            let reportName = $"{context.reportName}.md"
+            let reportName = $"{context.name}.md"
 
             let! path =
                 context.reportDirectory

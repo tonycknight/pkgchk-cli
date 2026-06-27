@@ -1,6 +1,7 @@
 namespace pkgchk.reporting
 
 open pkgchk
+open pkgchk.Github
 
 module GithubReporting =
 
@@ -23,6 +24,12 @@ module GithubReporting =
             return []
         }
 
-    // TODO:
-    let build (context: ReportGeneratorOptions) (values: string seq) =
-        values |> MarkdownReporting.build context
+    let buildComment (context: ReportGeneratorOptions) (values: string seq) =
+        let body = values |> String.joinLines        
+        let body = 
+            if body.Length < Github.maxCommentSize then body
+            else "_The report is too big for Github - Please check logs_"
+                    
+        GithubComment.create context.name body
+        |> ReportGenerationResult.GithubComment
+        
