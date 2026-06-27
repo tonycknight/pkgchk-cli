@@ -66,7 +66,7 @@ type ApplicationContext =
       services: ServiceContext }
 
 module Context =
-        
+
     let githubContext (settings: PackageGithubCommandSettings) =
         { GithubContext.commit = settings.GithubCommit
           token = settings.GithubToken
@@ -116,11 +116,13 @@ module Context =
 
             if context.report.reportDirectory <> "" then
                 let reportingKinds = context.report.formats |> Seq.map ScaModels.toRenderKind
-                kinds |> Seq.append reportingKinds                
+                kinds |> Seq.append reportingKinds
             else
                 kinds
 
-        let opts = { context.options with renderKinds = renderKinds |> Array.ofSeq }
+        let opts =
+            { context.options with
+                renderKinds = renderKinds |> Array.ofSeq }
 
         { context with options = opts }
 
@@ -129,7 +131,7 @@ module Context =
           github = githubContext settings
           report = reportContext settings
           services = serviceContext (settings, nuget) }
-          |> applyRenderKinds
+        |> applyRenderKinds
 
     let scanContext (nuget, settings: PackageScanCommandSettings) =
         let options =

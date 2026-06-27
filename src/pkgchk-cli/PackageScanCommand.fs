@@ -57,11 +57,18 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
             | ConsoleRender ->
                 { ((context, results) |> ConsoleReporting.gen options) with
                     generate =
-                        fun _ data -> consoleTables data |> Seq.map Console.toRenderable |> List.ofSeq |> Task.ofResult }
+                        fun _ data ->
+                            consoleTables data
+                            |> Seq.map Console.toRenderable
+                            |> List.ofSeq
+                            |> Task.ofResult }
                 |> ReportGeneration.gen
             | JsonFile -> results.hits |> JsonReporting.gen options |> ReportGeneration.gen
             | MarkdownFile ->
-                { ((results.hits, results.hitCounts, context.options.severities, (context |> Context.reportImage results.isGoodScan))
+                { ((results.hits,
+                    results.hitCounts,
+                    context.options.severities,
+                    (context |> Context.reportImage results.isGoodScan))
                    |> MarkdownReporting.gen options) with
                     generate = fun _ data -> markdown data |> Task.ofResult }
                 |> ReportGeneration.gen
@@ -102,7 +109,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
         { ApplicationScanResults.hits = hits
           hitCounts = errorHits |> ScaModels.hitCountSummary |> List.ofSeq
           isGoodScan = errorHits |> List.isEmpty }
-              
+
     override _.Validate
         (context: CommandContext, settings: PackageScanCommandSettings)
         : Spectre.Console.ValidationResult =
@@ -129,7 +136,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                     let! results = DotNet.getHits scanResults |> results context |> DotNet.enrichHits context
 
                     context.services.trace "Rendering..."
-                                        
+
                     let! renderResults = (context, results) |> render |> Task.map ConsoleReporting.renderReportFiles
 
                     if Context.hasGithubParameters context then

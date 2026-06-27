@@ -22,8 +22,7 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
             if results.hitCounts |> List.isEmpty |> not then
                 results.hitCounts |> Console.hitSummaryTable
             else
-                ReportTable.singleRow (Console.green "No upgrades found!") 
-                |> Console.table                
+                ReportTable.singleRow (Console.green "No upgrades found!") |> Console.table
         }
 
     let genMarkdownReport (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
@@ -51,7 +50,11 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
             | ConsoleRender ->
                 { (results |> ConsoleReporting.gen options) with
                     generate =
-                        fun _ data -> consoleTables data |> Seq.map Console.toRenderable |> List.ofSeq |> Task.ofResult }
+                        fun _ data ->
+                            consoleTables data
+                            |> Seq.map Console.toRenderable
+                            |> List.ofSeq
+                            |> Task.ofResult }
                 |> ReportGeneration.gen
             | JsonFile -> results.hits |> JsonReporting.gen options |> ReportGeneration.gen
             | MarkdownFile ->

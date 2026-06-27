@@ -17,9 +17,9 @@ module Task =
             return results
         }
 
-    let map (func: 'a -> 'b) (value: Task<'a>) = 
-        task { 
-            let! r = value 
+    let map (func: 'a -> 'b) (value: Task<'a>) =
+        task {
+            let! r = value
 
             return func r
         }
