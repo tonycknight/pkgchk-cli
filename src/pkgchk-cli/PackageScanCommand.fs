@@ -8,11 +8,11 @@ open Spectre.Console.Cli
 type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
     inherit AsyncCommand<PackageScanCommandSettings>()
 
-    let genMarkdownReport  (context: ApplicationContext, results: ApplicationScanResults, imageUri) =        
-        fun (options: ReportGeneratorOptions) x ->            
-            (results.hits, results.hitCounts, context.options.severities, imageUri)
-            |> Markdown.generateScan
-            |> Task.ofResult
+    let genMarkdownContent (context: ApplicationContext, results: ApplicationScanResults, imageUri) = 
+        (results.hits, results.hitCounts, context.options.severities, imageUri) |> Markdown.generateScan
+
+    let genMarkdownReport (context: ApplicationContext, results: ApplicationScanResults, imageUri) =        
+        fun x y -> genMarkdownContent (context, results, imageUri) |> Task.ofResult
         
     let genReports (context: ApplicationContext, results: ApplicationScanResults, imageUri) =                
         let options = { ReportGeneratorOptions.reportDirectory = context.report.reportDirectory; reportName = "pkgchk_scan" }
@@ -30,7 +30,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                     | ReportFormat.Markdown -> 
                         {   ReportGeneration.data = (results.hits, results.hitCounts, context.options.severities, imageUri)
                             options = options
-                            generate = genMarkdownReport (context, results, imageUri); // TODO: 
+                            generate = genMarkdownReport (context, results, imageUri);
                             build = MarkdownReporting.build }
                         |> ReportGeneration.gen
                     | _ -> invalidOp $"Unrecognised format {format}"
@@ -41,7 +41,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
         
     let genComment (context: ApplicationContext, (results: ApplicationScanResults), imageUri) =
 
-        let markdown = (context, results, imageUri) |> genMarkdownReport |> String.joinLines
+        let markdown = (context, results, imageUri) |> genMarkdownContent |> String.joinLines
 
         if markdown.Length < Github.maxCommentSize then
             GithubComment.create context.github.summaryTitle markdown
