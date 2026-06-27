@@ -6,7 +6,7 @@ type ReportGeneratorOptions =
     { reportDirectory: string
       reportName: string }
 
-type ReportGenerationResult = { outPath: string }
+type ReportGenerationResult = { outPath: string } // TODO: make a DU
 
 type ReportGeneratorFunc<'a, 'b> = ReportGeneratorOptions -> 'a -> Task<'b>
 type ReportBuilderFunc<'a> = ReportGeneratorOptions -> 'a -> Task<ReportGenerationResult>
