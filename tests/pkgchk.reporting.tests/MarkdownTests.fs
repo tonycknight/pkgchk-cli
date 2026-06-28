@@ -108,8 +108,6 @@ module MarkdownTests =
             |> Seq.map (fun r -> r.Split('|', StringSplitOptions.RemoveEmptyEntries ||| StringSplitOptions.TrimEntries))
             |> Array.ofSeq
         
-        // each row must have colCount + 1 '|' characters
-        // each column must have 2+rowCount rows
         rows
         |> Seq.forall (fun r -> r.Length = colCount.Get)
         
@@ -130,3 +128,18 @@ module MarkdownTests =
         |> Seq.zip t.rows
         |> Seq.forall (fun (r1,r2) -> r1 = (List.ofSeq r2))
     
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``table generates sparse rows`` (value: string) (rowCount: PositiveInt) (colCount: PositiveInt)=
+        
+        let t = genTable value rowCount.Get colCount.Get
+        let t = { t with rows = t.rows |> List.map (fun _ -> [value] ) } // truncate rows for a sparse table
+
+        let result = table t
+
+        let rows = 
+            result.Split(Environment.NewLine, StringSplitOptions.None)
+            |> Seq.map (fun r -> r.Split('|', StringSplitOptions.RemoveEmptyEntries))
+            |> Array.ofSeq
+        
+        rows
+        |> Seq.forall (fun r -> r.Length = colCount.Get)

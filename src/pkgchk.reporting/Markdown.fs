@@ -14,7 +14,15 @@ module Markdown =
         let columnCount = Seq.length value.columns
 
         let fmtRow (cols: string list) =
-            cols |> Seq.truncate columnCount |> String.join " | "
+            let actualColCount = List.length cols
+            let cols = 
+                if actualColCount < columnCount then
+                    let suffix = List.init (columnCount - actualColCount) (fun _ -> " ")
+                    cols @ suffix
+                else 
+                    cols |> List.truncate columnCount
+
+            cols |> String.join " | " 
 
         let lines =
             seq {
