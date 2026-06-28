@@ -36,6 +36,12 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "pkgchk.core.tests", "tests\
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "pkgchk.reporting.tests", "tests\pkgchk.reporting.tests\pkgchk.reporting.tests.fsproj", "{827219DF-669F-4AB0-97CB-EDD49C29F0A4}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{C627AB49-FE2E-4F36-99B5-486337171967}"
+	ProjectSection(SolutionItems) = preProject
+		build.ps1 = build.ps1
+		codecoverage.ps1 = codecoverage.ps1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
