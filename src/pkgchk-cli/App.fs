@@ -32,11 +32,6 @@ type TypeRegistrar(svcs: IServiceCollection) =
 
 [<ExcludeFromCodeCoverage>]
 module App =
-    [<Literal>]
-    let packageId = "Pkgchk-Cli"
-
-    [<Literal>]
-    let repo = "https://github.com/tonycknight/pkgchk-cli"
 
     let version () =
         Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyInformationalVersionAttribute>()
@@ -47,7 +42,7 @@ module App =
         task {
             try
                 let currVsn = version () |> Option.defaultValue ""
-                let! upgVsn = nuget.GetUpgradeVersionAsync(packageId, currVsn, false)
+                let! upgVsn = nuget.GetUpgradeVersionAsync(App.packageId, currVsn, false)
 
                 return
                     match upgVsn with
@@ -62,11 +57,11 @@ module App =
         let upgVsn = (upgradeVersion nuget).Result
 
         seq {
-            cyan packageId
+            cyan App.packageId
 
             version () |> Option.defaultValue "unknown" |> yellow |> sprintf "Version %s"
 
-            repo |> cyan |> sprintf "For more information, see %s" |> italic
+            App.repo |> cyan |> sprintf "For more information, see %s" |> italic
 
             "Thank you for using my software." |> grey |> italic
 
