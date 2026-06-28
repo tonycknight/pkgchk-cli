@@ -3,10 +3,10 @@ namespace pkgchk.reporting
 open pkgchk
 
 module Markdown =
+    let hdr (depth: int) (value: string) = 
+        let prefix = new string('#', depth)
+        $"{prefix} {value}"
 
-    let hdr1 (value: string) = $"# {value}"
-    let hdr2 (value: string) = $"## {value}"
-    let hdr3 (value: string) = $"### {value}"
     let dividor () = "---"
 
     let table (value: Table) =
