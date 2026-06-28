@@ -86,7 +86,7 @@ module Context =
           configFile = settings.ConfigFile
           suppressBanner = settings.NoBanner
           suppressRestore = settings.NoRestore
-          renderKinds = [||] // TODO: renderKinds settings.ReportFormats
+          renderKinds = [||]
           includePackages =
             settings.IncludedPackages
             |> Option.nullDefault [||]
@@ -110,16 +110,24 @@ module Context =
           console = Spectre.Console.AnsiConsole.Console
           nuget = nuget }
 
+    let hasGithubParameters (context: ApplicationContext) =
+        String.isNotEmpty context.github.token
+        && String.isNotEmpty context.github.repo
+        && (String.isNotEmpty context.github.prId || String.isNotEmpty context.github.commit)
+
     let private applyRenderKinds (context: ApplicationContext) =
-        let renderKinds =
-            let kinds = [ pkgchk.reporting.RenderKind.ConsoleRender ]
-
-            if context.report.reportDirectory <> "" then
-                let reportingKinds = context.report.formats |> Seq.map ScaModels.toRenderKind
-                kinds |> Seq.append reportingKinds
-            else
-                kinds
-
+        let mutable renderKinds = [ pkgchk.reporting.RenderKind.ConsoleRender ]
+            
+        if context.report.reportDirectory <> "" then
+            let reportingKinds = context.report.formats |> Seq.map ScaModels.toRenderKind |> List.ofSeq
+            renderKinds <- renderKinds @ reportingKinds
+        
+        if hasGithubParameters context && String.isNotEmpty context.github.prId then
+            renderKinds <- renderKinds @ [ pkgchk.reporting.RenderKind.GithubActionPrComment ]
+        
+        if hasGithubParameters context && String.isNotEmpty context.github.commit && (not context.github.noCheck) then
+            renderKinds <- renderKinds @ [ pkgchk.reporting.RenderKind.GithubActionCheck ]
+        
         let opts =
             { context.options with
                 renderKinds = renderKinds |> Array.ofSeq }
@@ -240,11 +248,6 @@ module Context =
             config |> applyConfig context
 
         | _ -> context
-
-    let hasGithubParameters (context: ApplicationContext) =
-        String.isNotEmpty context.github.token
-        && String.isNotEmpty context.github.repo
-        && (String.isNotEmpty context.github.prId || String.isNotEmpty context.github.commit)
 
     let reportImage ok (context: ApplicationContext) =
         match ok with
