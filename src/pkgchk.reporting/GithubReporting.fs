@@ -20,7 +20,9 @@ module GithubReporting =
 
     let buildCheck (context: ReportGeneratorOptions) (comment: GithubComment) =
         task {
-            // TODO: send...
+            // TODO: send... 
+            // isGoodScan is a problem... necessary to stop builds
+            //do! Github.sendCheck context results.isGoodScan comment
 
             return ReportGenerationResult.GithubComment comment
         }
@@ -28,6 +30,7 @@ module GithubReporting =
     let buildPrComment (context: ReportGeneratorOptions) (comment: GithubComment) =
         task {            
             // TODO: send...
+            //do! Github.sendPrComment context comment
 
             return ReportGenerationResult.GithubComment comment
         }
