@@ -6,7 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Tests.fs" />
+    <Compile Include="TestDataGenerators.fs" />
+    <Compile Include="GithubTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

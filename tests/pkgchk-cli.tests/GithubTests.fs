@@ -63,52 +63,7 @@ module GithubTests =
         let (t, b) = pkgchk.Github.constructComment comment
 
         t.Contains(title) && b.Contains(title) && b.Contains(body)
-
-    [<Fact>]
-    let ``getIssueComments on no issue returns empty comments`` () =
-        task {
-            let commentClient = commentClient () |> commentsGet [||]
-            let issueClient = issueClient () |> bindComments commentClient
-            let client = client () |> bindIssues issueClient
-
-            issueClient.Get(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int64>()).Returns(throwIssueException)
-            |> ignore
-
-            let! r = pkgchk.Github.getIssueComments client ignore repo 1
-
-            r |> should be Empty
-        }
-
-    [<Fact>]
-    let ``getIssueComments on empty issue returns empty comments`` () =
-        task {
-            let issue = new Octokit.Issue()
-
-            let commentClient = commentClient () |> commentsGet [||]
-            let issueClient = issueClient () |> issueGet issue |> bindComments commentClient
-            let client = client () |> bindIssues issueClient
-
-            let! r = pkgchk.Github.getIssueComments client ignore repo 1
-
-            r |> should be Empty
-        }
-
-    [<Fact>]
-    let ``getIssueComments on issue returns comments`` () =
-        task {
-            let issue = new Octokit.Issue()
-            let comment = comment "just a test"
-            let comments = [| comment |]
-
-            let commentClient = commentClient () |> commentsGet comments
-            let issueClient = issueClient () |> issueGet issue |> bindComments commentClient
-            let client = client () |> bindIssues issueClient
-
-            let! r = pkgchk.Github.getIssueComments client ignore repo 1
-
-            r |> should equal (List.ofSeq comments)
-        }
-
+            
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``setPrComment new comment invokes create`` (title: string, body: string, prId: int) =
         task {
