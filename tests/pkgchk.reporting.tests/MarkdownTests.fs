@@ -148,7 +148,7 @@ module MarkdownTests =
     let ``table generates oversized rows`` (value: string) (rowCount: PositiveInt) (colCount: PositiveInt)=
         
         let t = genTable value rowCount.Get colCount.Get
-        let t = { t with rows = t.rows |> List.map (fun _ -> List.init (colCount.Get * 2) (fun _ -> value )) } // truncate additional columns per row
+        let t = { t with rows = t.rows |> List.map (fun _ -> List.init (colCount.Get * 2) (fun _ -> value )) }
 
         let result = table t
 
