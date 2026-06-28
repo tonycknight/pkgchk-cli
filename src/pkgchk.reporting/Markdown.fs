@@ -6,8 +6,8 @@ module Markdown =
     let hdr (depth: int) (value: string) = 
         let prefix = new string('#', depth)
         $"{prefix} {value}"
-
-    let dividor () = "---"
+            
+    let dividor = "---"
 
     let table (value: Table) =
         let surround line = $"| {line} |"
@@ -34,6 +34,10 @@ module Markdown =
         lines |> Seq.map surround |> String.join System.Environment.NewLine
 
     let italic (value: string) = $"_{value}_"
+
+    let bold (value: string) = $"**{value}**"
+
+    let quote (value: string) = $"> {value}"
 
     let escape (value: string) =
         value.Replace('\r', ' ').Replace('\n', ' ')

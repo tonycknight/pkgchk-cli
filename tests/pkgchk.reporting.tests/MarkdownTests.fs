@@ -41,7 +41,22 @@ module MarkdownTests =
     let ``italic surrounded by underscores``(value: string) =
         let r = italic value;
 
-        r.StartsWith("_") && r.EndsWith("_")
+        r.StartsWith("_") && r.EndsWith("_") && r.Contains(value) && r.Length = (2 + value.Length)
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``bold surrounded by double asterisks``(value: string) =
+        let r = bold value;
+
+        r.StartsWith("**") && r.EndsWith("**") && r.Contains(value) && r.Length = (4 + value.Length)
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``quote starts with caret``(value: string) =
+        let r = quote value;
+
+        r.StartsWith("> ") && r.EndsWith(value) && r.Length = (2 + value.Length)
+
+
+
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``hyperlink builds formatted link`` (name: string) (uri: string) =
