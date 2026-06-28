@@ -1,19 +1,11 @@
 ﻿namespace pkgchk
 
 open System
-open System.Diagnostics.CodeAnalysis
 open pkgchk.reporting.Console
 open pkgchk.Github
 open Octokit
 
 module Github =
-
-    [<ExcludeFromCodeCoverage>]
-    let client token =
-        let header = new ProductHeaderValue(App.packageId)
-        let client = new GitHubClient(header)
-        client.Credentials <- new Credentials(token)
-        client :> IGitHubClient
 
     let constructComment (comment: GithubComment) =
         let commentTitle = $"# {comment.title}"
@@ -21,36 +13,13 @@ module Github =
 
         (commentTitle, commentBody)
 
-    let getIssue (client: IGitHubClient) (owner: string, repo) id =
-        task {
-            try
-                let! issue = client.Issue.Get(owner, repo, id)
-                return Some issue
-            with ex ->
-                return None
-        }
-
-    let getIssueComments (client: IGitHubClient) trace (owner: string, repo) id =
-        task {
-            try
-                trace $"Fetching comments for issue {id}..."
-
-                let! comments = client.Issue.Comment.GetAllForIssue(owner, repo, id)
-                trace $"Fetched {comments |> Seq.length} comments for id {id}."
-                return comments |> List.ofSeq
-
-            with ex ->
-                trace $"Failed to fetch comments for issue {id}: {ex.Message}"
-                return []
-        }
-
     let setPrComment trace (client: IGitHubClient) (owner, repo) prId (comment: GithubComment) =
         task {
 
             let (commentTitle, commentBody) = constructComment comment
 
             // As there's no concrete mechanism in Octokit to affinitise comments, we must use titles as the discriminator.
-            let! comments = getIssueComments client trace (owner, repo) prId
+            let! comments = Github.getIssueComments client trace (owner, repo) prId
 
             $"Found {comments |> Seq.length} comments." |> trace
 
@@ -100,7 +69,7 @@ module Github =
         task {
             let prId = String.toInt context.github.prId
             let repo = String.split '/' context.github.repo
-            let client = client context.github.token
+            let client = Github.client context.github.token
 
             context.services.trace $"Posting {comment.title} PR comment to Github repo {repo}..."
 
@@ -112,7 +81,7 @@ module Github =
     let sendCheck (context: ApplicationContext) isSuccess (comment: GithubComment) =
         task {
             let trace = context.services.trace
-            let client = client context.github.token
+            let client = Github.client context.github.token
             let repo = (String.split '/' context.github.repo)
 
             trace $"Posting {comment.title} build check to Github repo {context.github.repo}..."

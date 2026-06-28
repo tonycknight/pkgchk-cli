@@ -24,7 +24,7 @@ type RenderKind =
 type ReportGenerationResult =
     | Null
     | OutputFile of path: string
-    | GithubComment of comment: pkgchk.Github.GithubComment
+    | GithubComment of comment: pkgchk.GithubComment
 
 type ReportGeneratorFunc<'a, 'b> = ReportGeneratorOptions -> 'a -> Task<'b>
 type ReportBuilderFunc<'a> = ReportGeneratorOptions -> 'a -> Task<ReportGenerationResult>
