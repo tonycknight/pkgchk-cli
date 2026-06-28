@@ -15,6 +15,13 @@
         "reportgenerator"
       ],
       "rollForward": false
+    },
+    "nukit": {
+      "version": "0.2.5",
+      "commands": [
+        "nukit"
+      ],
+      "rollForward": false
     }
   }
 }
