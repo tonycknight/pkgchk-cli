@@ -6,6 +6,11 @@ open FsCheck.Xunit
 open pkgchk.reporting.Markdown
 
 module MarkdownTests =
+    let genTable value rowCount colCount =
+        let cols = [ 1 .. colCount ] |> List.map (fun x -> $"hdr{x}")
+        let rows = [ 1 .. rowCount ] |> List.map (fun r -> [ 1 .. colCount ] |> List.map (fun c -> $"{value} {r}.{c}") )
+
+        { pkgchk.reporting.Table.empty with columns = cols; rows = rows }
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``hdr has correct count of hashses`` (depth: PositiveInt) (value: string) =
@@ -49,3 +54,79 @@ module MarkdownTests =
         let r = link uri
 
         r.Contains($"[{uri}]") && r.Contains($"({uri})")
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``table generates expected row count`` (value: string) (rowCount: PositiveInt) (colCount: PositiveInt)=
+        
+        let t = genTable value rowCount.Get colCount.Get
+
+        let result = table t
+
+        let expectedNewLines = rowCount.Get + 2
+        let actualNewLines = result.Split(Environment.NewLine, StringSplitOptions.None)
+
+        expectedNewLines = actualNewLines.Length
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``table generates header row`` (value: string) (rowCount: PositiveInt) (colCount: PositiveInt)=
+        
+        let t = genTable value rowCount.Get colCount.Get
+
+        let result = table t
+
+        let rows = 
+            result.Split(Environment.NewLine, StringSplitOptions.None)
+            |> Seq.map (fun r -> r.Split('|', StringSplitOptions.RemoveEmptyEntries ||| StringSplitOptions.TrimEntries))
+            |> Array.ofSeq
+
+        rows.[0] = (Array.ofSeq t.columns)
+        
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``table generates splitter row`` (value: string) (rowCount: PositiveInt) (colCount: PositiveInt)=
+        
+        let t = genTable value rowCount.Get colCount.Get
+
+        let result = table t
+
+        let rows = 
+            result.Split(Environment.NewLine, StringSplitOptions.None)
+            |> Seq.map (fun r -> r.Split('|', StringSplitOptions.RemoveEmptyEntries ||| StringSplitOptions.TrimEntries))
+            |> Array.ofSeq
+
+        rows.[1] |> Seq.forall(fun c -> c = "-" )
+
+
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``table generates expected columns`` (value: string) (rowCount: PositiveInt) (colCount: PositiveInt)=
+        
+        let t = genTable value rowCount.Get colCount.Get
+
+        let result = table t
+
+        let rows = 
+            result.Split(Environment.NewLine, StringSplitOptions.None)
+            |> Seq.map (fun r -> r.Split('|', StringSplitOptions.RemoveEmptyEntries ||| StringSplitOptions.TrimEntries))
+            |> Array.ofSeq
+        
+        // each row must have colCount + 1 '|' characters
+        // each column must have 2+rowCount rows
+        rows
+        |> Seq.forall (fun r -> r.Length = colCount.Get)
+        
+    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
+    let ``table generates rows`` (value: string) (rowCount: PositiveInt) (colCount: PositiveInt)=
+        
+        let t = genTable value rowCount.Get colCount.Get
+
+        let result = table t
+
+        let rows = 
+            result.Split(Environment.NewLine, StringSplitOptions.None)
+            |> Seq.map (fun r -> r.Split('|', StringSplitOptions.RemoveEmptyEntries ||| StringSplitOptions.TrimEntries))
+            |> Seq.skip 2
+            |> Array.ofSeq
+                    
+        rows
+        |> Seq.zip t.rows
+        |> Seq.forall (fun (r1,r2) -> r1 = (List.ofSeq r2))
+    

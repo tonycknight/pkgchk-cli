@@ -18,9 +18,9 @@ module Markdown =
 
         let lines =
             seq {
-                yield value.columns |> Seq.rev |> String.join " | "
+                yield value.columns |> String.join " | "
                 yield [ 1..columnCount ] |> Seq.map (fun _ -> "-") |> String.join " | "
-                yield! value.rows |> Seq.rev |> Seq.map (List.ofSeq >> fmtRow)
+                yield! value.rows |> Seq.map (List.ofSeq >> fmtRow)
             }
 
         lines |> Seq.map surround |> String.join System.Environment.NewLine

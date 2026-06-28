@@ -59,9 +59,3 @@ type Table =
           border = false
           showHeaders = false
           rows = [ [ row ] ] }
-
-    static member addColumn name table =
-        { table with
-            columns = name :: table.columns }
-
-    static member addRow row table = { table with rows = row :: table.rows }
