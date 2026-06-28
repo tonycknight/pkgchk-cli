@@ -126,7 +126,7 @@ type PackageLicenceCommand(nuget: INugetClient) =
 
                     context.services.trace "Rendering..."
 
-                    let! renderResults = (context, results) |> render |> Task.map ConsoleReporting.renderReportFiles
+                    let! renderResults = (context, results) |> render |> Task.map ConsoleReporting.renderResults
 
                     if Context.hasGithubParameters context then
                         context.services.trace "Building Github reports..."

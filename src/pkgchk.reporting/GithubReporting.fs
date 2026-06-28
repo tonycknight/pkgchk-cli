@@ -5,34 +5,29 @@ open pkgchk.Github
 
 module GithubReporting =
 
-    let generateComment (context: ReportGeneratorOptions) (value: 'a) =
+    let generateComment (context: ReportGeneratorOptions) (body: 'a) =
         task {
-            // build a markdown representation as a seq of strings
-            // note that the size must not exceed a Github-imposed limit of let maxCommentSize = 65536
-            return value
+            let body = body |> String.joinLines
+
+            let body =
+                if body.Length < Github.maxCommentSize then
+                    body
+                else
+                    "_The report is too big for Github - Please check logs_"
+            
+            return GithubComment.create context.name body
         }
 
-    let generateCheck (context: ReportGeneratorOptions) (value: 'a) =
+    let buildCheck (context: ReportGeneratorOptions) (comment: GithubComment) =
         task {
-            // TODO: need to build a markdown representation as a seq of strings
-            return []
+            // TODO: send...
+
+            return ReportGenerationResult.GithubComment comment
         }
+        
+    let buildPrComment (context: ReportGeneratorOptions) (comment: GithubComment) =
+        task {            
+            // TODO: send...
 
-    let generatePrComment (context: ReportGeneratorOptions) (value: 'a) =
-        task {
-            // TODO: need to build a markdown representation as a seq of strings
-            return []
+            return ReportGenerationResult.GithubComment comment
         }
-
-    let buildComment (context: ReportGeneratorOptions) (body: string seq) =
-        let body = body |> String.joinLines
-
-        let body =
-            if body.Length < Github.maxCommentSize then
-                body
-            else
-                "_The report is too big for Github - Please check logs_"
-
-        GithubComment.create context.name body
-        |> ReportGenerationResult.GithubComment
-        |> Task.ofResult

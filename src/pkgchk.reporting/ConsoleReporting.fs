@@ -2,7 +2,6 @@ namespace pkgchk.reporting
 
 open pkgchk
 open pkgchk.reporting.Console
-open Spectre.Console
 open Spectre.Console.Rendering
 
 module ConsoleReporting =
@@ -25,21 +24,24 @@ module ConsoleReporting =
           generate = generate
           build = build }
 
-    let renderReportFiles (results) =
-        let render reportFiles =
+    let renderResults (results: ReportGenerationResult seq) =
+        let renderFiles results =
+            let filePaths = 
+                results |> Seq.map (function | OutputFile path -> path | _ -> "") |> Seq.filter (fun s -> s <> "")
             let msg =
-                reportFiles
+                filePaths
                 |> Seq.map (fun f -> $"[link={f}]{f}[/]" |> cyan)
                 |> String.joinPretty ", " " & "
 
             if msg.Length > 0 then
                 $"{System.Environment.NewLine}Report file(s) {msg} built." |> italic |> console
 
-        results
-        |> Seq.map (function
-            | OutputFile path -> path
-            | _ -> "")
-        |> Seq.filter (fun s -> s <> "")
-        |> render
+        let renderGhComments results =
+            let ghComments = results |> Seq.filter (function | GithubComment _ -> true | _ -> false ) |> Seq.length
+            if ghComments > 0 then
+                $"{ghComments} comment(s) sent to Github." |> italic |> console    
+            
+        renderFiles results
+        renderGhComments results
 
         results
