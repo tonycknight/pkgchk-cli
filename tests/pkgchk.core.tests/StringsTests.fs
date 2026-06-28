@@ -1,9 +1,9 @@
-﻿namespace pkgchk.tests
+﻿namespace pkgchk.core.tests
 
 open System
 open FsCheck
 open FsCheck.Xunit
-
+open pkgchk
 
 module StringsTests =
 
@@ -11,7 +11,7 @@ module StringsTests =
     let ``join conjugates strings`` (count: PositiveInt) =
         let values = [ 0 .. count.Get ] |> Seq.map (fun _ -> "A") |> Array.ofSeq
 
-        let result = values |> pkgchk.String.join " "
+        let result = values |> String.join " "
 
         let expected = result.Split(' ', StringSplitOptions.None)
 
@@ -24,7 +24,7 @@ module StringsTests =
         let separator = ", "
         let values = [ 1 .. count.Get ] |> Seq.map (fun _ -> word) |> List.ofSeq
 
-        let result = values |> pkgchk.String.joinPretty separator finalSeparator
+        let result = values |> String.joinPretty separator finalSeparator
 
         let decomp = result.Split([| word |], StringSplitOptions.RemoveEmptyEntries)
 
@@ -39,7 +39,7 @@ module StringsTests =
         let separator = ", "
         let values = [ 1 .. count.Get ] |> Seq.map (fun _ -> word) |> List.ofSeq
 
-        let result = values |> pkgchk.String.joinPretty separator finalSeparator
+        let result = values |> String.joinPretty separator finalSeparator
 
         let decomp = result.Split([| word |], StringSplitOptions.RemoveEmptyEntries)
 
@@ -54,7 +54,7 @@ module StringsTests =
         let separator = ", "
         let values = [ 1 .. count.Get ] |> Seq.map (fun _ -> word) |> List.ofSeq
 
-        let result = values |> pkgchk.String.joinPretty separator finalSeparator
+        let result = values |> String.joinPretty separator finalSeparator
 
         match result.Split([| word |], StringSplitOptions.RemoveEmptyEntries) with
         | [||] -> true
@@ -64,7 +64,7 @@ module StringsTests =
 
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``split constructs owner/repo`` (name: string[]) =
-        let input = name |> pkgchk.String.join "/"
+        let input = name |> String.join "/"
 
         let expected =
             if name.Length = 2 then
@@ -72,4 +72,4 @@ module StringsTests =
             else
                 ("", input)
 
-        input |> pkgchk.String.split '/' = expected
+        input |> String.split '/' = expected

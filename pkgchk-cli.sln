@@ -34,6 +34,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "pkgchk.core", "src\pkgchk.c
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "pkgchk.core.tests", "tests\pkgchk.core.tests\pkgchk.core.tests.fsproj", "{27775F0E-E280-467B-8421-6ECE2260D08F}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "pkgchk.reporting.tests", "tests\pkgchk.reporting.tests\pkgchk.reporting.tests.fsproj", "{827219DF-669F-4AB0-97CB-EDD49C29F0A4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -64,6 +66,10 @@ Global
 		{27775F0E-E280-467B-8421-6ECE2260D08F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{27775F0E-E280-467B-8421-6ECE2260D08F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{27775F0E-E280-467B-8421-6ECE2260D08F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{827219DF-669F-4AB0-97CB-EDD49C29F0A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{827219DF-669F-4AB0-97CB-EDD49C29F0A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{827219DF-669F-4AB0-97CB-EDD49C29F0A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{827219DF-669F-4AB0-97CB-EDD49C29F0A4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -75,6 +81,7 @@ Global
 		{0D6BB877-D071-4164-894D-0D7968CB86D6} = {9030FD14-8EA0-4FD1-A8FA-2639C11CB540}
 		{7D3F9821-0C24-0577-2056-299DA27D99A6} = {9030FD14-8EA0-4FD1-A8FA-2639C11CB540}
 		{27775F0E-E280-467B-8421-6ECE2260D08F} = {AC04A561-42B6-4D2E-A091-7B269015534D}
+		{827219DF-669F-4AB0-97CB-EDD49C29F0A4} = {AC04A561-42B6-4D2E-A091-7B269015534D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {59CE1C89-868D-4DAB-A9EC-BE3E1A1207EF}

@@ -7,10 +7,7 @@
 
   <ItemGroup>
     <Compile Include="TestDataGenerators.fs" />
-    <Compile Include="StringsTests.fs" />
-    <Compile Include="ExceptionTest.fs" />
-    <Compile Include="GithubCommentTests.fs" />
-    <Compile Include="GithubTests.fs" />
+    <Compile Include="MarkdownTests.fs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,7 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\pkgchk.core\pkgchk.core.fsproj" />
+    <ProjectReference Include="..\..\src\pkgchk.reporting\pkgchk.reporting.fsproj" />
   </ItemGroup>
 
 </Project>

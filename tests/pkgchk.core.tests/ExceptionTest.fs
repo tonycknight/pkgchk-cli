@@ -1,6 +1,7 @@
-namespace pkgchk.tests
+namespace pkgchk.core.tests
 
 open FsCheck.Xunit
+open pkgchk
 
 module ExceptionTest =
 
