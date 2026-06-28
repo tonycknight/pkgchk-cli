@@ -1,5 +1,6 @@
 namespace pkgchk
 
+open System
 open System.Diagnostics.CodeAnalysis
 open pkgchk
 open Octokit
@@ -18,6 +19,12 @@ type GithubComment =
     static member create title body =
         { GithubComment.title = (String.defaultValue "pkgchk summary" title)
           body = body }
+
+    static member deconstruct (comment: GithubComment) =
+        let commentTitle = $"# {comment.title}"
+        let commentBody = $"{commentTitle}{Environment.NewLine}{comment.body}"
+
+        (commentTitle, commentBody)
 
 module Github =
 

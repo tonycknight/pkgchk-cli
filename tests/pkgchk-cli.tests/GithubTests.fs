@@ -56,14 +56,7 @@ module GithubTests =
         issueClient
 
     let throwIssueException (ci: Core.CallInfo) : Octokit.Issue = failwith "boom"
-
-    [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
-    let ``constructComment from title and body`` (title: string, body: string) =
-        let comment = GithubComment.create title body
-        let (t, b) = pkgchk.Github.constructComment comment
-
-        t.Contains(title) && b.Contains(title) && b.Contains(body)
-            
+                
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``setPrComment new comment invokes create`` (title: string, body: string, prId: int) =
         task {

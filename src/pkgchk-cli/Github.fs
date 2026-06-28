@@ -7,16 +7,10 @@ open Octokit
 
 module Github =
 
-    let constructComment (comment: GithubComment) =
-        let commentTitle = $"# {comment.title}"
-        let commentBody = $"{commentTitle}{Environment.NewLine}{comment.body}"
-
-        (commentTitle, commentBody)
-
     let setPrComment trace (client: IGitHubClient) (owner, repo) prId (comment: GithubComment) =
         task {
 
-            let (commentTitle, commentBody) = constructComment comment
+            let (commentTitle, commentBody) = GithubComment.deconstruct comment
 
             // As there's no concrete mechanism in Octokit to affinitise comments, we must use titles as the discriminator.
             let! comments = Github.getIssueComments client trace (owner, repo) prId
