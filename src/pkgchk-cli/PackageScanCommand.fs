@@ -52,7 +52,9 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 reportDirectory = context.report.reportDirectory
                 trace = context.services.trace
                 name = "pkgchk-scan" }
+
         let imageUri = context |> Context.reportImage results.isGoodScan
+
         context.options.renderKinds
         |> Seq.map (function
             | ConsoleRender ->
@@ -66,36 +68,41 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 |> ReportGeneration.gen
             | JsonFile -> results.hits |> JsonReporting.gen options |> ReportGeneration.gen
             | MarkdownFile ->
-                { ((results.hits,
-                    results.hitCounts,
-                    context.options.severities,
-                    imageUri)
+                { ((results.hits, results.hitCounts, context.options.severities, imageUri)
                    |> MarkdownReporting.gen options) with
                     generate = fun _ data -> markdown data |> Task.ofResult }
                 |> ReportGeneration.gen
             | GithubActionCheck ->
-                { ReportGeneration.data = (results.hits, results.hitCounts, context.options.severities, imageUri) |> markdown
-                  options = { options with name = context.github.summaryTitle }
+                { ReportGeneration.data =
+                    (results.hits, results.hitCounts, context.options.severities, imageUri)
+                    |> markdown
+                  options =
+                    { options with
+                        name = context.github.summaryTitle }
                   generate = GithubReporting.generateComment
                   build = GithubReporting.buildCheck }
                 |> ReportGeneration.gen
             | GithubActionPrComment ->
-                { ReportGeneration.data = (results.hits, results.hitCounts, context.options.severities, imageUri) |> markdown
-                  options = { options with name = context.github.summaryTitle }
+                { ReportGeneration.data =
+                    (results.hits, results.hitCounts, context.options.severities, imageUri)
+                    |> markdown
+                  options =
+                    { options with
+                        name = context.github.summaryTitle }
                   generate = GithubReporting.generateComment
                   build = GithubReporting.buildPrComment }
-                |> ReportGeneration.gen            
-            )
+                |> ReportGeneration.gen)
         |> Task.iter
 
     // TODO: move this to render above
-    let genComment (context: ApplicationContext, (results: ApplicationScanResults), imageUri) =        
+    let genComment (context: ApplicationContext, (results: ApplicationScanResults), imageUri) =
         let options =
             { ReportGeneratorOptions.empty with
                 trace = context.services.trace
                 name = context.github.summaryTitle }
 
-        (results.hits, results.hitCounts, context.options.severities, imageUri) |> markdown
+        (results.hits, results.hitCounts, context.options.severities, imageUri)
+        |> markdown
         |> GithubReporting.generateComment options
         |> Task.result
 
@@ -141,9 +148,9 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
                     let! results = DotNet.getHits scanResults |> results context |> DotNet.enrichHits context
-                    
+
                     context.services.trace "Rendering..."
-                    
+
                     let! renderResults = (context, results) |> render |> Task.map ConsoleReporting.renderResults
 
                     if Context.hasGithubParameters context then

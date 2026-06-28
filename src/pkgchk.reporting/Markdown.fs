@@ -3,10 +3,10 @@ namespace pkgchk.reporting
 open pkgchk
 
 module Markdown =
-    let hdr (depth: int) (value: string) = 
-        let prefix = new string('#', depth)
+    let hdr (depth: int) (value: string) =
+        let prefix = new string ('#', depth)
         $"{prefix} {value}"
-            
+
     let dividor = "---"
 
     let table (value: Table) =
@@ -15,14 +15,15 @@ module Markdown =
 
         let fmtRow (cols: string list) =
             let actualColCount = List.length cols
-            let cols = 
+
+            let cols =
                 if actualColCount < columnCount then
                     let suffix = List.init (columnCount - actualColCount) (fun _ -> " ")
                     cols @ suffix
-                else 
+                else
                     cols |> List.truncate columnCount
 
-            cols |> String.join " | " 
+            cols |> String.join " | "
 
         let lines =
             seq {

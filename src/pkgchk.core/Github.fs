@@ -5,10 +5,11 @@ open System.Diagnostics.CodeAnalysis
 open pkgchk
 open Octokit
 
-type GithubRepo = 
+type GithubRepo =
     { owner: string
       repo: string }
-    static member create name = 
+
+    static member create name =
         let (name, repo) = String.split '/' name
         { GithubRepo.owner = name; repo = repo }
 
@@ -20,7 +21,7 @@ type GithubComment =
         { GithubComment.title = (String.defaultValue "pkgchk summary" title)
           body = body }
 
-    static member deconstruct (comment: GithubComment) =
+    static member deconstruct(comment: GithubComment) =
         let commentTitle = $"# {comment.title}"
         let commentBody = $"{commentTitle}{Environment.NewLine}{comment.body}"
 

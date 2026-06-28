@@ -117,17 +117,23 @@ module Context =
 
     let private applyRenderKinds (context: ApplicationContext) =
         let mutable renderKinds = [ pkgchk.reporting.RenderKind.ConsoleRender ]
-            
+
         if context.report.reportDirectory <> "" then
-            let reportingKinds = context.report.formats |> Seq.map ScaModels.toRenderKind |> List.ofSeq
+            let reportingKinds =
+                context.report.formats |> Seq.map ScaModels.toRenderKind |> List.ofSeq
+
             renderKinds <- renderKinds @ reportingKinds
-        
+
         if hasGithubParameters context && String.isNotEmpty context.github.prId then
             renderKinds <- renderKinds @ [ pkgchk.reporting.RenderKind.GithubActionPrComment ]
-        
-        if hasGithubParameters context && String.isNotEmpty context.github.commit && (not context.github.noCheck) then
+
+        if
+            hasGithubParameters context
+            && String.isNotEmpty context.github.commit
+            && (not context.github.noCheck)
+        then
             renderKinds <- renderKinds @ [ pkgchk.reporting.RenderKind.GithubActionCheck ]
-        
+
         let opts =
             { context.options with
                 renderKinds = renderKinds |> Array.ofSeq }

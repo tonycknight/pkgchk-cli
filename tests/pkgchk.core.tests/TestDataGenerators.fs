@@ -26,4 +26,3 @@ type AlphaNumericStringSingletonArray =
         |> Gen.filter isValidString
         |> Gen.map (fun s -> [| s |])
         |> Arb.fromGen
-

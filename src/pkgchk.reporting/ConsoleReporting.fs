@@ -26,8 +26,13 @@ module ConsoleReporting =
 
     let renderResults (results: ReportGenerationResult seq) =
         let renderFiles results =
-            let filePaths = 
-                results |> Seq.map (function | OutputFile path -> path | _ -> "") |> Seq.filter (fun s -> s <> "")
+            let filePaths =
+                results
+                |> Seq.map (function
+                    | OutputFile path -> path
+                    | _ -> "")
+                |> Seq.filter (fun s -> s <> "")
+
             let msg =
                 filePaths
                 |> Seq.map (fun f -> $"[link={f}]{f}[/]" |> cyan)
@@ -37,10 +42,16 @@ module ConsoleReporting =
                 $"{System.Environment.NewLine}Report file(s) {msg} built." |> italic |> console
 
         let renderGhComments results =
-            let ghComments = results |> Seq.filter (function | GithubComment _ -> true | _ -> false ) |> Seq.length
+            let ghComments =
+                results
+                |> Seq.filter (function
+                    | GithubComment _ -> true
+                    | _ -> false)
+                |> Seq.length
+
             if ghComments > 0 then
-                $"{ghComments} comment(s) sent to Github." |> italic |> console    
-            
+                $"{ghComments} comment(s) sent to Github." |> italic |> console
+
         renderFiles results
         renderGhComments results
 

@@ -14,21 +14,21 @@ module GithubReporting =
                     body
                 else
                     "_The report is too big for Github - Please check logs_"
-            
+
             return GithubComment.create context.name body
         }
 
     let buildCheck (context: ReportGeneratorOptions) (comment: GithubComment) =
         task {
-            // TODO: send... 
+            // TODO: send...
             // isGoodScan is a problem... necessary to stop builds
             //do! Github.sendCheck context results.isGoodScan comment
 
             return ReportGenerationResult.GithubComment comment
         }
-        
+
     let buildPrComment (context: ReportGeneratorOptions) (comment: GithubComment) =
-        task {            
+        task {
             // TODO: send...
             //do! Github.sendPrComment context comment
 

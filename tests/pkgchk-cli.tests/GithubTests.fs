@@ -56,7 +56,7 @@ module GithubTests =
         issueClient
 
     let throwIssueException (ci: Core.CallInfo) : Octokit.Issue = failwith "boom"
-                
+
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``setPrComment new comment invokes create`` (title: string, body: string, prId: int) =
         task {

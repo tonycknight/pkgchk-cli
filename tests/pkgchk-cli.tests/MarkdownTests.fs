@@ -51,7 +51,7 @@ module MarkdownTests =
 
         result.StartsWith($"[{suggestion}]")
         && result.EndsWith($"({pkgchk.Rendering.nugetLink (packageId, String.Empty)})")
-            
+
     [<Property(Arbitrary = [| typeof<AlphaNumericString> |], Verbose = true)>]
     let ``pkgFramework renders HTML colour markup`` (hit: pkgchk.ScaHit) =
         let result = pkgchk.Markdown.pkgFramework hit
