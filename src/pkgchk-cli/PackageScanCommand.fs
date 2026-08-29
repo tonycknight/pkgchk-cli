@@ -51,6 +51,10 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
             { ReportGeneratorOptions.empty with
                 reportDirectory = context.report.reportDirectory
                 trace = context.services.trace
+                githubRepo = context.github.repo
+                githubToken = context.github.token
+                githubCommit = context.github.commit
+                githubPrId = context.github.prId
                 name = "pkgchk-scan" }
 
         let imageUri = context |> Context.reportImage results.isGoodScan
@@ -78,6 +82,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                     |> markdown
                   options =
                     { options with
+                        isSuccess = results.isGoodScan
                         name = context.github.summaryTitle }
                   generate = GithubReporting.generateComment
                   build = GithubReporting.buildCheck }
@@ -88,6 +93,7 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                     |> markdown
                   options =
                     { options with
+                        isSuccess = results.isGoodScan
                         name = context.github.summaryTitle }
                   generate = GithubReporting.generateComment
                   build = GithubReporting.buildPrComment }

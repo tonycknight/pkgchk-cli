@@ -15,15 +15,19 @@ module GithubReporting =
                 else
                     "_The report is too big for Github - Please check logs_"
 
-            return GithubComment.create context.name body
+            return { GithubComment.create context.name body with isSuccess = context.isSuccess }
         }
 
     let buildCheck (context: ReportGeneratorOptions) (comment: GithubComment) =
-        task {
-            // TODO: send...
-            // isGoodScan is a problem... necessary to stop builds
-            //do! Github.sendCheck context results.isGoodScan comment
+        task {            
+            let client = Github.client context.githubToken
+            let repo = GithubRepo.create context.githubRepo
 
+            context.trace $"Posting {comment.title} build check to Github repo {repo}..." // TODO: ToString() rep?
+
+            // TODO: make a proxy...
+            do! Github.createCheck context.trace client repo context.githubCommit context.isSuccess comment
+            
             return ReportGenerationResult.GithubComment comment
         }
 
@@ -31,6 +35,12 @@ module GithubReporting =
         task {
             // TODO: send...
             //do! Github.sendPrComment context comment
+            let client = Github.client context.githubToken
+            let repo = GithubRepo.create context.githubRepo
+
+            context.trace $"Posting {comment.title} PR comment to Github repo {repo}..."
+
+            // TODO: 
 
             return ReportGenerationResult.GithubComment comment
         }

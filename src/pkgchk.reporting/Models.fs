@@ -5,12 +5,22 @@ open System.Threading.Tasks
 type ReportGeneratorOptions =
     { reportDirectory: string
       name: string
+      isSuccess: bool
+      githubRepo:  string
+      githubToken: string
+      githubCommit: string
+      githubPrId: string
       console: Spectre.Console.IAnsiConsole
       trace: string -> unit }
 
     static member empty =
         { ReportGeneratorOptions.reportDirectory = ""
           name = ""
+          isSuccess =  true
+          githubRepo = ""
+          githubToken = ""
+          githubCommit = ""
+          githubPrId = ""
           trace = ignore
           console = Spectre.Console.AnsiConsole.Console }
 
