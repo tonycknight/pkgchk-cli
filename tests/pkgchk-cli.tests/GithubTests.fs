@@ -126,8 +126,9 @@ module GithubTests =
             github.Check.Returns(checksClient) |> ignore
 
             let comment = GithubComment.create title body
+            let githubRepo = { pkgchk.GithubRepo.owner = owner; pkgchk.GithubRepo.repo = repo }
 
-            do! pkgchk.Github.createCheck ignore github (owner, repo) "commit" isSuccess comment
+            do! pkgchk.Github.createCheck ignore github githubRepo "commit" isSuccess comment
 
             checkRunsClient
                 .Received(1)
