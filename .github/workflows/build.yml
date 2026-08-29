@@ -57,24 +57,25 @@ jobs:
         run: dotnet restore
 
       - name: Run Tests
-        run: dotnet test -c Debug --filter FullyQualifiedName!~integration /p:CollectCoverage=true /p:CoverletOutput=./TestResults/coverage.info /p:CoverletOutputFormat=cobertura --logger "trx;LogFileName=test_results.trx" 
+        run: |
+          dotnet test .\tests\pkgchk-cli.tests\pkgchk-cli.tests.fsproj -c Debug -- --coverage --coverage-output-format cobertura --report-trx
       
       - name: Unit test results
         uses: dorny/test-reporter@v3
         if: always()
         with:
           name: unit test results
-          path: ${{ github.workspace }}/tests/pkgchk-cli.tests/TestResults/test_results.trx
+          path: ${{ github.workspace }}/TestResults/*.trx
           reporter: dotnet-trx
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Consolidate code coverage
-        run: dotnet reportgenerator -reports:./tests/**/coverage.net10.0.info -targetdir:./reports/codecoverage -reporttypes:Html,Cobertura
+        run: dotnet reportgenerator -reports:./TestResults/*.cobertura.xml -targetdir:./publish/codecoverage -reporttypes:Html  
 
       - name: Code coverage results
         uses: 5monkeys/cobertura-action@v14
         with:
-          path: ${{ github.workspace }}/reports/codecoverage/Cobertura.xml
+          path: ${{ github.workspace }}/TestResults/*.cobertura.xml
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           minimum_coverage: 1
           fail_below_threshold: true
@@ -84,12 +85,6 @@ jobs:
           show_class_names: true
           link_missing_lines: true
           report_name: code coverage results
-
-      - name: Archive Code coverage
-        uses: actions/upload-artifact@v7
-        with:
-          name: codecoverage
-          path: ./reports/codecoverage/*.*
 
   integration-tests:
     name: Integration Tests
@@ -113,14 +108,14 @@ jobs:
         run: dotnet restore
 
       - name: Run Tests
-        run: dotnet test -c Release --filter FullyQualifiedName~integration --logger "trx;LogFileName=test_results.trx" -v n
+        run: dotnet test .\tests\pkgchk-cli.tests.integration\pkgchk-cli.tests.integration.fsproj -c Debug -- --report-trx
 
       - name: Integration test results
         uses: dorny/test-reporter@v3
         if: always()
         with:
           name: integration test results - ${{ matrix.os }}
-          path: ${{ github.workspace }}/tests/pkgchk-cli.tests.integration/TestResults/test_results.trx
+          path: ${{ github.workspace }}/TestResults/*.trx
           reporter: dotnet-trx
           path-replace-backslashes: true
           token: ${{ secrets.GITHUB_TOKEN }}          
