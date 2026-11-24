@@ -186,7 +186,7 @@ type PackageLicenceCommandSettings() =
 
     [<CommandOption("--break-on-licences")>]
     [<Description("Break on outstanding package licences.")>]
-    [<DefaultValue(false)>]
+    [<DefaultValue(true)>]
     member val BreakOnLicences = false with get, set
 
 [<ExcludeFromCodeCoverage>]
