@@ -52,9 +52,11 @@ module Rendering =
 
 
     let maxHitKindLength () =
-        [ ScaHitKind.VulnerabilityTransitive
-          ScaHitKind.Vulnerability
-          ScaHitKind.Deprecated ]
+        [
+            ScaHitKind.VulnerabilityTransitive
+            ScaHitKind.Vulnerability
+            ScaHitKind.Deprecated
+        ]
         |> Seq.map (formatHitKind >> (fun s -> s.Length))
         |> Seq.max
 

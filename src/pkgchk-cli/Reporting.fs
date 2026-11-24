@@ -3,12 +3,14 @@
 type ReportFunc = (ApplicationContext * ApplicationScanResults * string) -> string seq
 
 type ReportGenerationContext =
-    { app: ApplicationContext
-      results: ApplicationScanResults
-      reportName: string
-      imageUri: string
-      genMarkdown: ReportFunc
-      genJson: ReportFunc }
+    {
+        app: ApplicationContext
+        results: ApplicationScanResults
+        reportName: string
+        imageUri: string
+        genMarkdown: ReportFunc
+        genJson: ReportFunc
+    }
 
 module ReportGeneration =
 
@@ -24,11 +26,13 @@ module ReportGeneration =
             Io.writeFile (name |> directory)
 
         let reports =
-            [ if required ReportFormat.Markdown then
-                  (context.genMarkdown, "md")
+            [
+                if required ReportFormat.Markdown then
+                    (context.genMarkdown, "md")
 
-              if required ReportFormat.Json then
-                  (context.genJson, "json") ]
+                if required ReportFormat.Json then
+                    (context.genJson, "json")
+            ]
 
         reports
         |> List.map (fun (gen, ext) ->

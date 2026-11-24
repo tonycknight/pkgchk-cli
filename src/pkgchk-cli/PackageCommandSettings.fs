@@ -184,6 +184,11 @@ type PackageLicenceCommandSettings() =
     [<DefaultValue(true)>]
     member val IgnoreMissingLicence = false with get, set
 
+    [<CommandOption("--break-on-licences")>]
+    [<Description("Break on outstanding package licences.")>]
+    [<DefaultValue(true)>]
+    member val BreakOnLicences = false with get, set
+
 [<ExcludeFromCodeCoverage>]
 type PackageUpgradeCommandSettings() =
     inherit PackageGithubCommandSettings()

@@ -7,13 +7,15 @@ type ScaVulnerabilityData = JsonProvider<"ScaVulnerabilitySample.json">
 type ScaPackageTreeData = JsonProvider<"PackageDependencyTreeSample.json">
 
 type DotNetScanContext =
-    { services: ServiceContext
-      projectPath: string
-      includeVulnerabilities: bool
-      includeTransitives: bool
-      includeDeprecations: bool
-      includeDependencies: bool
-      includeOutdated: bool }
+    {
+        services: ServiceContext
+        projectPath: string
+        includeVulnerabilities: bool
+        includeTransitives: bool
+        includeDeprecations: bool
+        includeDependencies: bool
+        includeOutdated: bool
+    }
 
 module DotNetParsing =
 
@@ -40,17 +42,19 @@ module DotNetParsing =
                         |> Seq.collect (fun tp ->
                             tp.Vulnerabilities
                             |> Seq.map (fun v ->
-                                { ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
-                                  kind = ScaHitKind.Vulnerability
-                                  framework = f.Framework
-                                  packageId = tp.Id
-                                  resolvedVersion = tp.ResolvedVersion
-                                  severity = v.Severity
-                                  reasons = [||]
-                                  suggestedReplacement = ""
-                                  alternativePackageId = ""
-                                  metadata = None
-                                  advisoryUri = v.Advisoryurl }))))
+                                {
+                                    ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
+                                    kind = ScaHitKind.Vulnerability
+                                    framework = f.Framework
+                                    packageId = tp.Id
+                                    resolvedVersion = tp.ResolvedVersion
+                                    severity = v.Severity
+                                    reasons = [||]
+                                    suggestedReplacement = ""
+                                    alternativePackageId = ""
+                                    metadata = None
+                                    advisoryUri = v.Advisoryurl
+                                }))))
 
             let topLevelDeprecations =
                 r.Projects
@@ -60,23 +64,25 @@ module DotNetParsing =
                         f.TopLevelPackages
                         |> Seq.filter (fun tp -> tp.DeprecationReasons |> Array.isEmpty |> not)
                         |> Seq.map (fun tp ->
-                            { ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
-                              kind = ScaHitKind.Deprecated
-                              framework = f.Framework
-                              packageId = tp.Id
-                              resolvedVersion = tp.ResolvedVersion
-                              severity = ""
-                              suggestedReplacement =
-                                match tp.AlternativePackage with
-                                | Some ap -> sprintf "%s %s" ap.Id ap.VersionRange
-                                | None -> ""
-                              alternativePackageId =
-                                match tp.AlternativePackage with
-                                | Some ap -> ap.Id
-                                | None -> ""
-                              reasons = tp.DeprecationReasons |> Array.ofSeq
-                              metadata = None
-                              advisoryUri = "" })))
+                            {
+                                ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
+                                kind = ScaHitKind.Deprecated
+                                framework = f.Framework
+                                packageId = tp.Id
+                                resolvedVersion = tp.ResolvedVersion
+                                severity = ""
+                                suggestedReplacement =
+                                    match tp.AlternativePackage with
+                                    | Some ap -> sprintf "%s %s" ap.Id ap.VersionRange
+                                    | None -> ""
+                                alternativePackageId =
+                                    match tp.AlternativePackage with
+                                    | Some ap -> ap.Id
+                                    | None -> ""
+                                reasons = tp.DeprecationReasons |> Array.ofSeq
+                                metadata = None
+                                advisoryUri = ""
+                            })))
 
             let transitiveVuls =
                 r.Projects
@@ -87,17 +93,19 @@ module DotNetParsing =
                         |> Seq.collect (fun tp ->
                             tp.Vulnerabilities
                             |> Seq.map (fun v ->
-                                { ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
-                                  kind = ScaHitKind.VulnerabilityTransitive
-                                  framework = f.Framework
-                                  packageId = tp.Id
-                                  resolvedVersion = tp.ResolvedVersion
-                                  severity = v.Severity
-                                  reasons = [||]
-                                  suggestedReplacement = ""
-                                  alternativePackageId = ""
-                                  metadata = None
-                                  advisoryUri = v.Advisoryurl }))))
+                                {
+                                    ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
+                                    kind = ScaHitKind.VulnerabilityTransitive
+                                    framework = f.Framework
+                                    packageId = tp.Id
+                                    resolvedVersion = tp.ResolvedVersion
+                                    severity = v.Severity
+                                    reasons = [||]
+                                    suggestedReplacement = ""
+                                    alternativePackageId = ""
+                                    metadata = None
+                                    advisoryUri = v.Advisoryurl
+                                }))))
 
             let hits =
                 topLevelDeprecations
@@ -122,20 +130,22 @@ module DotNetParsing =
                         f.TopLevelPackages
                         |> Seq.map (fun tp ->
 
-                            { ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
-                              kind = ScaHitKind.Dependency
-                              framework = f.Framework
-                              packageId = tp.Id
-                              resolvedVersion = tp.ResolvedVersion
-                              severity = ""
-                              reasons =
-                                match tp.LatestVersion with
-                                | Some _ -> [| "Upgrade available" |]
-                                | _ -> [||]
-                              suggestedReplacement = tp.LatestVersion |> Option.defaultValue ""
-                              alternativePackageId = ""
-                              metadata = None
-                              advisoryUri = "" })))
+                            {
+                                ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
+                                kind = ScaHitKind.Dependency
+                                framework = f.Framework
+                                packageId = tp.Id
+                                resolvedVersion = tp.ResolvedVersion
+                                severity = ""
+                                reasons =
+                                    match tp.LatestVersion with
+                                    | Some _ -> [| "Upgrade available" |]
+                                    | _ -> [||]
+                                suggestedReplacement = tp.LatestVersion |> Option.defaultValue ""
+                                alternativePackageId = ""
+                                metadata = None
+                                advisoryUri = ""
+                            })))
 
             let transitiveVuls =
                 r.Projects
@@ -144,17 +154,19 @@ module DotNetParsing =
                     |> Seq.collect (fun f ->
                         f.TransitivePackages
                         |> Seq.map (fun tp ->
-                            { ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
-                              kind = ScaHitKind.DependencyTransitive
-                              framework = f.Framework
-                              packageId = tp.Id
-                              resolvedVersion = tp.ResolvedVersion
-                              severity = ""
-                              reasons = [||]
-                              suggestedReplacement = ""
-                              alternativePackageId = ""
-                              metadata = None
-                              advisoryUri = "" })))
+                            {
+                                ScaHit.projectPath = System.IO.Path.GetFullPath(p.Path)
+                                kind = ScaHitKind.DependencyTransitive
+                                framework = f.Framework
+                                packageId = tp.Id
+                                resolvedVersion = tp.ResolvedVersion
+                                severity = ""
+                                reasons = [||]
+                                suggestedReplacement = ""
+                                alternativePackageId = ""
+                                metadata = None
+                                advisoryUri = ""
+                            })))
 
             let hits = transitiveVuls |> Seq.append topLevelVuls |> List.ofSeq
 
@@ -192,14 +204,16 @@ module DotNetArgs =
     let scanArgs (context: DotNetScanContext) =
         let projPath = context.projectPath |> Io.fullPath
 
-        [| if context.includeVulnerabilities then
-               yield (projPath |> scanVulnerabilities context.includeTransitives, DotNetParsing.parseVulnerabilities)
-           if context.includeDeprecations then
-               yield (projPath |> scanDeprecations context.includeTransitives, DotNetParsing.parseVulnerabilities)
-           if context.includeDependencies then
-               yield (projPath |> scanDependencies context.includeTransitives, DotNetParsing.parsePackageTree)
-           if context.includeOutdated then
-               yield (scanOutdated projPath, DotNetParsing.parsePackageTree) |]
+        [|
+            if context.includeVulnerabilities then
+                yield (projPath |> scanVulnerabilities context.includeTransitives, DotNetParsing.parseVulnerabilities)
+            if context.includeDeprecations then
+                yield (projPath |> scanDeprecations context.includeTransitives, DotNetParsing.parseVulnerabilities)
+            if context.includeDependencies then
+                yield (projPath |> scanDependencies context.includeTransitives, DotNetParsing.parsePackageTree)
+            if context.includeOutdated then
+                yield (scanOutdated projPath, DotNetParsing.parsePackageTree)
+        |]
 
 module DotNet =
 

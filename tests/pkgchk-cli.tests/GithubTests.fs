@@ -190,9 +190,10 @@ module GithubTests =
                         x.Output.Title = comment.title
                         && x.Output.Summary = comment.body
                         && x.Status.Value.Value = CheckStatus.Completed
-                        && x.Conclusion.Value.Value = (match isSuccess with
-                                                       | true -> CheckConclusion.Success
-                                                       | false -> CheckConclusion.Failure))
+                        && x.Conclusion.Value.Value =
+                            (match isSuccess with
+                             | true -> CheckConclusion.Success
+                             | false -> CheckConclusion.Failure))
                 )
             |> ignore
 

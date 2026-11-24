@@ -3,112 +3,137 @@
 open pkgchk.Combinators
 
 type GithubContext =
-    { [<Newtonsoft.Json.JsonIgnore>]
-      token: string
-      repo: string
-      summaryTitle: string
-      prId: string
-      commit: string
-      noCheck: bool }
+    {
+        [<Newtonsoft.Json.JsonIgnore>]
+        token: string
+        repo: string
+        summaryTitle: string
+        prId: string
+        commit: string
+        noCheck: bool
+    }
 
 type ReportContext =
-    { reportDirectory: string
-      formats: ReportFormat[]
-      goodImageUri: string
-      badImageUri: string }
+    {
+        reportDirectory: string
+        formats: ReportFormat[]
+        goodImageUri: string
+        badImageUri: string
+    }
 
 type OptionsContext =
-    { projectPath: string
-      configFile: string
-      suppressBanner: bool
-      suppressRestore: bool
-      includePackages: string[]
-      excludePackages: string[]
-      breakOnUpgrades: bool
-      severities: string[]
-      scanVulnerabilities: bool
-      scanDeprecations: bool
-      scanTransitives: bool
-      fetchMetadata: bool
-      allowedLicences: string[]
-      disallowedLicences: string[]
-      ignoreMissingLicence: bool }
+    {
+        projectPath: string
+        configFile: string
+        suppressBanner: bool
+        suppressRestore: bool
+        includePackages: string[]
+        excludePackages: string[]
+        breakOnUpgrades: bool
+        breakOnLicences: bool
+        severities: string[]
+        scanVulnerabilities: bool
+        scanDeprecations: bool
+        scanTransitives: bool
+        fetchMetadata: bool
+        allowedLicences: string[]
+        disallowedLicences: string[]
+        ignoreMissingLicence: bool
+    }
 
     static member empty =
-        { OptionsContext.projectPath = ""
-          configFile = ""
-          suppressBanner = false
-          suppressRestore = false
-          includePackages = [||]
-          excludePackages = [||]
-          breakOnUpgrades = false
-          severities = [||]
-          scanVulnerabilities = false
-          scanDeprecations = false
-          scanTransitives = false
-          fetchMetadata = false
-          allowedLicences = [||]
-          disallowedLicences = [||]
-          ignoreMissingLicence = false }
+        {
+            OptionsContext.projectPath = ""
+            configFile = ""
+            suppressBanner = false
+            suppressRestore = false
+            includePackages = [||]
+            excludePackages = [||]
+            breakOnUpgrades = false
+            breakOnLicences = false
+            severities = [||]
+            scanVulnerabilities = false
+            scanDeprecations = false
+            scanTransitives = false
+            fetchMetadata = false
+            allowedLicences = [||]
+            disallowedLicences = [||]
+            ignoreMissingLicence = false
+        }
 
 type ServiceContext =
-    { trace: (string -> unit)
-      nuget: Tk.Nuget.INugetClient }
+    {
+        trace: (string -> unit)
+        nuget: Tk.Nuget.INugetClient
+    }
 
 type ApplicationContext =
-    { options: OptionsContext
-      report: ReportContext
-      github: GithubContext
-      [<Newtonsoft.Json.JsonIgnore>]
-      services: ServiceContext }
+    {
+        options: OptionsContext
+        report: ReportContext
+        github: GithubContext
+        [<Newtonsoft.Json.JsonIgnore>]
+        services: ServiceContext
+    }
 
 module Context =
     let githubContext (settings: PackageGithubCommandSettings) =
-        { GithubContext.commit = settings.GithubCommit
-          token = settings.GithubToken
-          repo = settings.GithubRepo
-          summaryTitle = settings.GithubSummaryTitle
-          prId = settings.GithubPrId
-          noCheck = settings.NoCheck }
+        {
+            GithubContext.commit = settings.GithubCommit
+            token = settings.GithubToken
+            repo = settings.GithubRepo
+            summaryTitle = settings.GithubSummaryTitle
+            prId = settings.GithubPrId
+            noCheck = settings.NoCheck
+        }
 
     let reportContext (settings: PackageGithubCommandSettings) =
-        { ReportContext.reportDirectory = settings.OutputDirectory
-          formats = settings.ReportFormats
-          goodImageUri = settings.GoodImageUri
-          badImageUri = settings.BadImageUri }
+        {
+            ReportContext.reportDirectory = settings.OutputDirectory
+            formats = settings.ReportFormats
+            goodImageUri = settings.GoodImageUri
+            badImageUri = settings.BadImageUri
+        }
 
     let optionsContext (settings: PackageGithubCommandSettings) =
-        { OptionsContext.projectPath = settings.ProjectPath
-          configFile = settings.ConfigFile
-          suppressBanner = settings.NoBanner
-          suppressRestore = settings.NoRestore
-          includePackages =
-            settings.IncludedPackages
-            |> Option.nullDefault [||]
-            |> Array.filter String.isNotEmpty
-          excludePackages =
-            settings.ExcludedPackages
-            |> Option.nullDefault [||]
-            |> Array.filter String.isNotEmpty
-          breakOnUpgrades = false
-          severities = [||]
-          scanVulnerabilities = false
-          scanDeprecations = false
-          scanTransitives = false
-          allowedLicences = [||]
-          disallowedLicences = [||]
-          ignoreMissingLicence = false
-          fetchMetadata = settings.FetchMetadata }
+        {
+            OptionsContext.projectPath = settings.ProjectPath
+            configFile = settings.ConfigFile
+            suppressBanner = settings.NoBanner
+            suppressRestore = settings.NoRestore
+            includePackages =
+                settings.IncludedPackages
+                |> Option.nullDefault [||]
+                |> Array.filter String.isNotEmpty
+            excludePackages =
+                settings.ExcludedPackages
+                |> Option.nullDefault [||]
+                |> Array.filter String.isNotEmpty
+            breakOnUpgrades = false
+            breakOnLicences = false
+            severities = [||]
+            scanVulnerabilities = false
+            scanDeprecations = false
+            scanTransitives = false
+            allowedLicences = [||]
+            disallowedLicences = [||]
+            ignoreMissingLicence = false
+            fetchMetadata = settings.FetchMetadata
+        }
 
     let serviceContext (settings: PackageCommandSettings, nuget) =
-        { ServiceContext.trace = CliCommands.trace settings.TraceLogging
-          nuget = nuget }
+        {
+            ServiceContext.trace = CliCommands.trace settings.TraceLogging
+            nuget = nuget
+        }
 
     let applicationContext nuget (settings: PackageGithubCommandSettings) (options: OptionsContext) =
-        { ApplicationContext.options = options
-          github = githubContext settings
-          report = reportContext settings
-          services = serviceContext (settings, nuget) }
+        {
+            ApplicationContext.options = options
+            github = githubContext settings
+            report = reportContext settings
+            services = serviceContext (settings, nuget)
+        }
 
     let scanContext (nuget, settings: PackageScanCommandSettings) =
         let options =
@@ -116,14 +141,16 @@ module Context =
                 severities = settings.SeverityLevels |> Array.filter String.isNotEmpty
                 scanVulnerabilities = settings.IncludeVulnerables
                 scanDeprecations = settings.IncludeDeprecations
-                scanTransitives = settings.IncludeTransitives }
+                scanTransitives = settings.IncludeTransitives
+            }
 
         options |> applicationContext nuget settings
 
     let listContext (nuget, settings: PackageListCommandSettings) =
         let options =
             { optionsContext settings with
-                scanTransitives = settings.IncludeTransitives }
+                scanTransitives = settings.IncludeTransitives
+            }
 
         options |> applicationContext nuget settings
 
@@ -134,14 +161,17 @@ module Context =
                 allowedLicences = settings.AllowedLicences
                 disallowedLicences = settings.DisallowedLicences
                 ignoreMissingLicence = settings.IgnoreMissingLicence
-                scanTransitives = settings.IncludeTransitives }
+                scanTransitives = settings.IncludeTransitives
+                breakOnLicences = settings.BreakOnLicences
+            }
 
         options |> applicationContext nuget settings
 
     let upgradesContext (nuget, settings: PackageUpgradeCommandSettings) =
         let options =
             { optionsContext settings with
-                breakOnUpgrades = settings.BreakOnUpgrades }
+                breakOnUpgrades = settings.BreakOnUpgrades
+            }
 
         options |> applicationContext nuget settings
 
@@ -151,62 +181,80 @@ module Context =
         if config.noBanner.HasValue then
             result <-
                 { context with
-                    suppressBanner = config.noBanner.Value }
+                    suppressBanner = config.noBanner.Value
+                }
 
         if config.noRestore.HasValue then
             result <-
                 { result with
-                    suppressRestore = config.noRestore.Value }
+                    suppressRestore = config.noRestore.Value
+                }
 
         if config.includePackages |> Option.isNull |> not then
             result <-
                 { result with
-                    includePackages = config.includePackages }
+                    includePackages = config.includePackages
+                }
 
         if config.excludePackages |> Option.isNull |> not then
             result <-
                 { result with
-                    excludePackages = config.excludePackages }
+                    excludePackages = config.excludePackages
+                }
 
         if config.breakOnUpgrades.HasValue then
             result <-
                 { result with
-                    breakOnUpgrades = config.breakOnUpgrades.Value }
+                    breakOnUpgrades = config.breakOnUpgrades.Value
+                }
+
+        if config.breakOnLicences.HasValue then
+            result <-
+                { result with
+                    breakOnLicences = config.breakOnLicences.Value
+                }
 
         if config.severities |> Option.isNull |> not then
             result <-
                 { result with
-                    severities = config.severities }
+                    severities = config.severities
+                }
 
         if config.scanVulnerabilities.HasValue then
             result <-
                 { result with
-                    scanVulnerabilities = config.scanVulnerabilities.Value }
+                    scanVulnerabilities = config.scanVulnerabilities.Value
+                }
 
         if config.scanDeprecations.HasValue then
             result <-
                 { result with
-                    scanDeprecations = config.scanDeprecations.Value }
+                    scanDeprecations = config.scanDeprecations.Value
+                }
 
         if config.scanTransitives.HasValue then
             result <-
                 { result with
-                    scanTransitives = config.scanTransitives.Value }
+                    scanTransitives = config.scanTransitives.Value
+                }
 
         if config.allowedLicences |> Option.isNull |> not then
             result <-
                 { result with
-                    allowedLicences = config.allowedLicences }
+                    allowedLicences = config.allowedLicences
+                }
 
         if config.disallowedLicences |> Option.isNull |> not then
             result <-
                 { result with
-                    disallowedLicences = config.disallowedLicences }
+                    disallowedLicences = config.disallowedLicences
+                }
 
         if config.ignoreMissingLicence.HasValue then
             result <-
                 { result with
-                    ignoreMissingLicence = config.ignoreMissingLicence.Value }
+                    ignoreMissingLicence = config.ignoreMissingLicence.Value
+                }
 
         result
 
