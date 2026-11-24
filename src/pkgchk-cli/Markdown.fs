@@ -85,6 +85,11 @@ module Markdown =
     let titleList () =
         seq { "# :heavy_check_mark: Package dependencies" }
 
+    let titleLicenses hits =
+        match hits with
+        | [] -> seq { "# :heavy_check_mark: No license issues found!" }
+        | _ -> seq { "# :warning: License issues found!" }
+
     let formatHitCounts (severities: seq<string>, counts: seq<ScaHitSummary>) =
         let tableHdr =
             seq {
@@ -246,6 +251,17 @@ module Markdown =
     let generateList hits =
         seq {
             yield! titleList ()
+            yield! formatHits hits
+            yield! footer
+        }
+
+    let generateLicenses  (hits, imageUri) =
+        seq {
+            yield! titleLicenses hits
+
+            if String.isNotEmpty imageUri then
+                yield imgLink imageUri
+
             yield! formatHits hits
             yield! footer
         }

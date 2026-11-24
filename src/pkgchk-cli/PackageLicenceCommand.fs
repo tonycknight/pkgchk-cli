@@ -9,7 +9,7 @@ type PackageLicenceCommand(nuget: INugetClient) =
     inherit AsyncCommand<PackageLicenceCommandSettings>()
 
     let genMarkdownReport (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
-        results.hits |> Markdown.generateList
+        (results.hits, imageUri) |> Markdown.generateLicenses
 
     let genReports (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
         let ctx =
@@ -70,8 +70,8 @@ type PackageLicenceCommand(nuget: INugetClient) =
                 results.hitCounts |> Console.hitSummaryTable
         }
 
-    let genComment (context: ApplicationContext, results: ApplicationScanResults) =
-        let markdown = (context, results, "") |> genMarkdownReport |> String.joinLines
+    let genComment (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
+        let markdown = (context, results, imageUri) |> genMarkdownReport |> String.joinLines
 
         if markdown.Length < Github.maxCommentSize then
             GithubComment.create context.github.summaryTitle markdown
@@ -111,15 +111,16 @@ type PackageLicenceCommand(nuget: INugetClient) =
                     context.services.trace "Building display..."
 
                     results |> consoleTable |> CliCommands.renderTables
+                    let reportImg = context |> Context.reportImage results.isGoodScan
 
                     if context.report.reportDirectory <> "" then
                         context.services.trace "Building reports..."
 
-                        (context, results, "") |> genReports |> CliCommands.renderReportLines
+                        (context, results, reportImg) |> genReports |> CliCommands.renderReportLines
 
                     if Context.hasGithubParameters context then
                         context.services.trace "Building Github reports..."
-                        let comment = genComment (context, results)
+                        let comment = genComment (context, results, reportImg)
 
                         if String.isNotEmpty context.github.prId then
                             do! Github.sendPrComment context comment
