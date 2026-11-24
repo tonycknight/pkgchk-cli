@@ -177,6 +177,11 @@ module Context =
                 { result with
                     breakOnUpgrades = config.breakOnUpgrades.Value }
 
+        if config.breakOnLicences.HasValue then
+            result <-
+                { result with
+                    breakOnLicences = config.breakOnLicences.Value }
+
         if config.severities |> Option.isNull |> not then
             result <-
                 { result with

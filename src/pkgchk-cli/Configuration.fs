@@ -10,6 +10,7 @@ type ScanConfiguration =
       includePackages: string[]
       excludePackages: string[]
       breakOnUpgrades: Nullable<bool>
+      breakOnLicences: Nullable<bool>
       severities: string[]
       scanVulnerabilities: Nullable<bool>
       scanDeprecations: Nullable<bool>
