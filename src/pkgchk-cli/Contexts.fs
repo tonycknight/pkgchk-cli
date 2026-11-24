@@ -25,6 +25,7 @@ type OptionsContext =
       includePackages: string[]
       excludePackages: string[]
       breakOnUpgrades: bool
+      breakOnLicences: bool
       severities: string[]
       scanVulnerabilities: bool
       scanDeprecations: bool
@@ -42,6 +43,7 @@ type OptionsContext =
           includePackages = [||]
           excludePackages = [||]
           breakOnUpgrades = false
+          breakOnLicences = false
           severities = [||]
           scanVulnerabilities = false
           scanDeprecations = false
@@ -91,6 +93,7 @@ module Context =
             |> Option.nullDefault [||]
             |> Array.filter String.isNotEmpty
           breakOnUpgrades = false
+          breakOnLicences = false
           severities = [||]
           scanVulnerabilities = false
           scanDeprecations = false
@@ -134,7 +137,8 @@ module Context =
                 allowedLicences = settings.AllowedLicences
                 disallowedLicences = settings.DisallowedLicences
                 ignoreMissingLicence = settings.IgnoreMissingLicence
-                scanTransitives = settings.IncludeTransitives }
+                scanTransitives = settings.IncludeTransitives
+                breakOnLicences = settings.BreakOnLicences }
 
         options |> applicationContext nuget settings
 
