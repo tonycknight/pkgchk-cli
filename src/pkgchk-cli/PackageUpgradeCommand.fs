@@ -12,12 +12,14 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
 
     let genReports (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
         let ctx =
-            { ReportGenerationContext.app = context
-              results = results
-              reportName = "pkgchk-upgrades"
-              imageUri = imageUri
-              genMarkdown = genMarkdownReport
-              genJson = ReportGeneration.jsonReport }
+            {
+                ReportGenerationContext.app = context
+                results = results
+                reportName = "pkgchk-upgrades"
+                imageUri = imageUri
+                genMarkdown = genMarkdownReport
+                genJson = ReportGeneration.jsonReport
+            }
 
         ReportGeneration.reports ctx
 
@@ -34,16 +36,19 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
         let context = Context.upgradesContext (nuget, settings)
 
         { context with
-            options = Context.loadApplyConfig context.options }
+            options = Context.loadApplyConfig context.options
+        }
 
     let dotnetContext (context: ApplicationContext) =
-        { DotNetScanContext.services = context.services
-          projectPath = context.options.projectPath
-          includeVulnerabilities = false
-          includeTransitives = false
-          includeDeprecations = false
-          includeDependencies = false
-          includeOutdated = true }
+        {
+            DotNetScanContext.services = context.services
+            projectPath = context.options.projectPath
+            includeVulnerabilities = false
+            includeTransitives = false
+            includeDeprecations = false
+            includeDependencies = false
+            includeOutdated = true
+        }
 
     let consoleTable (results: ApplicationScanResults) =
         seq {
@@ -58,9 +63,11 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
     let results (context: ApplicationContext) (hits: seq<ScaHit>) =
         let hits = hits |> Context.filterPackages context.options |> List.ofSeq
 
-        { ApplicationScanResults.hits = hits
-          hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
-          isGoodScan = hits |> List.isEmpty || (context.options.breakOnUpgrades |> not) }
+        {
+            ApplicationScanResults.hits = hits
+            hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
+            isGoodScan = hits |> List.isEmpty || (context.options.breakOnUpgrades |> not)
+        }
 
     override _.Validate
         (context: CommandContext, settings: PackageUpgradeCommandSettings)
@@ -88,7 +95,8 @@ type PackageUpgradeCommand(nuget: Tk.Nuget.INugetClient) =
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
 
-                    let! results = DotNet.getHits scanResults |> results context |> DotNet.enrichHits context
+                    let! results =
+                        DotNet.getHits scanResults |> results context |> DotNet.enrichHits context
 
                     context.services.trace "Building display..."
                     results |> consoleTable |> CliCommands.renderTables

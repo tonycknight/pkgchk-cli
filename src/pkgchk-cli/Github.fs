@@ -5,12 +5,16 @@ open System.Diagnostics.CodeAnalysis
 open Octokit
 
 type GithubComment =
-    { title: string
-      body: string }
+    {
+        title: string
+        body: string
+    }
 
     static member create title body =
-        { GithubComment.title = (String.defaultValue "pkgchk summary" title)
-          body = body }
+        {
+            GithubComment.title = (String.defaultValue "pkgchk summary" title)
+            body = body
+        }
 
 module Github =
 

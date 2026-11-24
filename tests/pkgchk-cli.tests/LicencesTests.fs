@@ -42,11 +42,13 @@ module LicencesTests =
     let ``licence extracts licences`` (expression, expected: string) =
         let metadata =
             { pkgchk.NugetPackageMetadata.empty with
-                license = expression }
+                license = expression
+            }
 
         let hit =
             { pkgchk.ScaHit.empty with
-                metadata = Some metadata }
+                metadata = Some metadata
+            }
 
         let result = pkgchk.Licences.licence hit
         let expected = expected.Split('|')

@@ -255,7 +255,7 @@ module Markdown =
             yield! footer
         }
 
-    let generateLicenses  (hits, imageUri) =
+    let generateLicenses (hits, imageUri) =
         seq {
             yield! titleLicenses hits
 

@@ -76,51 +76,60 @@ module ContextTests =
         let r = pkgchk.Context.applyConfig context config
 
         let suppressBanner =
-            r.suppressBanner = (match config.noBanner.HasValue with
-                                | true -> config.noBanner.Value
-                                | false -> context.suppressBanner)
+            r.suppressBanner =
+                (match config.noBanner.HasValue with
+                 | true -> config.noBanner.Value
+                 | false -> context.suppressBanner)
 
         let suppressRestore =
-            r.suppressRestore = (match config.noRestore.HasValue with
-                                 | true -> config.noRestore.Value
-                                 | false -> context.suppressRestore)
+            r.suppressRestore =
+                (match config.noRestore.HasValue with
+                 | true -> config.noRestore.Value
+                 | false -> context.suppressRestore)
 
         let projectPath = (r.projectPath = context.projectPath)
 
         let includedPackages =
-            r.includePackages = (match config.includePackages with
-                                 | null -> context.includePackages
-                                 | x -> config.includePackages)
+            r.includePackages =
+                (match config.includePackages with
+                 | null -> context.includePackages
+                 | x -> config.includePackages)
 
         let excludedPackages =
-            r.excludePackages = (match config.excludePackages with
-                                 | null -> context.excludePackages
-                                 | x -> config.excludePackages)
+            r.excludePackages =
+                (match config.excludePackages with
+                 | null -> context.excludePackages
+                 | x -> config.excludePackages)
 
         let breakOnUpgrades =
-            r.breakOnUpgrades = (match config.breakOnUpgrades.HasValue with
-                                 | true -> config.breakOnUpgrades.Value
-                                 | false -> context.breakOnUpgrades)
+            r.breakOnUpgrades =
+                (match config.breakOnUpgrades.HasValue with
+                 | true -> config.breakOnUpgrades.Value
+                 | false -> context.breakOnUpgrades)
 
         let severities =
-            r.severities = (match config.severities with
-                            | null -> context.severities
-                            | x -> config.severities)
+            r.severities =
+                (match config.severities with
+                 | null -> context.severities
+                 | x -> config.severities)
 
         let scanVulnerabilities =
-            r.scanVulnerabilities = (match config.scanVulnerabilities.HasValue with
-                                     | true -> config.scanVulnerabilities.Value
-                                     | false -> context.scanVulnerabilities)
+            r.scanVulnerabilities =
+                (match config.scanVulnerabilities.HasValue with
+                 | true -> config.scanVulnerabilities.Value
+                 | false -> context.scanVulnerabilities)
 
         let scanDeprecations =
-            r.scanDeprecations = (match config.scanDeprecations.HasValue with
-                                  | true -> config.scanDeprecations.Value
-                                  | false -> context.scanDeprecations)
+            r.scanDeprecations =
+                (match config.scanDeprecations.HasValue with
+                 | true -> config.scanDeprecations.Value
+                 | false -> context.scanDeprecations)
 
         let includeTransitives =
-            r.scanTransitives = (match config.scanTransitives.HasValue with
-                                 | true -> config.scanTransitives.Value
-                                 | false -> context.scanTransitives)
+            r.scanTransitives =
+                (match config.scanTransitives.HasValue with
+                 | true -> config.scanTransitives.Value
+                 | false -> context.scanTransitives)
 
         suppressBanner
         && suppressRestore
@@ -140,7 +149,8 @@ module ContextTests =
         let context =
             { context with
                 excludePackages = [||]
-                includePackages = [||] }
+                includePackages = [||]
+            }
 
         let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
 
@@ -153,7 +163,8 @@ module ContextTests =
         let context =
             { context with
                 excludePackages = [||]
-                includePackages = [| hit.packageId |] }
+                includePackages = [| hit.packageId |]
+            }
 
         let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
 
@@ -166,7 +177,8 @@ module ContextTests =
         let context =
             { context with
                 excludePackages = [||]
-                includePackages = [| $"{hit.packageId}*" |] }
+                includePackages = [| $"{hit.packageId}*" |]
+            }
 
         let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
 
@@ -179,7 +191,8 @@ module ContextTests =
         let context =
             { context with
                 excludePackages = [||]
-                includePackages = [| (hit.packageId + hit.packageId) |] }
+                includePackages = [| (hit.packageId + hit.packageId) |]
+            }
 
         let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
 
@@ -192,7 +205,8 @@ module ContextTests =
         let context =
             { context with
                 includePackages = [||]
-                excludePackages = [| hit.packageId |] }
+                excludePackages = [| hit.packageId |]
+            }
 
         let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
 
@@ -204,14 +218,16 @@ module ContextTests =
 
         let hit =
             { hit with
-                packageId = hit.packageId + "Extra" } // extend the package ID to match by wildcard
+                packageId = hit.packageId + "Extra"
+            } // extend the package ID to match by wildcard
 
         let hits = [ hit ]
 
         let context =
             { context with
                 includePackages = [||]
-                excludePackages = [| $"{packageId}*" |] }
+                excludePackages = [| $"{packageId}*" |]
+            }
 
         let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
 
@@ -225,7 +241,8 @@ module ContextTests =
         let context =
             { context with
                 includePackages = [||]
-                excludePackages = [| (hit.packageId + hit.packageId) |] }
+                excludePackages = [| (hit.packageId + hit.packageId) |]
+            }
 
         let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
 
@@ -238,7 +255,8 @@ module ContextTests =
         let context =
             { context with
                 includePackages = [| hit.packageId |]
-                excludePackages = [| hit.packageId |] }
+                excludePackages = [| hit.packageId |]
+            }
 
         let r = pkgchk.Context.filterPackages context hits |> List.ofSeq
 

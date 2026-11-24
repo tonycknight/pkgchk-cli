@@ -152,24 +152,26 @@ module Console =
         match hit.metadata with
         | None -> []
         | Some meta ->
-            [ meta.projectUrl |> Option.map green |> Option.defaultValue ""
-              sprintf
-                  "%s %s"
-                  (match (meta.license |> Option.ofNull |> Option.defaultValue "", meta.licenseUrl) with
-                   | ("", Some url) -> url |> yellow
-                   | ("", None) -> "No licence given" |> yellow
-                   | (l, _) -> l |> yellow)
-                  (meta.authors |> darkcyan)
-              |> italic
-              meta.description
-              |> trimNewLines
-              |> Option.nonEmpty
-              |> Option.map (Markup.Escape >> lightgrey >> italic)
-              |> Option.defaultValue ""
-              meta.tags
-              |> Option.nonEmpty
-              |> Option.map (String.trim >> Markup.Escape >> grey >> italic)
-              |> Option.defaultValue "" ]
+            [
+                meta.projectUrl |> Option.map green |> Option.defaultValue ""
+                sprintf
+                    "%s %s"
+                    (match (meta.license |> Option.ofNull |> Option.defaultValue "", meta.licenseUrl) with
+                     | ("", Some url) -> url |> yellow
+                     | ("", None) -> "No licence given" |> yellow
+                     | (l, _) -> l |> yellow)
+                    (meta.authors |> darkcyan)
+                |> italic
+                meta.description
+                |> trimNewLines
+                |> Option.nonEmpty
+                |> Option.map (Markup.Escape >> lightgrey >> italic)
+                |> Option.defaultValue ""
+                meta.tags
+                |> Option.nonEmpty
+                |> Option.map (String.trim >> Markup.Escape >> grey >> italic)
+                |> Option.defaultValue ""
+            ]
             |> List.filter String.isNotEmpty
 
     let hitDetails (hit: ScaHit) =
@@ -253,9 +255,11 @@ module Console =
             | 1 -> $"{value} hit"
             | _ -> $"{value} hits"
 
-        [| Rendering.formatHitKind value.kind
-           fmtSeverity value.kind value.severity
-           fmtCount value.count |]
+        [|
+            Rendering.formatHitKind value.kind
+            fmtSeverity value.kind value.severity
+            fmtCount value.count
+        |]
 
     let hitSummaryTable (counts: seq<ScaHitSummary>) =
         let table =

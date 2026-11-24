@@ -13,12 +13,14 @@ type PackageListCommand(nuget: INugetClient) =
 
     let genReports (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
         let ctx =
-            { ReportGenerationContext.app = context
-              results = results
-              reportName = "pkgchk-dependencies"
-              imageUri = imageUri
-              genMarkdown = genMarkdownReport
-              genJson = ReportGeneration.jsonReport }
+            {
+                ReportGenerationContext.app = context
+                results = results
+                reportName = "pkgchk-dependencies"
+                imageUri = imageUri
+                genMarkdown = genMarkdownReport
+                genJson = ReportGeneration.jsonReport
+            }
 
         ReportGeneration.reports ctx
 
@@ -26,23 +28,28 @@ type PackageListCommand(nuget: INugetClient) =
         let context = Context.listContext (nuget, settings)
 
         { context with
-            options = Context.loadApplyConfig context.options }
+            options = Context.loadApplyConfig context.options
+        }
 
     let dotnetContext (context: ApplicationContext) =
-        { DotNetScanContext.services = context.services
-          projectPath = context.options.projectPath
-          includeVulnerabilities = false
-          includeTransitives = context.options.scanTransitives
-          includeDeprecations = false
-          includeDependencies = true
-          includeOutdated = false }
+        {
+            DotNetScanContext.services = context.services
+            projectPath = context.options.projectPath
+            includeVulnerabilities = false
+            includeTransitives = context.options.scanTransitives
+            includeDeprecations = false
+            includeDependencies = true
+            includeOutdated = false
+        }
 
     let results (context: ApplicationContext) (hits: seq<ScaHit>) =
         let hits = hits |> Context.filterPackages context.options |> List.ofSeq
 
-        { ApplicationScanResults.hits = hits
-          hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
-          isGoodScan = true }
+        {
+            ApplicationScanResults.hits = hits
+            hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
+            isGoodScan = true
+        }
 
     let consoleTable (results: ApplicationScanResults) =
         seq {
@@ -87,7 +94,8 @@ type PackageListCommand(nuget: INugetClient) =
                 if Seq.isEmpty errors |> not then
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
-                    let! results = scanResults |> DotNet.getHits |> results context |> DotNet.enrichHits context
+                    let! results =
+                        scanResults |> DotNet.getHits |> results context |> DotNet.enrichHits context
 
                     context.services.trace "Building display..."
 

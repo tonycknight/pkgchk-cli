@@ -8,10 +8,12 @@ module PackageAutomationScanning =
         patterns
         |> Seq.collect (Io.findFiles path)
         |> Seq.map (fun p ->
-            { name = Io.fileName p
-              path = Io.relativePath path p
-              fullPath = p
-              propertyType = name })
+            {
+                name = Io.fileName p
+                path = Io.relativePath path p
+                fullPath = p
+                propertyType = name
+            })
 
     let private scanPackageElements (path: string) =
         seq {

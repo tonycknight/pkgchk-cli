@@ -13,12 +13,14 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
     let genReports (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
         let ctx =
-            { ReportGenerationContext.app = context
-              results = results
-              reportName = "pkgchk"
-              imageUri = imageUri
-              genMarkdown = genMarkdownReport
-              genJson = ReportGeneration.jsonReport }
+            {
+                ReportGenerationContext.app = context
+                results = results
+                reportName = "pkgchk"
+                imageUri = imageUri
+                genMarkdown = genMarkdownReport
+                genJson = ReportGeneration.jsonReport
+            }
 
         ReportGeneration.reports ctx
 
@@ -36,16 +38,19 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
         let context = Context.scanContext (nuget, settings)
 
         { context with
-            options = Context.loadApplyConfig context.options }
+            options = Context.loadApplyConfig context.options
+        }
 
     let dotnetContext (context: ApplicationContext) =
-        { DotNetScanContext.services = context.services
-          projectPath = context.options.projectPath
-          includeVulnerabilities = context.options.scanVulnerabilities
-          includeTransitives = context.options.scanTransitives
-          includeDeprecations = context.options.scanDeprecations
-          includeDependencies = false
-          includeOutdated = false }
+        {
+            DotNetScanContext.services = context.services
+            projectPath = context.options.projectPath
+            includeVulnerabilities = context.options.scanVulnerabilities
+            includeTransitives = context.options.scanTransitives
+            includeDeprecations = context.options.scanDeprecations
+            includeDependencies = false
+            includeOutdated = false
+        }
 
     let consoleTable (context: ApplicationContext) (results: ApplicationScanResults) =
         seq {
@@ -69,9 +74,11 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
 
         let errorHits = hits |> ScaModels.hitsByLevels context.options.severities
 
-        { ApplicationScanResults.hits = hits
-          hitCounts = errorHits |> ScaModels.hitCountSummary |> List.ofSeq
-          isGoodScan = errorHits |> List.isEmpty }
+        {
+            ApplicationScanResults.hits = hits
+            hitCounts = errorHits |> ScaModels.hitCountSummary |> List.ofSeq
+            isGoodScan = errorHits |> List.isEmpty
+        }
 
     override _.Validate
         (context: CommandContext, settings: PackageScanCommandSettings)
@@ -98,7 +105,8 @@ type PackageScanCommand(nuget: Tk.Nuget.INugetClient) =
                 if Seq.isEmpty errors |> not then
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
-                    let! results = DotNet.getHits scanResults |> results context |> DotNet.enrichHits context
+                    let! results =
+                        DotNet.getHits scanResults |> results context |> DotNet.enrichHits context
 
                     context.services.trace "Building display..."
 

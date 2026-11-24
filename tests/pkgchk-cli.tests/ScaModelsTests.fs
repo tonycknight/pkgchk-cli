@@ -35,9 +35,11 @@ module ScaModelsTests =
             result = expectedHits
 
     [<Property(Arbitrary =
-                   [| typeof<AlphaNumericString>
-                      typeof<AlphaNumericStringSingletonArray>
-                      typeof<DeprecatedScaHitKind> |],
+                   [|
+                       typeof<AlphaNumericString>
+                       typeof<AlphaNumericStringSingletonArray>
+                       typeof<DeprecatedScaHitKind>
+                   |],
                Verbose = true)>]
     let ``hitsByLevels deprecated by known reasons returns hits`` (hits: pkgchk.ScaHit list) =
         if hits |> List.isEmpty then
@@ -71,18 +73,22 @@ module ScaModelsTests =
         let expected =
             groupedHits
             |> Seq.map (fun ((k, s), xs) ->
-                { pkgchk.ScaHitSummary.kind = k
-                  pkgchk.ScaHitSummary.severity = s
-                  pkgchk.ScaHitSummary.count = Seq.length xs })
+                {
+                    pkgchk.ScaHitSummary.kind = k
+                    pkgchk.ScaHitSummary.severity = s
+                    pkgchk.ScaHitSummary.count = Seq.length xs
+                })
             |> Seq.sortBy sort
             |> Array.ofSeq
 
         results = expected
 
     [<Property(Arbitrary =
-                   [| typeof<AlphaNumericString>
-                      typeof<AlphaNumericStringSingletonArray>
-                      typeof<DeprecatedScaHitKind> |],
+                   [|
+                       typeof<AlphaNumericString>
+                       typeof<AlphaNumericStringSingletonArray>
+                       typeof<DeprecatedScaHitKind>
+                   |],
                Verbose = true)>]
     let ``hitCountSummary on deprecated produces counts`` (hits: pkgchk.ScaHit list) =
         let hits =
@@ -90,7 +96,8 @@ module ScaModelsTests =
             |> List.map (fun h ->
                 { h with
                     severity = ""
-                    reasons = [| h.reasons.[0] |] })
+                    reasons = [| h.reasons.[0] |]
+                })
 
         let sort (h: pkgchk.ScaHitSummary) = (h.kind, h.severity)
 
@@ -102,9 +109,11 @@ module ScaModelsTests =
         let expected =
             groupedHits
             |> Seq.map (fun ((k, s), xs) ->
-                { pkgchk.ScaHitSummary.kind = k
-                  pkgchk.ScaHitSummary.severity = s
-                  pkgchk.ScaHitSummary.count = Seq.length xs })
+                {
+                    pkgchk.ScaHitSummary.kind = k
+                    pkgchk.ScaHitSummary.severity = s
+                    pkgchk.ScaHitSummary.count = Seq.length xs
+                })
             |> Seq.sortBy sort
             |> Array.ofSeq
 

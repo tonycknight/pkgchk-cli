@@ -13,12 +13,14 @@ type PackageLicenceCommand(nuget: INugetClient) =
 
     let genReports (context: ApplicationContext, results: ApplicationScanResults, imageUri) =
         let ctx =
-            { ReportGenerationContext.app = context
-              results = results
-              reportName = "pkgchk-licence-scan"
-              imageUri = imageUri
-              genMarkdown = genMarkdownReport
-              genJson = ReportGeneration.jsonReport }
+            {
+                ReportGenerationContext.app = context
+                results = results
+                reportName = "pkgchk-licence-scan"
+                imageUri = imageUri
+                genMarkdown = genMarkdownReport
+                genJson = ReportGeneration.jsonReport
+            }
 
         ReportGeneration.reports ctx
 
@@ -26,23 +28,28 @@ type PackageLicenceCommand(nuget: INugetClient) =
         let context = Context.licenceContext (nuget, settings)
 
         { context with
-            options = Context.loadApplyConfig context.options }
+            options = Context.loadApplyConfig context.options
+        }
 
     let dotnetContext (context: ApplicationContext) =
-        { DotNetScanContext.services = context.services
-          projectPath = context.options.projectPath
-          includeVulnerabilities = false
-          includeTransitives = context.options.scanTransitives
-          includeDeprecations = false
-          includeDependencies = true
-          includeOutdated = false }
+        {
+            DotNetScanContext.services = context.services
+            projectPath = context.options.projectPath
+            includeVulnerabilities = false
+            includeTransitives = context.options.scanTransitives
+            includeDeprecations = false
+            includeDependencies = true
+            includeOutdated = false
+        }
 
     let results (context: ApplicationContext) (hits: seq<ScaHit>) =
         let hits = hits |> Context.filterPackages context.options |> List.ofSeq
 
-        { ApplicationScanResults.hits = hits
-          hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
-          isGoodScan = true }
+        {
+            ApplicationScanResults.hits = hits
+            hitCounts = hits |> ScaModels.hitCountSummary |> List.ofSeq
+            isGoodScan = true
+        }
 
     let filterLicenceHits (context: ApplicationContext) (results: ApplicationScanResults) =
 
@@ -56,9 +63,11 @@ type PackageLicenceCommand(nuget: INugetClient) =
 
         let filteredHits = results.hits |> Seq.filter isHit |> List.ofSeq
 
-        { ApplicationScanResults.hits = filteredHits
-          hitCounts = filteredHits |> ScaModels.hitCountSummary |> List.ofSeq
-          isGoodScan = filteredHits |> List.isEmpty }
+        {
+            ApplicationScanResults.hits = filteredHits
+            hitCounts = filteredHits |> ScaModels.hitCountSummary |> List.ofSeq
+            isGoodScan = filteredHits |> List.isEmpty || (context.options.breakOnLicences |> not)
+        }
 
     let consoleTable (results: ApplicationScanResults) =
         seq {
@@ -104,7 +113,8 @@ type PackageLicenceCommand(nuget: INugetClient) =
                     return errors |> String.joinLines |> CliCommands.returnError
                 else
 
-                    let! results = scanResults |> DotNet.getHits |> results context |> DotNet.enrichHits context
+                    let! results =
+                        scanResults |> DotNet.getHits |> results context |> DotNet.enrichHits context
 
                     let results = results |> filterLicenceHits context
 
